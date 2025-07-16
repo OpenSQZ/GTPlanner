@@ -23,7 +23,14 @@ dependencies = [
 url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
 default = true
 
-
+[tool.uv]
+http-timeout = 120      
+connect-timeout = 60   
+read-timeout = 120      
+write-timeout = 60     
+max-retries = 3         
+retry-delay = 2     
+    
 
     
 
