@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="gtplanner" type="gtplanner_node" name="planner" output="screen"/>
+  <node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure"/>
+</launch>
