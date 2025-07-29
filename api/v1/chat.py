@@ -5,7 +5,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from utils.multilingual_utils import determine_language
-# from utils.context_manager import optimize_conversation_context  # 已禁用上下文压缩功能
+from utils.context_manager import optimize_conversation_context  # 启用上下文压缩功能
 
 # 导入规划相关的功能
 from api.v1.planning import (
@@ -265,36 +265,33 @@ async def generate_stream_response(
 
         # 禁用上下文压缩功能，直接使用原始对话历史
         # TODO: 后续研究更智能的压缩方案时可以重新启用以下代码
-        # try:
-        #     # 转换消息格式
-        #     history_dicts = []
-        #     for msg in conversation_history:
-        #         history_dicts.append({
-        #             "role": msg.role,
-        #             "content": msg.content,
-        #             "message_type": msg.message_type,
-        #             "timestamp": msg.timestamp
-        #         })
-        #
-        #     # 优化上下文
-        #     context_str, context_stats = await optimize_conversation_context(
-        #         history_dicts, message
-        #     )
-        # except Exception as e:
-        #     print(f"上下文优化失败，使用降级策略: {e}")
-
-        # 直接处理原始对话历史，分离系统提示词和用户聊天记录
-        user_conversation_history = []
+        # 转换消息格式
+        history_dicts = []
         for msg in conversation_history:
-            # 包含用户和助手的对话消息和规划消息，排除系统消息、文档和分析消息
-            # plan消息相对简洁且是对话的重要组成部分，应该保留在上下文中
-            # document和analysis消息通常很长，会占用过多token，因此排除
-            if msg.role in ["user", "assistant"] and msg.message_type in ["message", "plan"]:
-                msg_content = f"{msg.role}: {msg.content}"
-                user_conversation_history.append(msg_content)
+            history_dicts.append({
+                "role": msg.role,
+                "content": msg.content,
+                "message_type": msg.message_type,
+                "timestamp": msg.timestamp
+            })
+    
+        # 优化上下文
+        context_str, context_stats = await optimize_conversation_context(
+            history_dicts, message
+        )
 
-        # 构建纯净的用户对话历史字符串
-        context_str = "\n".join(user_conversation_history) if user_conversation_history else "这是对话的开始。"
+        # # 直接处理原始对话历史，分离系统提示词和用户聊天记录
+        # user_conversation_history = []
+        # for msg in conversation_history:
+        #     # 包含用户和助手的对话消息和规划消息，排除系统消息、文档和分析消息
+        #     # plan消息相对简洁且是对话的重要组成部分，应该保留在上下文中
+        #     # document和analysis消息通常很长，会占用过多token，因此排除
+        #     if msg.role in ["user", "assistant"] and msg.message_type in ["message", "plan"]:
+        #         msg_content = f"{msg.role}: {msg.content}"
+        #         user_conversation_history.append(msg_content)
+
+        # # 构建纯净的用户对话历史字符串
+        # context_str = "\n".join(user_conversation_history) if user_conversation_history else "这是对话的开始。"
 
         # 构建分离的系统提示词和用户对话上下文
         if language == "zh":
