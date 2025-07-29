@@ -1,0 +1,1556 @@
+[
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T08:39:03.861492"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T08:39:04.092008"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T08:39:04.210649"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不完整",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T08:39:04.432693"
+  },
+  {
+    "input_prompt": "恨神话悟空讲的是什么？",
+    "output_result": "这是对'恨神话悟空讲的是什么？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T08:40:21.663073"
+  },
+  {
+    "input_prompt": "python 是什么",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：python 是什么的相关信息如上所示。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T08:46:41.468654"
+  },
+  {
+    "input_prompt": "python变成基础",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：python变成基础的相关信息如上所示。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T08:47:22.270445"
+  },
+  {
+    "input_prompt": "python编程基础",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：python编程基础的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T08:47:32.419060"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "不完整",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T08:49:16.373427"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T08:49:16.492847"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T08:49:16.615180"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T08:49:16.733204"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不完整",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T08:49:16.991827"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "无关",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T15:01:04.949856"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T15:01:05.175899"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T15:01:05.285647"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "无关",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T15:01:05.509790"
+  },
+  {
+    "input_prompt": "java好学吗？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：java好学吗？的相关信息如上所示。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:01:53.557071"
+  },
+  {
+    "input_prompt": "小狗只喜欢吃骨头是对的吗？",
+    "output_result": "这是对'小狗只喜欢吃骨头是对的吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:07:06.887350"
+  },
+  {
+    "input_prompt": "小鸭子不会游泳吗？",
+    "output_result": "这是对'小鸭子不会游泳吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:07:29.777205"
+  },
+  {
+    "input_prompt": "青蛙就是癞蛤蟆",
+    "output_result": "这是对'青蛙就是癞蛤蟆'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:07:47.245367"
+  },
+  {
+    "input_prompt": "统计下今天有多少badcase了？",
+    "output_result": "这是对'统计下今天有多少badcase了？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:08:37.552545"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T15:11:13.563807"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "无关",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T15:11:13.689293"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "无关",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T15:11:13.799609"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T15:11:13.911838"
+  },
+  {
+    "input_prompt": "如何做菜",
+    "output_result": "这是对'如何做菜'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:11:52.810337"
+  },
+  {
+    "input_prompt": "请统计所有被自动识别为‘不完整’的反馈数量",
+    "output_result": "这是对'请统计所有被自动识别为‘不完整’的反馈数量'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:14:23.729298"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T15:19:43.210510"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T15:19:43.328237"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T15:19:43.448514"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T15:19:43.566625"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T15:19:43.808396"
+  },
+  {
+    "input_prompt": "统计结果",
+    "output_result": "这是对'统计结果'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:20:16.227959"
+  },
+  {
+    "input_prompt": "小鸭子是小鸡生的",
+    "output_result": "这是对'小鸭子是小鸡生的'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:21:36.628969"
+  },
+  {
+    "input_prompt": "& D:/software/python.exe d:/software/mianshi/GTPlanner/main.py",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：& D:/software/python.exe d:/software/mianshi/GTPlanner/main.py的相关信息如上所示。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:23:51.522611"
+  },
+  {
+    "input_prompt": "小鸡是小鸭子孵化的",
+    "output_result": "这是对'小鸡是小鸭子孵化的'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:24:04.984509"
+  },
+  {
+    "input_prompt": "& D:/software/python.exe d:/software/mianshi/GTPlanner/main.py",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：& D:/software/python.exe d:/software/mianshi/GTPlanner/main.py的相关信息如上所示。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:25:05.516639"
+  },
+  {
+    "input_prompt": "小鸡是鸭蛋孵化的",
+    "output_result": "这是对'小鸡是鸭蛋孵化的'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T15:25:20.390330"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T16:45:12.933613"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T16:45:13.178113"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T16:45:13.303295"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T16:45:13.552982"
+  },
+  {
+    "input_prompt": "如何做菜",
+    "output_result": "这是对'如何做菜'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T16:45:20.536939"
+  },
+  {
+    "input_prompt": "请统计‘不完整’类型的问题数量",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：请统计‘不完整’类型的问题数量的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T16:45:38.668967"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T16:48:24.153338"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T16:48:24.349076"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T16:48:24.550378"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T16:48:24.685704"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不完整",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T16:48:25.052587"
+  },
+  {
+    "input_prompt": "小鸭子的妈妈是小鸡",
+    "output_result": "这是对'小鸭子的妈妈是小鸡'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T16:48:44.468487"
+  },
+  {
+    "input_prompt": "请输出‘不完整’类型的问题都有哪些，逐条列出",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：请输出‘不完整’类型的问题都有哪些，逐条列出的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T16:49:22.855804"
+  },
+  {
+    "input_prompt": "小鸡会游泳，是真的吗？",
+    "output_result": "这是对'小鸡会游泳，是真的吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T16:49:58.046063"
+  },
+  {
+    "input_prompt": "下雨天不用打伞，对吗？",
+    "output_result": "这是对'下雨天不用打伞，对吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T16:50:13.128683"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "这是对'q\u0004\u0003'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T16:52:41.665506"
+  },
+  {
+    "input_prompt": "你是人吗？",
+    "output_result": "这是对'你是人吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T16:58:53.427346"
+  },
+  {
+    "input_prompt": "你是人类吗？",
+    "output_result": "这是对'你是人类吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T16:58:59.409955"
+  },
+  {
+    "input_prompt": "机器人是人",
+    "output_result": "这是对'机器人是人'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T16:59:08.059967"
+  },
+  {
+    "input_prompt": "请逐条列出这些问题",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：请逐条列出这些问题的相关信息如上所示。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T16:59:28.005640"
+  },
+  {
+    "input_prompt": "请列出‘不完整’类型的问题",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：请列出‘不完整’类型的问题的相关信息如上所示。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:00:05.417402"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "这是对'q\u0004\u0003'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:00:28.284561"
+  },
+  {
+    "input_prompt": "python test_detail_query.py",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：python test_detail_query.py的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:01:03.448070"
+  },
+  {
+    "input_prompt": "小鸭子是小鸡蛋孵化的",
+    "output_result": "这是对'小鸭子是小鸡蛋孵化的'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:01:16.291521"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "无关",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T17:02:32.304784"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T17:02:32.429189"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "无关",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T17:02:32.553984"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T17:02:32.697928"
+  },
+  {
+    "input_prompt": "python是什么",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：python是什么的相关信息如上所示。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:02:38.349867"
+  },
+  {
+    "input_prompt": "请统计‘不完整’q\u0004\u0003化",
+    "output_result": "这是对'请统计‘不完整’q\u0004\u0003化'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:03:53.591483"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "这是对'q\u0004\u0003'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:04:07.686107"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T17:06:34.333717"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T17:06:34.595110"
+  },
+  {
+    "input_prompt": "鸭子的妈妈是小母鸡",
+    "output_result": "这是对'鸭子的妈妈是小母鸡'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:06:44.532152"
+  },
+  {
+    "input_prompt": "今天北京下雨了吗",
+    "output_result": "这是对'今天北京下雨了吗'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:07:20.987608"
+  },
+  {
+    "input_prompt": "另外33个BadCase也输出一下",
+    "output_result": "这是对'另外33个BadCase也输出一下'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:08:06.591605"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "这是对'q\u0004\u0003'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:08:58.660540"
+  },
+  {
+    "input_prompt": "鸭子妈妈是母鸡吗？",
+    "output_result": "这是对'鸭子妈妈是母鸡吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:13:23.053376"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "这是对'q\u0004\u0003'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:13:31.746259"
+  },
+  {
+    "input_prompt": "鸭子妈妈是母鸡吗？",
+    "output_result": "这是对'鸭子妈妈是母鸡吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:14:32.490030"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "这是对'q\u0004\u0003'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:14:42.627031"
+  },
+  {
+    "input_prompt": "鸭子妈妈是母鸡吗？",
+    "output_result": "这是对'鸭子妈妈是母鸡吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:14:58.899629"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "这是对'q\u0004\u0003'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:15:04.733422"
+  },
+  {
+    "input_prompt": "& D:/software/python.exe d:/software/mianshi/GTPlanner/main.py",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：& D:/software/python.exe d:/software/mianshi/GTPlanner/main.py的相关信息如上所示。",
+    "feedback_label": "错误",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:20:17.315748"
+  },
+  {
+    "input_prompt": "鸭子妈妈是母鸡",
+    "output_result": "这是对'鸭子妈妈是母鸡'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:20:24.513547"
+  },
+  {
+    "input_prompt": "母鸡是鸭鸭妈妈吗",
+    "output_result": "这是对'母鸡是鸭鸭妈妈吗'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:22:38.860085"
+  },
+  {
+    "input_prompt": "你怎么不问我满不满意",
+    "output_result": "这是对'你怎么不问我满不满意'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "不完整",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:22:50.226873"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：什么是Python？的相关信息如上所示。",
+    "feedback_label": "不完整",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T17:28:54.747360"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：什么是Python？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T17:31:05.163766"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：机器学习有什么应用？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T17:31:05.279416"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T17:31:05.398644"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T17:31:05.514532"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T17:31:05.631202"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T17:31:05.744329"
+  },
+  {
+    "input_prompt": "Python编程有什么特点？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：Python编程有什么特点？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_7",
+    "timestamp": "2025-07-29T17:31:05.857322"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T17:31:05.973352"
+  },
+  {
+    "input_prompt": "北京天天下雨是真的吗？",
+    "output_result": "这是对'北京天天下雨是真的吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:31:15.288409"
+  },
+  {
+    "input_prompt": "请列出‘无关’问题的明细",
+    "output_result": "基于提供的上下文信息：文档1 - 数据结构与算法:\n数据结构是计算机科学的基础，它定义了数据的组织、存储和访问方式。常见的数据结构包括数组、链表、栈、队列、树、图等。算法是解决问题的步骤和方法，好的算法能够高效地处理数据。...\n\n回答：请列出‘无关’问题的明细的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:31:34.858782"
+  },
+  {
+    "input_prompt": "请列出‘无关’类型问题的明细",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：请列出‘无关’类型问题的明细的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:31:45.158600"
+  },
+  {
+    "input_prompt": "总BadCase数量",
+    "output_result": "这是对'总BadCase数量'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:32:16.433397"
+  },
+  {
+    "input_prompt": "列出‘不确定’类型的问题明细",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：列出‘不确定’类型的问题明细的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:33:55.152566"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：什么是Python？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T17:34:30.595879"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：机器学习有什么应用？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T17:34:30.721702"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T17:34:30.838281"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T17:34:30.954336"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T17:34:31.070533"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T17:34:31.185265"
+  },
+  {
+    "input_prompt": "Python编程有什么特点？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：Python编程有什么特点？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_7",
+    "timestamp": "2025-07-29T17:34:31.298389"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T17:34:31.411669"
+  },
+  {
+    "input_prompt": "人工智能是昨天才出现吗？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能是昨天才出现吗？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:34:40.933909"
+  },
+  {
+    "input_prompt": "请列出‘不准确’问题类型的问题明细",
+    "output_result": "基于提供的上下文信息：文档1 - 数据结构与算法:\n数据结构是计算机科学的基础，它定义了数据的组织、存储和访问方式。常见的数据结构包括数组、链表、栈、队列、树、图等。算法是解决问题的步骤和方法，好的算法能够高效地处理数据。...\n\n回答：请列出‘不准确’问题类型的问题明细的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:35:04.383504"
+  },
+  {
+    "input_prompt": "列出‘不准确’类型的问题",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：列出‘不准确’类型的问题的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:35:33.670013"
+  },
+  {
+    "input_prompt": "列出‘不准确’类型的问题",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：列出‘不准确’类型的问题的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:37:08.016626"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：什么是Python？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T17:37:36.876109"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：机器学习有什么应用？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T17:37:36.996336"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T17:37:37.112109"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T17:37:37.227979"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T17:37:37.350139"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T17:37:37.464893"
+  },
+  {
+    "input_prompt": "Python编程有什么特点？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：Python编程有什么特点？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_7",
+    "timestamp": "2025-07-29T17:37:37.580229"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T17:37:37.695500"
+  },
+  {
+    "input_prompt": "什么时python",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：什么时python的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:37:42.445231"
+  },
+  {
+    "input_prompt": "什么是python",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：什么是python的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:37:46.491374"
+  },
+  {
+    "input_prompt": "请列出‘不准确’类型的问题",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：请列出‘不准确’类型的问题的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:37:57.260306"
+  },
+  {
+    "input_prompt": "请逐条列出‘不准确’类型的问题有哪些",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：请逐条列出‘不准确’类型的问题有哪些的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:38:12.890778"
+  },
+  {
+    "input_prompt": "列出'不准确'类型的问题",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：列出'不准确'类型的问题的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:41:55.802310"
+  },
+  {
+    "input_prompt": "显示'不完整'类型的问题",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：显示'不完整'类型的问题的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:41:55.919131"
+  },
+  {
+    "input_prompt": "列出'不准确'类型的问题",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：列出'不准确'类型的问题的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:43:05.516863"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：什么是Python？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T17:43:47.555149"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：机器学习有什么应用？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T17:43:47.687139"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T17:43:47.817404"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T17:43:47.956415"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T17:43:48.115877"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T17:43:48.246318"
+  },
+  {
+    "input_prompt": "Python编程有什么特点？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：Python编程有什么特点？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_7",
+    "timestamp": "2025-07-29T17:43:48.398229"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T17:43:48.543278"
+  },
+  {
+    "input_prompt": "鸡妈妈会生小鸭子吗",
+    "output_result": "这是对'鸡妈妈会生小鸭子吗'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:43:57.502464"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：什么是Python？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T17:46:54.192314"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：机器学习有什么应用？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T17:46:54.310319"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T17:46:54.426666"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T17:46:54.550860"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T17:46:54.668373"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T17:46:54.783976"
+  },
+  {
+    "input_prompt": "Python编程有什么特点？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：Python编程有什么特点？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_7",
+    "timestamp": "2025-07-29T17:46:54.904608"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T17:46:55.020636"
+  },
+  {
+    "input_prompt": "北京现在是冬天嘛？",
+    "output_result": "这是对'北京现在是冬天嘛？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:47:03.186489"
+  },
+  {
+    "input_prompt": "你知道小猫爱吃什么吗？",
+    "output_result": "这是对'你知道小猫爱吃什么吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T17:47:51.142328"
+  },
+  {
+    "input_prompt": "小猫的叫声是汪汪汪吗？",
+    "output_result": "这是对'小猫的叫声是汪汪汪吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T18:05:04.115965"
+  },
+  {
+    "input_prompt": "小鸟是哺乳动物吗？",
+    "output_result": "这是对'小鸟是哺乳动物吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T18:05:30.021971"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：什么是Python？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T18:50:21.476454"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：机器学习有什么应用？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T18:50:21.597821"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T18:50:21.719939"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T18:50:21.846073"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T18:50:21.969325"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T18:50:22.104664"
+  },
+  {
+    "input_prompt": "Python编程有什么特点？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：Python编程有什么特点？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_7",
+    "timestamp": "2025-07-29T18:50:22.238825"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T18:50:22.358314"
+  },
+  {
+    "input_prompt": "什么事黑神话悟空",
+    "output_result": "这是对'什么事黑神话悟空'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T18:50:29.746917"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：什么是Python？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T18:51:27.215347"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：机器学习有什么应用？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T18:51:27.358412"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T18:51:27.497448"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T18:51:27.648005"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T18:51:27.768665"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T18:51:27.900987"
+  },
+  {
+    "input_prompt": "Python编程有什么特点？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：Python编程有什么特点？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_7",
+    "timestamp": "2025-07-29T18:51:28.024356"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T18:51:28.156578"
+  },
+  {
+    "input_prompt": "deepseek接入成功了吗？",
+    "output_result": "这是对'deepseek接入成功了吗？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T18:51:38.645312"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "这是对'q\u0004\u0003'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T18:51:42.291905"
+  },
+  {
+    "input_prompt": "黑神话是什么",
+    "output_result": "这是对'黑神话是什么'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T18:53:28.031709"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：什么是Python？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T18:54:43.242748"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：机器学习有什么应用？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T18:54:43.554181"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "基于提供的上下文信息：文档1 - 机器学习入门:\n机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监...\n\n回答：如何学习数据结构？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T18:54:43.822616"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T18:54:44.437280"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "基于提供的上下文信息：文档1 - Web开发技术:\nWeb开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还...\n\n回答：Web开发需要什么技术？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T18:54:44.770479"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "这是对'如何做菜？'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T18:54:44.967374"
+  },
+  {
+    "input_prompt": "Python编程有什么特点？",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：Python编程有什么特点？的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_7",
+    "timestamp": "2025-07-29T18:54:45.151591"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：人工智能的发展历史的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T18:54:45.350892"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "Python是一种由Guido van Rossum于1991年创建的高级编程语言。它以简洁的语法和强大的功能著称，支持多种编程范式，包括面向对象编程和函数式编程。Python被广泛应用于Web开发、数据科学、人工智能等多个领域。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T18:57:15.657372"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "根据提供的上下文信息，机器学习（尤其是其子领域深度学习）的主要应用包括：\n\n1. **图像识别**（文档2提及）：如人脸识别、物体检测、医学影像分析等  \n2. **自然语言处理**（文档2提及）：如机器翻译、情感分析、智能客服等  \n3. **语音识别**（文档2提及）：如智能语音助手、语音转文字等  \n4. **预测与决策**（文档1提及）：如金融风控、销售预测、推荐系统等  \n\n注：虽然文档3提到Web开发技术，但该内容与机器学习应用无直接关联。更具体的应用领域需要结合更详细的上下文补充说明。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T18:57:28.341668"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "根据上下文信息，以下是学习数据结构的建议：\n\n1. **理解基本概念**  \n   从文档2可知，数据结构是计算机科学的基础，涉及数据的组织、存储和访问方式。首先需要掌握基本概念，如数组、链表、栈、队列、树、图等常见数据结构。\n\n2. **结合算法学习**  \n   数据结构与算法紧密相关（文档2提到算法是解决问题的步骤和方法）。学习数据结构时，应同时了解如何通过算法高效操作这些结构（如排序、搜索、遍历等）。\n\n3. **实践与应用**  \n   - 通过编程实现数据结构（如用代码实现链表或二叉树）。  \n   - 解决实际问题（如使用栈处理括号匹配，用图解决最短路径问题）。  \n\n4. **扩展学习资源**  \n   虽然上下文未提供具体教材或课程，但建议：  \n   - 选择经典的计算机科学教材（如《算法导论》）。  \n   - 结合在线编程平台（如LeetCode、HackerRank）练习题目。  \n\n5. **关联其他领域**  \n   数据结构是机器学习（文档1）和深度学习（文档3）的基础。例如，神经网络中的图结构、数据处理中的数组和树结构等。理解数据结构有助于后续学习更高级的主题。  \n\n**注意**：上下文未提及学习路径的细节（如先修知识、学习时长等），需根据个人基础补充。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T18:57:49.003076"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "根据上下文信息，常见的深度学习框架包括 **TensorFlow** 和 **PyTorch**。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T18:57:55.198007"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "根据提供的上下文信息，Web开发需要以下技术：\n\n1. **前端技术**：\n   - **HTML**：用于构建网页的结构。\n   - **CSS**：用于设计网页的样式和布局。\n   - **JavaScript**：用于实现网页的交互功能和动态效果。\n   - 其他现代概念：\n     - **响应式设计**：确保网页在不同设备上都能良好显示。\n     - **单页应用（SPA）**：提供更流畅的用户体验，无需重新加载页面。\n\n2. **后端技术**：\n   - **服务器端编程**：处理业务逻辑和数据操作（如使用Python、Node.js等语言）。\n   - **数据库设计**：存储和管理数据（如MySQL、PostgreSQL等）。\n   - **API开发**：提供数据接口供前端或其他服务调用。\n\n3. **其他相关技术**：\n   - 如文档2提到的，Python可以用于Web开发的后端部分，支持面向对象编程和函数式编程。\n\n总结：Web开发需要前端技术（HTML、CSS、JavaScript等）和后端技术（服务器编程、数据库、API等），同时可能涉及现代开发概念（如响应式设计、单页应用）以及多种编程语言（如Python）。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T18:58:29.199746"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "生成回答时出错：DeepSeek API request failed: HTTPSConnectionPool(host='api.deepseek.com', port=443): Read timed out.",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T18:59:00.671493"
+  },
+  {
+    "input_prompt": "Python编程有什么特点？",
+    "output_result": "根据文档1 - Python编程基础提供的上下文信息，Python编程具有以下特点：\n\n1. 语法简洁：Python以简洁易读的语法著称\n2. 功能强大：具有丰富的功能和库支持\n3. 多范式支持：同时支持面向对象编程和函数式编程等多种编程范式\n4. 广泛应用：在Web开发、数据科学、人工智能等多个领域都有广泛应用\n5. 高级语言：属于高级编程语言，抽象程度高\n\n这些特点使Python成为当前最流行的编程语言之一。",
+    "feedback_label": "不准确",
+    "user_id": "user_7",
+    "timestamp": "2025-07-29T18:59:13.288427"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "根据提供的上下文信息，文档1主要介绍了Python编程语言的基本情况，文档2则简要说明了机器学习作为人工智能分支的概念和类型。这两个文档都没有直接涉及人工智能发展历史的具体内容。\n\n因此，基于当前上下文无法回答\"人工智能的发展历史\"这一问题。若需了解该主题，建议补充人工智能发展历程的相关资料，例如：\n1. 人工智能的起源（如1956年达特茅斯会议）\n2. 早期符号主义AI的发展\n3. 神经网络与深度学习的演进\n4. 21世纪以来的重大突破等历史节点信息。\n\n当前上下文仅能确认：\n- Python是AI领域常用工具（文档1）\n- 机器学习是AI的分支（文档2）",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T18:59:29.761949"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "根据文档1提供的上下文信息，常见的深度学习框架包括 **TensorFlow** 和 **PyTorch**。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T18:59:59.234727"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "这是对'q\u0004\u0003'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:00:22.304591"
+  },
+  {
+    "input_prompt": "python main.py",
+    "output_result": "基于提供的上下文信息：文档1 - Python编程基础:\nPython是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能...\n\n回答：python main.py的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:01:32.537145"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:01:39.512087"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "Python是一种由Guido van Rossum于1991年创建的高级编程语言。它具有简洁的语法和强大的功能，支持多种编程范式，包括面向对象编程和函数式编程。Python被广泛应用于Web开发、数据科学、人工智能等多个领域。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T19:02:26.405066"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "根据提供的上下文信息，机器学习（尤其是其子领域深度学习）的主要应用包括：\n\n1. **图像识别**（文档2提及）  \n   例如人脸识别、医学影像分析、自动驾驶中的物体检测等。\n\n2. **自然语言处理**（文档2提及）  \n   包括机器翻译、情感分析、智能客服（如聊天机器人）等。\n\n3. **语音识别**（文档2提及）  \n   如智能助手（Siri、Alexa）、语音转文字工具等。\n\n此外，虽然上下文未直接列举其他应用，但通过机器学习“通过数据识别模式并做出预测”的核心能力（文档1），还可推断其广泛用于：  \n- 金融领域的欺诈检测、信用评分  \n- 推荐系统（如电商、流媒体平台的个性化推荐）  \n- 预测性维护（工业设备故障预测）  \n\n注：上下文未提及Web开发相关应用，因此不在此回答范围内。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T19:02:42.222417"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "根据上下文信息，以下是学习数据结构的建议：\n\n1. **理解基本概念**（来自文档2）：\n   - 首先掌握数据结构的基础定义，即数据的组织、存储和访问方式。\n   - 学习常见数据结构类型，如数组、链表、栈、队列、树、图等。\n\n2. **结合算法学习**（来自文档2）：\n   - 数据结构与算法紧密相关，建议同步学习算法的基础知识，理解如何通过高效算法操作数据结构。\n\n3. **实践与应用**：\n   - 通过编程练习实现各类数据结构（如用代码实现链表或二叉树）。\n   - 解决实际问题（如利用栈处理括号匹配、用图解决路径查找问题）。\n\n4. **扩展学习**（可选）：\n   - 若对更复杂的数据处理感兴趣，可探索机器学习（文档1）或深度学习（文档3）中的数据结构应用，例如神经网络中的图结构或矩阵运算。\n\n**注意**：上下文未提供具体学习方法（如书籍或课程推荐），建议补充学习资源（如经典教材《算法导论》或在线编程平台练习）。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T19:02:59.456351"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "根据文档1提供的上下文信息，常见的深度学习框架包括 **TensorFlow** 和 **PyTorch**。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T19:03:06.133068"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "根据提供的上下文信息，Web开发需要以下技术：\n\n1. **前端技术**：\n   - **HTML**：用于构建网页的结构\n   - **CSS**：用于设计网页的样式和布局\n   - **JavaScript**：用于实现网页的交互功能\n   - **现代概念**：如响应式设计（使网页适配不同设备）、单页应用（SPA）等\n\n2. **后端技术**：\n   - 服务器端编程（如使用Python、PHP、Java等语言）\n   - 数据库设计与管理\n   - API开发（用于前后端数据交互）\n\n3. **其他相关技术**：\n   - 如上下文提到的Python，可以用于后端开发（例如通过Django、Flask等框架）\n   - 面向对象编程、函数式编程等范式（根据开发需求选择）\n\n这些技术共同构成了完整的Web开发技术栈，涵盖用户界面构建、业务逻辑处理和数据存储等方面。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T19:03:22.706942"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "这是对'q\u0004\u0003'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:03:33.693434"
+  },
+  {
+    "input_prompt": "Get-Content .env",
+    "output_result": "这是对'Get-Content .env'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:03:42.898558"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些",
+    "output_result": "基于提供的上下文信息：文档1 - 深度学习基础:\n深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFl...\n\n回答：深度学习框架有哪些的相关信息如上所示。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:03:49.773029"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "做菜的基本步骤可以概括为以下几个阶段，具体操作会根据不同的菜品有所调整：\n\n### 1. **准备工作**\n   - **食材选择**：根据菜谱购买新鲜食材，注意搭配颜色、口感和营养。\n   - **清洗处理**：洗净食材，去除不可食用部分（如根、皮、籽等）。\n   - **切配**：将食材切成适合的形状（丝、片、块等），大小均匀以便受热均匀。\n   - **腌制**：肉类或鱼类可提前用调料（盐、酱油、料酒等）腌制入味。\n\n### 2. **烹饪方法**\n   - **炒**：热锅冷油，大火快炒，保持食材鲜嫩（如炒青菜、宫保鸡丁）。\n   - **煮/炖**：加水或高汤慢煮，适合汤类或硬质食材（如红烧肉、排骨汤）。\n   - **蒸**：保留原汁原味，适合鱼类、蔬菜（如清蒸鱼、蒸蛋）。\n   - **烤/炸**：高温制作外酥里嫩的效果（如烤鸡翅、炸春卷）。\n\n### 3. **调味技巧**\n   - **基础调味**：盐、糖、酱油、醋等平衡酸甜咸鲜。\n   - **增香**：葱姜蒜、香料（八角、花椒）或香草（罗勒、迷迭香）。\n   - **勾芡**：淀粉水使汤汁浓稠（如麻婆豆腐）。\n   - **出锅前调味**：香油、胡椒粉等提升风味。\n\n### 4. **装盘与点缀**\n   - 注意色彩搭配，可用香菜、芝麻等装饰。\n\n### 新手建议\n   - 从简单菜品开始（如番茄炒蛋、蒜蓉西兰花）。\n   - 掌握火候（大火快炒、小火慢炖）。\n   - 备好工具：锋利的刀、不粘锅、计时器等。\n\n### 示例：番茄炒蛋\n1. 番茄切块，鸡蛋打散加盐。\n2. 热油炒鸡蛋至凝固，盛出备用。\n3. 炒番茄至出汁，加糖和盐调味。\n4. 倒入鸡蛋翻炒均匀，撒葱花出锅。\n\n如果需要具体某道菜的做法或更详细的技巧，可以告诉我你想学的菜品哦！",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T19:03:53.766729"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "这是对'q\u0004\u0003'的回答。由于没有相关上下文，我只能提供一般性信息。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:03:56.395047"
+  },
+  {
+    "input_prompt": "Python编程有什么特点？",
+    "output_result": "根据提供的上下文信息（文档1 - Python编程基础），Python编程具有以下特点：\n\n1. **简洁的语法**：Python的语法设计清晰易读，降低了编程的复杂性。  \n2. **强大的功能**：支持多种编程任务，涵盖从基础脚本到复杂应用的开发。  \n3. **多范式支持**：同时支持面向对象编程、函数式编程等多种编程范式。  \n4. **广泛应用领域**：在Web开发、数据科学、人工智能等领域被广泛使用。  \n\n这些特点使得Python成为一门高效且适应性强的编程语言。",
+    "feedback_label": "不准确",
+    "user_id": "user_7",
+    "timestamp": "2025-07-29T19:04:06.164076"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "根据提供的上下文信息，文档1主要介绍了Python编程语言的基本信息，文档2则简要说明了机器学习的概念和类型。这两个文档中都没有包含关于\"人工智能发展历史\"的具体内容。\n\n因此，基于当前提供的上下文信息，我无法准确回答关于人工智能发展历史的问题。如果您需要了解这方面的信息，建议查阅专门讲述人工智能历史的资料或更全面的背景文档。",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T19:04:14.450186"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "Python是一种由Guido van Rossum于1991年创建的高级编程语言。它以简洁的语法和强大的功能著称，支持多种编程范式，包括面向对象编程和函数式编程。Python被广泛应用于多个领域，如Web开发、数据科学和人工智能等。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T19:04:35.373264"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "根据文档1提供的上下文信息，常见的深度学习框架包括 **TensorFlow** 和 **PyTorch**。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:04:42.154803"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "根据提供的上下文信息，机器学习（尤其是其子领域深度学习）的应用包括但不限于以下领域：\n\n1. **图像识别**（文档2提及）：如人脸识别、医学影像分析、自动驾驶中的物体检测等。  \n2. **自然语言处理**（文档2提及）：例如机器翻译、情感分析、智能客服对话系统等。  \n3. **语音识别**（文档2提及）：如智能助手（Siri、Alexa）、语音转文字工具等。  \n\n此外，虽然上下文未直接列举其他应用，但机器学习的一般特性（文档1所述）使其还可广泛应用于：  \n- **预测分析**（如金融风控、销售预测）  \n- **推荐系统**（如电商、流媒体平台的个性化推荐）  \n- **异常检测**（如网络安全、工业设备故障监测）  \n\n注：若需更具体的应用场景或技术细节，可能需要补充上下文。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T19:04:50.000107"
+  },
+  {
+    "input_prompt": "什么是Python？",
+    "output_result": "Python是一种由Guido van Rossum于1991年创建的高级编程语言。它以简洁的语法和强大的功能著称，支持多种编程范式，包括面向对象编程和函数式编程。Python被广泛应用于Web开发、数据科学、人工智能等多个领域。",
+    "feedback_label": "不准确",
+    "user_id": "user_1",
+    "timestamp": "2025-07-29T19:05:59.379372"
+  },
+  {
+    "input_prompt": "机器学习有什么应用？",
+    "output_result": "根据提供的上下文信息，机器学习的主要应用包括：\n\n1. **图像识别**（文档2提及）：深度学习作为机器学习的子集，在图像识别领域取得了突破性进展，例如人脸识别、物体检测等。\n\n2. **自然语言处理**（文档2提及）：如机器翻译、文本分析、聊天机器人等。\n\n3. **语音识别**（文档2提及）：例如智能语音助手、语音转文字等技术。\n\n4. **预测与决策**（文档1提及）：通过分析数据模式进行预测（如金融风控、销售预测）或自动化决策（如推荐系统）。\n\n需要注意的是，上下文未提及的其他常见应用（如医疗诊断、自动驾驶等）未被包含在此回答中。若需更全面的应用场景，可能需要补充更多相关资料。",
+    "feedback_label": "不准确",
+    "user_id": "user_2",
+    "timestamp": "2025-07-29T19:06:13.045297"
+  },
+  {
+    "input_prompt": "如何学习数据结构？",
+    "output_result": "根据上下文信息，以下是学习数据结构的建议：\n\n1. **理解基本概念**  \n   首先需要掌握数据结构的基础定义（如文档2所述），即数据的组织、存储和访问方式。明确数据结构与算法的关系——数据结构是算法的实现基础。\n\n2. **学习常见数据结构类型**  \n   从基础结构入手，逐步掌握以下核心内容（文档2提到的例子）：\n   - 线性结构：数组、链表、栈、队列  \n   - 非线性结构：树（二叉树、堆等）、图  \n   每种结构需理解其特性、适用场景及优缺点。\n\n3. **结合算法实践**  \n   通过实际编码实现数据结构（如用链表实现插入/删除操作），并学习与之关联的基础算法（如排序、搜索）。文档2强调“好的算法能高效处理数据”，因此需注重时间/空间复杂度分析。\n\n4. **应用与拓展**  \n   - 高阶学习可关联其他领域。例如：  \n     - 树结构在机器学习决策树中的应用（参考文档1）  \n     - 图神经网络与深度学习的结合（参考文档3）  \n   - 使用编程语言（如Python/C++）的标准库（如STL、Collections）加深理解。\n\n**补充建议**：若上下文未涵盖具体学习方法，可进一步通过在线课程、刷题（如LeetCode）或开源项目实践巩固知识。",
+    "feedback_label": "不准确",
+    "user_id": "user_3",
+    "timestamp": "2025-07-29T19:06:33.856595"
+  },
+  {
+    "input_prompt": "python的由来",
+    "output_result": "Python是由荷兰程序员Guido van Rossum（吉多·范罗苏姆）于1991年创建的。它的设计初衷是提供一种语法简洁、易读性强且功能强大的高级编程语言。Python的名字并非源自蟒蛇，而是来自Guido喜爱的英国喜剧团体Monty Python（蒙提·派森），体现了语言轻松幽默的风格。Python的诞生填补了当时对可读性高、易于维护的脚本语言的需求，并逐渐发展成为支持多种编程范式（如面向对象、函数式编程）的通用语言，广泛应用于Web开发、数据科学、人工智能等领域。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:06:35.817190"
+  },
+  {
+    "input_prompt": "深度学习框架有哪些？",
+    "output_result": "根据上下文信息，常见的深度学习框架包括 **TensorFlow** 和 **PyTorch**。",
+    "feedback_label": "不准确",
+    "user_id": "user_4",
+    "timestamp": "2025-07-29T19:06:42.371881"
+  },
+  {
+    "input_prompt": "Web开发需要什么技术？",
+    "output_result": "根据提供的上下文信息，Web开发需要以下技术：\n\n1. **前端技术**：\n   - HTML：用于构建网页的结构\n   - CSS：用于设计网页的样式和布局\n   - JavaScript：用于实现网页的交互功能\n   - 现代Web开发概念：如响应式设计（使网页适配不同设备）、单页应用（SPA）等\n\n2. **后端技术**：\n   - 服务器端编程（如使用Python、PHP、Java等语言）\n   - 数据库设计与管理\n   - API开发（用于前后端数据交互）\n\n3. **其他相关技术**：\n   - 如上下文提到的Python语言，可以用于后端开发\n   - 面向对象编程、函数式编程等编程范式\n\n这些技术共同构成了完整的Web开发技术栈，开发者需要根据项目需求选择合适的技术组合。",
+    "feedback_label": "不准确",
+    "user_id": "user_5",
+    "timestamp": "2025-07-29T19:06:56.529605"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "生成回答时出错：DeepSeek API request failed: HTTPSConnectionPool(host='api.deepseek.com', port=443): Read timed out.",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T19:07:28.035059"
+  },
+  {
+    "input_prompt": "Python编程有什么特点？",
+    "output_result": "根据文档1 - Python编程基础中的信息，Python编程具有以下特点：\n\n1. **简洁的语法**：Python的语法设计清晰、易读，使得代码编写和维护更加高效。\n\n2. **强大的功能**：Python提供了丰富的内置功能和库，支持多种编程任务。\n\n3. **广泛的应用领域**：Python被广泛应用于Web开发、数据科学、人工智能等多个领域。\n\n4. **多范式支持**：Python支持面向对象编程、函数式编程等多种编程范式，灵活性高。\n\n这些特点使得Python成为一门受欢迎且实用的编程语言。",
+    "feedback_label": "不准确",
+    "user_id": "user_7",
+    "timestamp": "2025-07-29T19:07:39.089519"
+  },
+  {
+    "input_prompt": "人工智能的发展历史",
+    "output_result": "根据提供的上下文信息，文档1主要介绍了Python编程语言的基本信息，文档2则简要说明了机器学习的概念和分类。这两个文档都没有包含关于人工智能发展历史的具体内容。\n\n因此，基于当前提供的上下文信息，我无法回答关于人工智能发展历史的问题。如果您需要了解这方面的信息，建议查阅专门讲述人工智能历史的资料或文档。",
+    "feedback_label": "不准确",
+    "user_id": "user_8",
+    "timestamp": "2025-07-29T19:07:47.928533"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "你好！我注意到你发送的内容似乎是一些无法识别的字符或代码片段。为了更好地帮助你，能否请你提供更多背景信息或明确你的问题？这样我就能更准确地为你提供解答或支持。 \n\n如果是技术问题（比如编码、数据传输等），可以描述你遇到的具体情况；如果是其他需求，也请随时告诉我！ \n\n期待你的进一步说明~",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:07:57.350256"
+  },
+  {
+    "input_prompt": "python test_feedback_logic.py",
+    "output_result": "根据提供的上下文信息，您提到的命令`python test_feedback_logic.py`似乎是一个运行Python脚本的命令，但上下文文档中并未提及任何与`test_feedback_logic.py`相关的具体内容。\n\n以下是可能的情况说明：\n1. 这是一个用于测试某种反馈逻辑的Python脚本文件\n2. 您需要确保：\n   - Python已正确安装在您的系统上(文档1提到Python是1991年创建的编程语言)\n   - test_feedback_logic.py文件存在于当前目录或指定路径中\n   - 该脚本所需的任何依赖项(如深度学习框架如TensorFlow/PyTorch等，如文档2所述)已安装\n\n由于上下文没有提供关于这个特定脚本的更多信息，我无法给出更具体的解释或帮助。如果您能提供更多关于这个脚本或您遇到的具体问题的信息，我可以尝试给出更有针对性的建议。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:09:19.168449"
+  },
+  {
+    "input_prompt": "python的由来",
+    "output_result": "Python是由荷兰程序员Guido van Rossum于1991年创建的。它是一种高级编程语言，以其简洁的语法和强大的功能而闻名。Python的设计哲学强调代码的可读性和简洁性，这使得它成为Web开发、数据科学、人工智能等多个领域的流行选择。Python支持多种编程范式，包括面向对象编程和函数式编程。",
+    "feedback_label": "不准确",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:09:37.892363"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "你好！我无法理解你发送的内容。如果你有任何问题或需要帮助，请用更详细的方式描述，我会尽力为你提供帮助。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:09:51.851421"
+  },
+  {
+    "input_prompt": "如何做菜？",
+    "output_result": "生成回答时出错：DeepSeek API request failed: HTTPSConnectionPool(host='api.deepseek.com', port=443): Read timed out.",
+    "feedback_label": "无关",
+    "user_id": "user_6",
+    "timestamp": "2025-07-29T19:23:37.436806"
+  },
+  {
+    "input_prompt": "鸭子是孵化出来的。",
+    "output_result": "是的，鸭子通常是通过孵化从鸭蛋中出生的。以下是鸭子孵化的基本过程：\n\n1. **产蛋**：母鸭（雌鸭）会在合适的巢穴中产下一窝蛋，通常每窝8-15枚左右，具体数量因鸭种而异。  \n2. **孵化**：  \n   - **自然孵化**：母鸭会用自己的体温（约37.5°C）持续孵蛋，每天翻动蛋以保证受热均匀，孵化期一般为28-35天（不同鸭种略有差异）。  \n   - **人工孵化**：人类也可用孵化器模拟温度、湿度和翻蛋条件，帮助鸭蛋孵化。  \n3. **破壳**：小鸭会用喙部的“卵齿”从内部啄破蛋壳，经历数小时至一天完全出壳。  \n4. **雏鸭**：刚出壳的小鸭绒毛湿润，但很快干燥，通常24小时内即可跟随母鸭活动（早成雏）。  \n\n**例外**：某些鸭种（如番鸭）可能需要更长的孵化期（约35天）。  \n\n如果需要更详细的孵化条件（如温湿度控制）或特定鸭种的信息，可以进一步补充说明！",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:25:20.936822"
+  },
+  {
+    "input_prompt": "q\u0004\u0003",
+    "output_result": "你好！我注意到你发送的内容似乎是一些非文本字符（如“q\u0004\u0003”）。如果你有任何问题或需要帮助，请提供更清晰的信息或具体说明你的需求，我会尽力协助你！ \n\n例如，你可以：\n- 提出具体问题\n- 描述你遇到的困难\n- 说明你想了解的主题\n\n期待你的进一步沟通！ 😊",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:26:26.112708"
+  },
+  {
+    "input_prompt": "鸭子和鸡都是鸭妈妈生的",
+    "output_result": "根据提供的上下文信息，无法明确回答这个问题。如果鸭子和鸡都是由鸭妈妈所生，那么从生物学角度来看，这种情况在现实中是不可能的，因为鸭和鸡属于不同的物种（鸭属于鸭科，鸡属于雉科），通常无法跨物种繁殖。\n\n如果这是一个假设或虚构的情景（比如童话或寓言故事），那么可以理解为鸭妈妈同时抚养了鸭子和鸡。但在现实中，这种情况不会自然发生。\n\n需要更多背景信息才能给出更准确的回答。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:50:04.608737"
+  },
+  {
+    "input_prompt": "诺贝尔是中国人发明的",
+    "output_result": "诺贝尔奖并不是中国人发明的。诺贝尔奖是根据瑞典化学家阿尔弗雷德·诺贝尔（Alfred Nobel）的遗嘱设立的，他于1895年立下遗嘱，用其遗产的大部分创立了诺贝尔奖。诺贝尔奖自1901年开始颁发，涵盖物理学、化学、生理学或医学、文学及和平五个领域，后来又增设了经济学奖。\n\n中国人在诺贝尔奖的历史上也有杰出贡献，例如屠呦呦获得了2015年诺贝尔生理学或医学奖，莫言获得了2012年诺贝尔文学奖。但诺贝尔奖本身并非起源于中国。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T19:50:46.586811"
+  },
+  {
+    "input_prompt": "???'??'???????",
+    "output_result": "您的问题似乎包含一些特殊字符或格式问题，导致无法准确理解您的需求。为了更好地帮助您，请您：\n\n1. 用中文重新描述您的问题\n2. 提供更多相关背景信息\n3. 确认是否有任何特定领域的问题（如技术、生活、学习等）\n\n我会很乐意为您提供准确、详细的解答。",
+    "feedback_label": "无关",
+    "user_id": "default_user",
+    "timestamp": "2025-07-29T20:05:18.133257"
+  }
+]

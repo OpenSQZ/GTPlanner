@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTPlanner - 智能问答系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin: 10px;
+            padding: 12px 16px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message {
+            background: white;
+            border: 1px solid #e9ecef;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .feedback-badge {
+            font-size: 0.8em;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+        
+        .feedback-satisfied {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .feedback-unsatisfied {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .stats-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            margin: 10px 0;
+            transition: transform 0.2s;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-ready {
+            background: #28a745;
+        }
+        
+        .status-initializing {
+            background: #ffc107;
+        }
+        
+        .status-error {
+            background: #dc3545;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .btn-custom {
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+            padding: 12px 20px;
+        }
+        
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-robot"></i> GTPlanner
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text">
+                    <span class="status-indicator" id="systemStatus"></span>
+                    <span id="systemStatusText">系统状态</span>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- 主聊天区域 -->
+            <div class="col-lg-8">
+                <div class="main-container p-4">
+                    <h3 class="mb-4">
+                        <i class="bi bi-chat-dots"></i> 智能问答
+                    </h3>
+                    
+                    <!-- 聊天历史 -->
+                    <div class="chat-container mb-3" id="chatContainer">
+                        <div class="text-center text-muted mt-4">
+                            <i class="bi bi-chat-quote" style="font-size: 2rem;"></i>
+                            <p class="mt-2">欢迎使用GTPlanner智能问答系统！</p>
+                            <p>请输入您的问题，我将为您提供专业的回答。</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 输入区域 -->
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="questionInput" 
+                               placeholder="请输入您的问题..." maxlength="1000">
+                        <button class="btn btn-primary btn-custom" type="button" id="sendButton">
+                            <i class="bi bi-send"></i> 发送
+                        </button>
+                    </div>
+                    
+                    <!-- 处理状态 -->
+                    <div class="mt-3" id="processingStatus" style="display: none;">
+                        <div class="d-flex align-items-center">
+                            <div class="loading me-2"></div>
+                            <span class="text-muted">正在处理您的问题...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 侧边栏 -->
+            <div class="col-lg-4">
+                <!-- 系统统计 -->
+                <div class="stats-card">
+                    <h5><i class="bi bi-graph-up"></i> 系统统计</h5>
+                    <div id="systemStats">
+                        <div class="text-center">
+                            <div class="loading"></div>
+                            <p class="mt-2 text-muted">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 快速操作 -->
+                <div class="stats-card">
+                    <h5><i class="bi bi-gear"></i> 系统管理</h5>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="clearCache()">
+                            <i class="bi bi-trash"></i> 清空缓存
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="restartSystem()">
+                            <i class="bi bi-arrow-clockwise"></i> 重启系统
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="showBadCases()">
+                            <i class="bi bi-list-ul"></i> 查看BadCase
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 性能监控 -->
+                <div class="stats-card">
+                    <h5><i class="bi bi-speedometer2"></i> 性能监控</h5>
+                    <div id="performanceStats">
+                        <div class="text-center">
+                            <div class="loading"></div>
+                            <p class="mt-2 text-muted">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BadCase模态框 -->
+    <div class="modal fade" id="badcaseModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">BadCase列表</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="badcaseList">
+                        <div class="text-center">
+                            <div class="loading"></div>
+                            <p class="mt-2 text-muted">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 全局变量
+        let systemReady = false;
+        let processing = false;
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            loadSystemStats();
+            loadPerformanceStats();
+            
+            // 定期更新状态
+            setInterval(checkSystemStatus, 10000);
+            setInterval(loadSystemStats, 30000);
+            setInterval(loadPerformanceStats, 30000);
+            
+            // 绑定事件
+            document.getElementById('sendButton').addEventListener('click', sendQuestion);
+            document.getElementById('questionInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !processing) {
+                    sendQuestion();
+                }
+            });
+        });
+        
+        // 检查系统状态
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                const statusIndicator = document.getElementById('systemStatus');
+                const statusText = document.getElementById('systemStatusText');
+                
+                if (data.status === 'ready') {
+                    statusIndicator.className = 'status-indicator status-ready';
+                    statusText.textContent = '系统就绪';
+                    systemReady = true;
+                } else if (data.status === 'initializing') {
+                    statusIndicator.className = 'status-indicator status-initializing';
+                    statusText.textContent = '系统初始化中...';
+                    systemReady = false;
+                } else {
+                    statusIndicator.className = 'status-indicator status-error';
+                    statusText.textContent = '系统错误';
+                    systemReady = false;
+                }
+            } catch (error) {
+                console.error('检查系统状态失败:', error);
+                document.getElementById('systemStatus').className = 'status-indicator status-error';
+                document.getElementById('systemStatusText').textContent = '连接失败';
+                systemReady = false;
+            }
+        }
+        
+        // 发送问题
+        async function sendQuestion() {
+            if (processing || !systemReady) return;
+            
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                alert('请输入问题');
+                return;
+            }
+            
+            processing = true;
+            questionInput.disabled = true;
+            document.getElementById('sendButton').disabled = true;
+            document.getElementById('processingStatus').style.display = 'block';
+            
+            // 添加用户消息
+            addMessage(question, 'user');
+            
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        user_id: 'web_user'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // 添加机器人回答
+                    addMessage(data.answer, 'bot', data.feedback, data.processing_time, data.cached);
+                } else {
+                    addMessage(`错误: ${data.error}`, 'bot', '错误');
+                }
+            } catch (error) {
+                console.error('发送问题失败:', error);
+                addMessage('网络错误，请稍后重试', 'bot', '错误');
+            } finally {
+                processing = false;
+                questionInput.disabled = false;
+                document.getElementById('sendButton').disabled = false;
+                document.getElementById('processingStatus').style.display = 'none';
+                questionInput.value = '';
+                questionInput.focus();
+            }
+        }
+        
+        // 添加消息到聊天区域
+        function addMessage(content, type, feedback = null, processingTime = null, cached = false) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            
+            let messageContent = content;
+            
+            // 添加反馈标签
+            if (feedback && feedback !== '满意') {
+                const feedbackClass = feedback === '满意' ? 'feedback-satisfied' : 'feedback-unsatisfied';
+                messageContent += `<div class="feedback-badge ${feedbackClass}">${feedback}</div>`;
+            }
+            
+            // 添加处理时间
+            if (processingTime) {
+                messageContent += `<div class="text-muted" style="font-size: 0.8em; margin-top: 5px;">
+                    <i class="bi bi-clock"></i> ${processingTime.toFixed(2)}秒
+                    ${cached ? '<i class="bi bi-lightning"></i> 缓存' : ''}
+                </div>`;
+            }
+            
+            messageDiv.innerHTML = messageContent;
+            chatContainer.appendChild(messageDiv);
+            
+            // 滚动到底部
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // 加载系统统计
+        async function loadSystemStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const statsHtml = `
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-primary">${data.badcase_stats.total_count || 0}</h4>
+                                <small class="text-muted">总BadCase</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-success">${data.cache_stats.hit_rate || '0%'}</h4>
+                                <small class="text-muted">缓存命中率</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-info">${data.cache_stats.total_requests || 0}</h4>
+                                <small class="text-muted">总请求数</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-warning">${data.performance.avg_response_time || 0}</h4>
+                                <small class="text-muted">平均响应时间(s)</small>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('systemStats').innerHTML = statsHtml;
+                }
+            } catch (error) {
+                console.error('加载系统统计失败:', error);
+            }
+        }
+        
+        // 加载性能统计
+        async function loadPerformanceStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const perfHtml = `
+                        <div class="mb-2">
+                            <small class="text-muted">CPU使用率</small>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar" style="width: ${data.performance.cpu_avg || 0}%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">内存使用率</small>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: ${data.performance.memory_avg || 0}%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">活跃连接</small>
+                            <div class="text-center">
+                                <span class="badge bg-primary">${data.performance.active_connections || 0}</span>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('performanceStats').innerHTML = perfHtml;
+                }
+            } catch (error) {
+                console.error('加载性能统计失败:', error);
+            }
+        }
+        
+        // 清空缓存
+        async function clearCache() {
+            if (!confirm('确定要清空缓存吗？')) return;
+            
+            try {
+                const response = await fetch('/api/cache/clear', { method: 'POST' });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('缓存已清空');
+                    loadSystemStats();
+                } else {
+                    alert(`清空缓存失败: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('清空缓存失败:', error);
+                alert('清空缓存失败');
+            }
+        }
+        
+        // 重启系统
+        async function restartSystem() {
+            if (!confirm('确定要重启系统吗？这可能需要一些时间。')) return;
+            
+            try {
+                const response = await fetch('/api/system/restart', { method: 'POST' });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('系统重启成功');
+                    checkSystemStatus();
+                } else {
+                    alert(`重启系统失败: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('重启系统失败:', error);
+                alert('重启系统失败');
+            }
+        }
+        
+        // 显示BadCase
+        async function showBadCases() {
+            const modal = new bootstrap.Modal(document.getElementById('badcaseModal'));
+            modal.show();
+            
+            try {
+                const response = await fetch('/api/badcases?limit=50');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    let badcaseHtml = '';
+                    data.badcases.forEach((badcase, index) => {
+                        badcaseHtml += `
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title">${badcase.input_prompt}</h6>
+                                            <p class="card-text text-muted">${badcase.output_result.substring(0, 100)}...</p>
+                                        </div>
+                                        <span class="badge bg-${badcase.feedback_label === '满意' ? 'success' : 'danger'}">${badcase.feedback_label}</span>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="bi bi-person"></i> ${badcase.user_id} | 
+                                        <i class="bi bi-clock"></i> ${new Date(badcase.timestamp).toLocaleString()}
+                                    </small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('badcaseList').innerHTML = badcaseHtml || '<p class="text-muted">暂无BadCase</p>';
+                } else {
+                    document.getElementById('badcaseList').innerHTML = '<p class="text-danger">加载失败</p>';
+                }
+            } catch (error) {
+                console.error('加载BadCase失败:', error);
+                document.getElementById('badcaseList').innerHTML = '<p class="text-danger">加载失败</p>';
+            }
+        }
+    </script>
+</body>
+</html> 
