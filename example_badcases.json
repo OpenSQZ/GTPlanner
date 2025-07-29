@@ -1,0 +1,142 @@
+[
+  {
+    "input_prompt": "请帮我写一个Python函数来计算斐波那契数列",
+    "output_result": "def fibonacci(n): return n if n <= 1 else fibonacci(n-1) + fibonacci(n-2)",
+    "feedback_label": "性能问题",
+    "user_id": "user001",
+    "timestamp": "2025-07-29T06:50:42.219635"
+  },
+  {
+    "input_prompt": "如何优化这个递归函数？",
+    "output_result": "可以使用动态规划来优化，时间复杂度从O(2^n)降低到O(n)",
+    "feedback_label": "代码质量",
+    "user_id": "user001",
+    "timestamp": "2025-07-29T06:50:42.226783"
+  },
+  {
+    "input_prompt": "解释一下什么是装饰器",
+    "output_result": "装饰器是一种设计模式，用于在不修改原函数的情况下添加新功能",
+    "feedback_label": "概念解释",
+    "user_id": "user002",
+    "timestamp": "2025-07-29T06:50:42.229973"
+  },
+  {
+    "input_prompt": "Python中的列表和元组有什么区别？",
+    "output_result": "列表是可变的，元组是不可变的。列表使用方括号[]，元组使用圆括号()",
+    "feedback_label": "概念解释",
+    "user_id": "user003",
+    "timestamp": "2025-07-29T06:50:42.232801"
+  },
+  {
+    "input_prompt": "这是一个自定义的BadCase",
+    "output_result": "这是对应的输出结果",
+    "feedback_label": "自定义标签",
+    "user_id": "user004",
+    "timestamp": "2025-07-29T06:50:42.275559"
+  },
+  {
+    "input_prompt": "请帮我写一个Python函数来计算斐波那契数列",
+    "output_result": "def fibonacci(n): return n if n <= 1 else fibonacci(n-1) + fibonacci(n-2)",
+    "feedback_label": "性能问题",
+    "user_id": "user001",
+    "timestamp": "2025-07-29T06:50:51.278648"
+  },
+  {
+    "input_prompt": "如何优化这个递归函数？",
+    "output_result": "可以使用动态规划来优化，时间复杂度从O(2^n)降低到O(n)",
+    "feedback_label": "代码质量",
+    "user_id": "user001",
+    "timestamp": "2025-07-29T06:50:51.281021"
+  },
+  {
+    "input_prompt": "解释一下什么是装饰器",
+    "output_result": "装饰器是一种设计模式，用于在不修改原函数的情况下添加新功能",
+    "feedback_label": "概念解释",
+    "user_id": "user002",
+    "timestamp": "2025-07-29T06:50:51.286534"
+  },
+  {
+    "input_prompt": "Python中的列表和元组有什么区别？",
+    "output_result": "列表是可变的，元组是不可变的。列表使用方括号[]，元组使用圆括号()",
+    "feedback_label": "概念解释",
+    "user_id": "user003",
+    "timestamp": "2025-07-29T06:50:51.291353"
+  },
+  {
+    "input_prompt": "这是一个自定义的BadCase",
+    "output_result": "这是对应的输出结果",
+    "feedback_label": "自定义标签",
+    "user_id": "user004",
+    "timestamp": "2025-07-29T06:50:51.307757"
+  },
+  {
+    "input_prompt": "请帮我写一个Python函数来计算斐波那契数列",
+    "output_result": "def fibonacci(n): return n if n <= 1 else fibonacci(n-1) + fibonacci(n-2)",
+    "feedback_label": "性能问题",
+    "user_id": "user001",
+    "timestamp": "2025-07-29T14:13:50.994951"
+  },
+  {
+    "input_prompt": "如何优化这个递归函数？",
+    "output_result": "可以使用动态规划来优化，时间复杂度从O(2^n)降低到O(n)",
+    "feedback_label": "代码质量",
+    "user_id": "user001",
+    "timestamp": "2025-07-29T14:13:51.001255"
+  },
+  {
+    "input_prompt": "解释一下什么是装饰器",
+    "output_result": "装饰器是一种设计模式，用于在不修改原函数的情况下添加新功能",
+    "feedback_label": "概念解释",
+    "user_id": "user002",
+    "timestamp": "2025-07-29T14:13:51.009078"
+  },
+  {
+    "input_prompt": "Python中的列表和元组有什么区别？",
+    "output_result": "列表是可变的，元组是不可变的。列表使用方括号[]，元组使用圆括号()",
+    "feedback_label": "概念解释",
+    "user_id": "user003",
+    "timestamp": "2025-07-29T14:13:51.016236"
+  },
+  {
+    "input_prompt": "这是一个自定义的BadCase",
+    "output_result": "这是对应的输出结果",
+    "feedback_label": "自定义标签",
+    "user_id": "user004",
+    "timestamp": "2025-07-29T14:13:51.042424"
+  },
+  {
+    "input_prompt": "请帮我写一个Python函数来计算斐波那契数列",
+    "output_result": "def fibonacci(n): return n if n <= 1 else fibonacci(n-1) + fibonacci(n-2)",
+    "feedback_label": "性能问题",
+    "user_id": "user001",
+    "timestamp": "2025-07-29T15:09:08.999844"
+  },
+  {
+    "input_prompt": "如何优化这个递归函数？",
+    "output_result": "可以使用动态规划来优化，时间复杂度从O(2^n)降低到O(n)",
+    "feedback_label": "代码质量",
+    "user_id": "user001",
+    "timestamp": "2025-07-29T15:09:09.002504"
+  },
+  {
+    "input_prompt": "解释一下什么是装饰器",
+    "output_result": "装饰器是一种设计模式，用于在不修改原函数的情况下添加新功能",
+    "feedback_label": "概念解释",
+    "user_id": "user002",
+    "timestamp": "2025-07-29T15:09:09.005376"
+  },
+  {
+    "input_prompt": "Python中的列表和元组有什么区别？",
+    "output_result": "列表是可变的，元组是不可变的。列表使用方括号[]，元组使用圆括号()",
+    "feedback_label": "概念解释",
+    "user_id": "user003",
+    "timestamp": "2025-07-29T15:09:09.009120"
+  },
+  {
+    "input_prompt": "这是一个自定义的BadCase",
+    "output_result": "这是对应的输出结果",
+    "feedback_label": "自定义标签",
+    "user_id": "user004",
+    "timestamp": "2025-07-29T15:09:09.019075"
+  }
+]
