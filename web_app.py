@@ -195,9 +195,6 @@ def api_query():
         # 处理查询
         result = gtplanner_system.process_user_query(question)
         
-        # 计算处理时间
-        processing_time = time.time() - start_time
-        
         # 处理不同类型的返回结果
         if 'stat_type' in result:
             # 统计查询结果
@@ -216,14 +213,20 @@ def api_query():
                 if len(badcases) > 10:
                     answer += f"... 还有 {len(badcases) - 10} 个BadCase"
             else:
-                answer = f"没有找到'{result['detail_label']}'类型的BadCase"
+                answer = f"没有找到匹配的BadCase"
             feedback = '满意'
             relevant_docs = []
         else:
             # 普通RAG查询结果
-            answer = result.get('answer', '')
-            feedback = result.get('feedback', '满意')
+            answer = result['answer']
+            feedback = result['feedback']
             relevant_docs = result.get('relevant_docs', [])
+        
+        # 计算处理时间
+        processing_time = time.time() - start_time
+        
+        # 记录性能监控数据
+        performance_monitor.record_query_time(processing_time)
         
         # 记录查询日志
         log_query(user_id, question, answer, feedback, processing_time)
@@ -233,15 +236,20 @@ def api_query():
             'feedback': feedback
         })
         
-        # 缓存结果（只缓存满意的结果）
+        # 缓存结果（只有满意的结果才缓存）
+        cached = False
         if feedback == '满意':
             query_cache.cache_answer(question, answer, relevant_docs)
+            performance_monitor.record_cache_hit()
+            cached = True
+        else:
+            performance_monitor.record_cache_miss()
         
         return jsonify({
             'answer': answer,
             'feedback': feedback,
             'processing_time': processing_time,
-            'cached': False,
+            'cached': cached,
             'relevant_docs_count': len(relevant_docs)
         })
     
@@ -318,7 +326,20 @@ def api_stats():
             return jsonify({'error': '系统尚未准备就绪'}), 503
         
         # 获取各种统计信息
-        badcase_stats = db_manager.get_badcase_stats()
+        if gtplanner_system:
+            # 获取BadCase统计
+            total_count = gtplanner_system.badcase_analyzer.get_total_count()
+            label_distribution = gtplanner_system.badcase_analyzer.get_label_distribution()
+            user_stats = gtplanner_system.badcase_analyzer.get_user_statistics()
+            
+            badcase_stats = {
+                'total_count': total_count,
+                'label_distribution': label_distribution,
+                'user_stats': user_stats
+            }
+        else:
+            badcase_stats = {'total_count': 0, 'label_distribution': {}, 'user_stats': {}}
+        
         cache_stats = cache_manager.get_stats()
         perf_summary = performance_monitor.get_performance_summary()
         alerts = performance_monitor.get_alerts()
@@ -326,7 +347,14 @@ def api_stats():
         return jsonify({
             'badcase_stats': badcase_stats,
             'cache_stats': cache_stats,
-            'performance': perf_summary,
+            'performance': {
+                'cpu_avg': perf_summary.get('cpu_avg', 0),
+                'memory_avg': perf_summary.get('memory_avg', 0),
+                'active_connections': perf_summary.get('active_connections', 0),
+                'avg_response_time': round(perf_summary.get('response_time_avg', 0), 2),
+                'total_queries': perf_summary.get('total_queries', 0),
+                'cache_hit_rate': perf_summary.get('cache_hit_rate', 0)
+            },
             'alerts': alerts,
             'timestamp': datetime.now().isoformat()
         })

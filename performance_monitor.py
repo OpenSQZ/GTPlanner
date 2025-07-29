@@ -164,6 +164,7 @@ class PerformanceMonitor:
         
         with self.lock:
             metrics_list = list(self.metrics_history)
+            current_query_times = list(self.query_times)
         
         if not metrics_list:
             return {}
@@ -171,7 +172,9 @@ class PerformanceMonitor:
         # 计算统计信息
         cpu_values = [m.cpu_percent for m in metrics_list]
         memory_values = [m.memory_percent for m in metrics_list]
-        response_times = [m.avg_response_time for m in metrics_list]
+        
+        # 直接基于当前查询时间计算平均响应时间
+        avg_response_time = sum(current_query_times) / len(current_query_times) if current_query_times else 0
         
         return {
             'cpu_avg': sum(cpu_values) / len(cpu_values),
@@ -180,10 +183,10 @@ class PerformanceMonitor:
             'memory_avg': sum(memory_values) / len(memory_values),
             'memory_max': max(memory_values),
             'memory_min': min(memory_values),
-            'response_time_avg': sum(response_times) / len(response_times),
-            'response_time_max': max(response_times) if response_times else 0,
-            'response_time_min': min(response_times) if response_times else 0,
-            'total_queries': len(self.query_times),
+            'response_time_avg': avg_response_time,
+            'response_time_max': max(current_query_times) if current_query_times else 0,
+            'response_time_min': min(current_query_times) if current_query_times else 0,
+            'total_queries': len(current_query_times),
             'cache_hit_rate': (self.cache_hits / (self.cache_hits + self.cache_misses) * 100) if (self.cache_hits + self.cache_misses) > 0 else 0,
             'active_connections': self.active_connections
         }
