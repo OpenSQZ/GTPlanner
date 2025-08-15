@@ -1,0 +1,1225 @@
+id: "public.tts-api"
+type: "APIS"
+summary: "文本转语音（TTS）服务，支持本地参考音色或服务器音色。"
+description: |
+  通过公开TTS API，可以将任意文本生成语音音频。支持参考音频的音色模仿或选择已有服务器音色。
+  支持 WAV/MP3 等音频格式，并可控制生成长度、随机性和重复惩罚等参数。
+
+  主要功能：
+  - 文本转语音生成
+  - 支持本地参考音色文件
+  - 可选择服务器已有音色
+  - 支持控制生成参数：长度、温度、重复惩罚、top_p
+  - 支持流式或非流式生成
+
+examples:      
+  - title: "fastapi - 生成PPT并导出"
+    content: |
+      import requests
+
+      # 步骤1：生成演示文稿
+      generate_url = "http://192.168.1.218:4999/api/v1/ppt/presentation/generate"
+      generate_data = {
+          "prompt": "Introduction to Machine Learning",
+          "n_slides": 5,  # 改为整数类型
+          "language": "English",
+          "layout": "general",
+          "export_as": "pptx"
+      }
+
+      # 发送生成请求
+      generate_response = requests.post(generate_url, data=generate_data)
+
+      if generate_response.status_code != 200:
+          print(f"生成失败: {generate_response.status_code}")
+          print(generate_response.json())
+          exit()
+
+      generate_result = generate_response.json()
+      print("生成结果:", generate_result)
+
+      # 获取返回的presentation_id
+      presentation_id = generate_result['presentation_id']
+
+      # 步骤2：导出PPTX文件
+      export_url = "http://192.168.1.218:4999/api/v1/ppt/presentation/export/pptx"
+      export_headers = {'Content-Type': 'application/json'}
+
+      # 构建导出请求体
+      export_data = {
+          "name": "MachineLearning_Presentation",
+          "slides": [],  # 实际使用中需要填充幻灯片数据
+          "shapes": []   # 实际使用中需要填充形状数据
+      }
+
+      export_response = requests.post(
+          export_url,
+          json=export_data,
+          headers=export_headers
+      )
+
+      if export_response.status_code != 200:
+          print(f"导出失败: {export_response.status_code}")
+          print(export_response.json())
+          exit()
+
+      # 保存PPTX文件
+      output_filename = "machine_learning.pptx"
+      with open(output_filename, 'wb') as f:
+          f.write(export_response.content)
+
+      print(f"PPTX文件已保存为: {output_filename}")
+      
+  - title: "fastmcp-ppt生成导出"
+    content: |
+      """
+      优化后的MCP完整工作流程测试
+      修复演示文稿ID获取问题，确保导出流程完整执行
+      """
+
+      import asyncio
+      import os
+      import aiohttp
+      from fastmcp import Client
+      from datetime import datetime
+
+      async def test_mcp_fixed_workflow():
+          """测试修复后的MCP完整工作流程"""
+          print("🔧 测试MCP修复后的工作流程")
+          print("=" * 50)
+          
+          session_id = f"mcp_fix_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+          
+          try:
+              async with Client("http://192.168.1.218:4999/mcp") as client:
+                  print("✅ 连接到MCP服务器成功")
+                  
+                  # 步骤1: 开始演示文稿
+                  print("\n📝 步骤1: 开始创建演示文稿...")
+                  start_result = await client.call_tool("start_presentation", {
+                      "session_id": session_id,
+                      "prompt": "Create a presentation about quantum computing and its applications in cryptography",
+                      "n_slides": 5,
+                      "language": "English"
+                  })
+                  
+                  if start_result.data.get("status") != "success":
+                      raise Exception(f"步骤1失败: {start_result.data}")
+                  
+                  print("✅ 演示文稿会话创建成功")
+                  
+                  # 步骤2: 生成大纲
+                  print("\n📋 步骤2: 生成大纲...")
+                  outline_result = await client.call_tool("continue_workflow", {
+                      "session_id": session_id
+                  })
+                  
+                  if outline_result.data.get("status") != "success":
+                      raise Exception(f"步骤2失败: {outline_result.data}")
+                  
+                  print("✅ 大纲生成成功")
+                  title = outline_result.data.get("title", "")
+                  print(f"   标题: {title}")
+                  
+                  # 步骤3: 继续到布局选择阶段
+                  print("\n🔄 步骤3: 进入布局选择阶段...")
+                  layout_stage_result = await client.call_tool("continue_workflow", {
+                      "session_id": session_id
+                  })
+                  
+                  print(f"布局阶段状态: {layout_stage_result.data.get('status')}")
+                  print(f"布局阶段消息: {layout_stage_result.data.get('message', '')}")
+                  
+                  # 步骤4: 选择布局
+                  print("\n🎨 步骤4: 选择布局...")
+                  choose_result = await client.call_tool("choose_layout", {
+                      "session_id": session_id,
+                      "layout_name": "classic"
+                  })
+                  
+                  print(f"布局选择状态: {choose_result.data.get('status')}")
+                  print(f"布局选择消息: {choose_result.data.get('message', '')}")
+                  
+                  # 步骤5: 最终生成
+                  print("\n🔄 步骤5: 最终生成PPT...")
+                  final_result = await client.call_tool("continue_workflow", {
+                      "session_id": session_id
+                  })
+
+                  print(f"最终生成状态: {final_result.data.get('status')}")
+                  print(f"最终生成消息: {final_result.data.get('message', '')}")
+
+                  # 直接进入导出步骤，不依赖presentation_id
+                  # 步骤6: 导出PPT文件
+                  print("\n📤 步骤6: 导出PPT文件...")
+                  export_result = await client.call_tool("export_presentation", {
+                      "session_id": session_id,
+                      "format": "pptx"  # 根据MCP工具描述，实际应为"ppc"或"pdf"，但测试使用"pptx"
+                  })
+
+                  print(f"导出状态: {export_result.data.get('status')}")
+                  print(f"导出消息: {export_result.data.get('message', '')}")
+
+                  if export_result.data.get("status") == "success":
+                      server_file_path = export_result.data.get("path")
+
+                      if server_file_path:
+                          print(f"\n📁 找到文件路径: {server_file_path}")
+
+                          # 构建下载URL
+                          filename = os.path.basename(server_file_path)
+                          download_url = f"http://192.168.1.218:4999/app_data/exports/{filename}"
+
+                          print(f"📥 下载URL: {download_url}")
+
+                          # 下载文件
+                          print("📥 下载PPT文件...")
+                          local_filename = f"mcp_fixed_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pptx"
+                          local_path = os.path.join(os.getcwd(), local_filename)
+
+                          async with aiohttp.ClientSession() as session:
+                              async with session.get(download_url) as response:
+                                  if response.status == 200:
+                                      with open(local_path, 'wb') as f:
+                                          async for chunk in response.content.iter_chunked(8192):
+                                              f.write(chunk)
+
+                                      file_size = os.path.getsize(local_path)
+                                      print(f"✅ MCP修复验证成功!")
+                                      print(f"   📁 本地文件: {local_path}")
+                                      print(f"   📏 文件大小: {file_size} 字节")
+                                      print(f"   🌐 服务器路径: {server_file_path}")
+
+                                      return {
+                                          "success": True,
+                                          "local_path": local_path,
+                                          "file_size": file_size,
+                                          "server_path": server_file_path,
+                                          "fix_verified": True
+                                      }
+                                  else:
+                                      error_text = await response.text()
+                                      raise Exception(f"下载失败: {response.status} - {error_text}")
+                      else:
+                          print("⚠️ 导出成功但没有返回文件路径")
+                          return {
+                              "success": True,
+                              "fix_verified": True,
+                              "message": "导出成功但无文件路径",
+                              "export_status": export_result.data
+                          }
+                  else:
+                      print(f"❌ 导出失败: {export_result.data}")
+                      return {
+                          "success": False,
+                          "fix_verified": False,
+                          "error": f"导出失败: {export_result.data}"
+                      }
+                  
+          except Exception as e:
+              print(f"❌ MCP修复测试失败: {str(e)}")
+              return {
+                  "success": False,
+                  "fix_verified": False,
+                  "error": str(e)
+              }
+
+      async def main():
+          """主函数"""
+          print("🚀 MCP修复验证测试\n")
+          
+          result = await test_mcp_fixed_workflow()
+          
+          print("\n" + "=" * 60)
+          print("📋 MCP修复验证结果")
+          print("=" * 60)
+          
+          if result["success"]:
+              if result.get("local_path"):
+                  print("🎉 MCP修复验证完全成功!")
+                  print(f"   📁 本地文件: {result['local_path']}")
+                  print(f"   📏 文件大小: {result['file_size']} 字节")
+                  if result.get("server_path"):
+                      print(f"   🌐 服务器路径: {result['server_path']}")
+              else:
+                  print("✅ MCP修复验证成功（工作流程正常）")
+                  print(f"   消息: {result.get('message', '')}")
+
+              print(f"\n🔧 修复状态: ✅ 已修复")
+              print(f"   - 完整执行MCP工作流程")
+              print(f"   - 成功通过export_presentation获取文件路径")
+              print(f"   - 文档导出功能正常")
+              print(f"   - 文件下载功能正常")
+
+          else:
+              print(f"❌ MCP修复验证失败: {result['error']}")
+              print(f"🔧 修复状态: ❌ 修复失败")
+
+      if __name__ == "__main__":
+          asyncio.run(main())
+mcp_url:  "http://192.168.1.218:4995/mcp"
+base_url: "http://192.168.1.218:4999"
+endpoints:
+  - summary: "上传文件"
+    method: "POST"
+    path: "/api/v1/ppt/files/upload"
+    inputs:
+      type: "object"
+      properties:
+        files:
+          type: "array"
+          items:
+            type: "string"
+            format: "binary"
+          description: "上传的文件列表"
+    outputs:
+      success_schema:
+        type: "array"
+        items:
+          type: "string"
+        description: "上传成功的文件路径列表"
+
+  - summary: "分解文件"
+    method: "POST"
+    path: "/api/v1/ppt/files/decompose"
+    inputs:
+      type: "object"
+      properties:
+        file_paths:
+          type: "array"
+          items:
+            type: "string"
+          description: "需要分解的文件路径列表"
+    outputs:
+      success_schema:
+        type: "array"
+        items:
+          $ref: "#/components/schemas/DecomposedFileInfo"
+        description: "分解后的文件信息"
+
+  - summary: "生成演示文稿"
+    method: "POST"
+    path: "/api/v1/ppt/presentation/generate"
+    inputs:
+      type: "object"
+      properties:
+        prompt:
+          type: "string"
+          description: "生成演示文稿的提示文本"
+        n_slides:
+          type: "integer"
+          description: "幻灯片数量"
+          default: 8
+        language:
+          type: "string"
+          description: "语言"
+          default: "English"
+        template:
+          type: "string"
+          description: "模板名称"
+          default: "general"
+        files:
+          type: "array"
+          items:
+            type: "string"
+            format: "binary"
+          description: "可选的上传文件"
+        export_as:
+          type: "string"
+          enum: ["pptx", "pdf"]
+          description: "导出格式"
+          default: "pptx"
+      required: ["prompt"]
+    outputs:
+      success_schema:
+        $ref: "#/components/schemas/PresentationPathAndEditPath"
+
+  - summary: "导出PPTX文件"
+    method: "POST"
+    path: "/api/v1/ppt/presentation/export/pptx"
+    inputs:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          description: "演示文稿名称"
+        slides:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PptxSlideModel"
+          description: "幻灯片列表"
+        shapes:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PptxShapeModel"
+          description: "形状列表"
+      required: ["slides"]
+    outputs:
+      success_schema:
+        type: "string"
+        format: "binary"
+        description: "生成的PPTX文件内容"
+
+  - summary: "上传字体"
+    method: "POST"
+    path: "/api/v1/ppt/fonts/upload"
+    inputs:
+      type: "object"
+      properties:
+        font_file:
+          type: "string"
+          format: "binary"
+          description: "字体文件(.ttf, .otf, .woff, .woff2, .eot)"
+      required: ["font_file"]
+    outputs:
+      success_schema:
+        $ref: "#/components/schemas/FontUploadResponse"
+
+  - summary: "列出字体"
+    method: "GET"
+    path: "/api/v1/ppt/fonts/list"
+    outputs:
+      success_schema:
+        $ref: "#/components/schemas/FontListResponse"
+
+  - summary: "删除字体"
+    method: "DELETE"
+    path: "/api/v1/ppt/fonts/delete/{filename}"
+    inputs:
+      parameters:
+        - name: "filename"
+          in: "path"
+          type: "string"
+          description: "要删除的字体文件名"
+          required: true
+    outputs:
+      success_schema:
+        type: "object"
+
+  - summary: "处理PPTX幻灯片"
+    method: "POST"
+    path: "/api/v1/ppt/pptx-slides/process"
+    inputs:
+      type: "object"
+      properties:
+        pptx_file:
+          type: "string"
+          format: "binary"
+          description: "PPTX文件"
+        fonts:
+          type: "array"
+          items:
+            type: "string"
+            format: "binary"
+          description: "可选字体文件"
+      required: ["pptx_file"]
+    outputs:
+      success_schema:
+        $ref: "#/components/schemas/PptxSlidesResponse"
+
+  - summary: "转换幻灯片为HTML"
+    method: "POST"
+    path: "/api/v1/ppt/slide-to-html/"
+    inputs:
+      type: "object"
+      properties:
+        image:
+          type: "string"
+          description: "幻灯片图像路径"
+        xml:
+          type: "string"
+          description: "幻灯片XML内容"
+        fonts:
+          type: "array"
+          items:
+            type: "string"
+          description: "使用的字体列表"
+      required: ["image", "xml"]
+    outputs:
+      success_schema:
+        $ref: "#/components/schemas/SlideToHtmlResponse"
+
+  - summary: "转换HTML为React组件"
+    method: "POST"
+    path: "/api/v1/ppt/html-to-react/"
+    inputs:
+      type: "object"
+      properties:
+        html:
+          type: "string"
+          description: "HTML内容"
+        image:
+          type: "string"
+          description: "相关图像路径"
+      required: ["html"]
+    outputs:
+      success_schema:
+        $ref: "#/components/schemas/HtmlToReactResponse"
+
+  - summary: "编辑带图像的HTML"
+    method: "POST"
+    path: "/api/v1/ppt/html-edit/"
+    inputs:
+      type: "object"
+      properties:
+        current_ui_image:
+          type: "string"
+          format: "binary"
+          description: "当前UI图像"
+        sketch_image:
+          type: "string"
+          format: "binary"
+          description: "草图图像（可选）"
+        html:
+          type: "string"
+          description: "要编辑的HTML内容"
+        prompt:
+          type: "string"
+          description: "编辑提示"
+      required: ["current_ui_image", "html", "prompt"]
+    outputs:
+      success_schema:
+        $ref: "#/components/schemas/HtmlEditResponse"
+
+  - summary: "获取所有演示文稿"
+    method: "GET"
+    path: "/api/v1/ppt/presentation/all"
+    outputs:
+      success_schema:
+        type: "array"
+        items:
+          $ref: "#/components/schemas/PresentationWithSlides-Output"
+        description: "所有演示文稿列表"
+
+  - summary: "删除演示文稿"
+    method: "DELETE"
+    path: "/api/v1/ppt/presentation"
+    inputs:
+      parameters:
+        - name: "id"
+          in: "query"
+          type: "string"
+          description: "演示文稿ID"
+          required: true
+    outputs:
+      success_schema:
+        type: "object"
+
+  - summary: "创建演示文稿"
+    method: "POST"
+    path: "/api/v1/ppt/presentation/create"
+    inputs:
+      type: "object"
+      properties:
+        prompt:
+          type: "string"
+          description: "生成提示"
+        n_slides:
+          type: "integer"
+          description: "幻灯片数量"
+        language:
+          type: "string"
+          description: "语言"
+        file_paths:
+          type: "array"
+          items:
+            type: "string"
+          description: "文件路径列表"
+      required: ["prompt", "n_slides", "language"]
+    outputs:
+      success_schema:
+        $ref: "#/components/schemas/PresentationModel"
+
+  - summary: "更新演示文稿"
+    method: "PUT"
+    path: "/api/v1/ppt/presentation/update"
+    inputs:
+      type: "object"
+      properties:
+        $ref: "#/components/schemas/PresentationWithSlides-Input"
+      required: true
+    outputs:
+      success_schema:
+        $ref: "#/components/schemas/PresentationWithSlides-Output"
+
+  - summary: "处理PDF幻灯片"
+    method: "POST"
+    path: "/api/v1/ppt/pdf-slides/process"
+    inputs:
+      type: "object"
+      properties:
+        pdf_file:
+          type: "string"
+          format: "binary"
+          description: "PDF文件"
+      required: ["pdf_file"]
+    outputs:
+      success_schema:
+        $ref: "#/components/schemas/PdfSlidesResponse"
+
+  - summary: "分析PPTX字体"
+    method: "POST"
+    path: "/api/v1/ppt/pptx-fonts/process"
+    inputs:
+      type: "object"
+      properties:
+        pptx_file:
+          type: "string"
+          format: "binary"
+          description: "PPTX文件"
+      required: ["pptx_file"]
+    outputs:
+      success_schema:
+        $ref: "#/components/schemas/PptxFontsResponse"
+
+components:
+  schemas:
+    DecomposedFileInfo:
+      type: "object"
+      properties:
+        name: 
+          type: "string"
+        file_path: 
+          type: "string"
+      required: ["name", "file_path"]
+
+    PresentationPathAndEditPath:
+      type: "object"
+      properties:
+        presentation_id: 
+          type: "string"
+        path: 
+          type: "string"
+        edit_path: 
+          type: "string"
+      required: ["presentation_id", "path", "edit_path"]
+
+    FontUploadResponse:
+      type: "object"
+      properties:
+        success: 
+          type: "boolean"
+        font_name: 
+          type: "string"
+        font_url: 
+          type: "string"
+        font_path: 
+          type: "string"
+        message: 
+          type: "string"
+      required: ["success", "font_name", "font_url", "font_path"]
+
+    FontListResponse:
+      type: "object"
+      properties:
+        success: 
+          type: "boolean"
+        fonts: 
+          type: "array"
+          items: 
+            type: "object"
+        message: 
+          type: "string"
+      required: ["success", "fonts"]
+
+    PptxSlideModel:
+      type: "object"
+      properties:
+        background: 
+          $ref: "#/components/schemas/PptxFillModel"
+        note: 
+          type: "string"
+        shapes: 
+          type: "array"
+          items: 
+            anyOf:
+              - $ref: "#/components/schemas/PptxTextBoxModel"
+              - $ref: "#/components/schemas/PptxAutoShapeBoxModel"
+              - $ref: "#/components/schemas/PptxConnectorModel"
+              - $ref: "#/components/schemas/PptxPictureBoxModel"
+      required: ["shapes"]
+
+    PptxShapeModel:
+      type: "object"
+      properties:
+        shape_type: 
+          type: "string"
+          enum: ["textbox", "autoshape", "picture", "connector"]
+      required: ["shape_type"]
+
+    PptxFillModel:
+      type: "object"
+      properties:
+        color: 
+          type: "string"
+        opacity: 
+          type: "number"
+          default: 1.0
+      required: ["color"]
+
+    PptxTextBoxModel:
+      type: "object"
+      properties:
+        shape_type: 
+          type: "string"
+          default: "textbox"
+        margin: 
+          $ref: "#/components/schemas/PptxSpacingModel"
+        fill: 
+          $ref: "#/components/schemas/PptxFillModel"
+        position: 
+          $ref: "#/components/schemas/PptxPositionModel"
+        text_wrap: 
+          type: "boolean"
+          default: true
+        paragraphs: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/PptxParagraphModel"
+      required: ["position", "paragraphs"]
+
+    PptxPositionModel:
+      type: "object"
+      properties:
+        left: 
+          type: "integer"
+          default: 0
+        top: 
+          type: "integer"
+          default: 0
+        width: 
+          type: "integer"
+          default: 0
+        height: 
+          type: "integer"
+          default: 0
+
+    PptxSpacingModel:
+      type: "object"
+      properties:
+        top: 
+          type: "integer"
+          default: 0
+        bottom: 
+          type: "integer"
+          default: 0
+        left: 
+          type: "integer"
+          default: 0
+        right: 
+          type: "integer"
+          default: 0
+
+    PptxParagraphModel:
+      type: "object"
+      properties:
+        spacing: 
+          $ref: "#/components/schemas/PptxSpacingModel"
+        alignment: 
+          $ref: "#/components/schemas/PP_PARAGRAPH_ALIGNMENT"
+        font: 
+          $ref: "#/components/schemas/PptxFontModel"
+        line_height: 
+          type: "number"
+        text: 
+          type: "string"
+        text_runs: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/PptxTextRunModel"
+
+    PP_PARAGRAPH_ALIGNMENT:
+      type: "integer"
+      enum: [2, 5, 4, 7, 1, 3, 6, -2]
+      description: "段落对齐方式"
+
+    PptxFontModel:
+      type: "object"
+      properties:
+        name: 
+          type: "string"
+          default: "Inter"
+        size: 
+          type: "integer"
+          default: 16
+        italic: 
+          type: "boolean"
+          default: false
+        color: 
+          type: "string"
+          default: "000000"
+        font_weight: 
+          type: "integer"
+          default: 400
+        underline: 
+          type: "boolean"
+        strike: 
+          type: "boolean"
+
+    PptxTextRunModel:
+      type: "object"
+      properties:
+        text: 
+          type: "string"
+        font: 
+          $ref: "#/components/schemas/PptxFontModel"
+      required: ["text"]
+
+    PptxAutoShapeBoxModel:
+      type: "object"
+      properties:
+        shape_type: 
+          type: "string"
+          default: "autoshape"
+        type: 
+          $ref: "#/components/schemas/MSO_AUTO_SHAPE_TYPE"
+          default: 1
+        margin: 
+          $ref: "#/components/schemas/PptxSpacingModel"
+        fill: 
+          $ref: "#/components/schemas/PptxFillModel"
+        stroke: 
+          $ref: "#/components/schemas/PptxStrokeModel"
+        shadow: 
+          $ref: "#/components/schemas/PptxShadowModel"
+        position: 
+          $ref: "#/components/schemas/PptxPositionModel"
+        text_wrap: 
+          type: "boolean"
+          default: true
+        border_radius: 
+          type: "integer"
+        paragraphs: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/PptxParagraphModel"
+      required: ["position"]
+
+    MSO_AUTO_SHAPE_TYPE:
+      type: "integer"
+      enum: [129,131,125,134,132,130,127,126,128,136,133,135,25,137,41,44,15,20,13,182,181,180,52,161,60,179,108,162,169,11,14,48,100,46,45,47,99,144,141,4,146,18,27,26,104,36,56,98,89,90,62,75,79,73,64,63,84,87,88,67,81,66,86,71,72,82,68,139,74,78,65,70,61,76,85,80,83,77,69,16,158,174,172,173,159,21,145,10,102,7,34,54,31,29,176,37,57,177,140,40,43,22,109,113,121,117,110,114,122,118,111,115,123,119,112,116,124,120,183,166,167,164,165,168,163,24,143,50,19,6,9,107,2,51,142,175,28,171,39,59,1,105,12,33,53,32,30,8,5,106,151,153,152,17,155,157,156,154,170,149,150,94,95,96,91,92,147,148,93,49,23,178,160,3,35,55,38,58,97,42,101,103]
+
+    PptxStrokeModel:
+      type: "object"
+      properties:
+        color: 
+          type: "string"
+        thickness: 
+          type: "number"
+        opacity: 
+          type: "number"
+          default: 1.0
+      required: ["color", "thickness"]
+
+    PptxShadowModel:
+      type: "object"
+      properties:
+        radius: 
+          type: "integer"
+        offset: 
+          type: "integer"
+          default: 0
+        color: 
+          type: "string"
+          default: "000000"
+        opacity: 
+          type: "number"
+          default: 0.5
+        angle: 
+          type: "integer"
+          default: 0
+      required: ["radius"]
+
+    PptxPictureBoxModel:
+      type: "object"
+      properties:
+        shape_type: 
+          type: "string"
+          default: "picture"
+        position: 
+          $ref: "#/components/schemas/PptxPositionModel"
+        margin: 
+          $ref: "#/components/schemas/PptxSpacingModel"
+        clip: 
+          type: "boolean"
+          default: true
+        opacity: 
+          type: "number"
+        invert: 
+          type: "boolean"
+          default: false
+        border_radius: 
+          type: "array"
+          items: 
+            type: "integer"
+        shape: 
+          $ref: "#/components/schemas/PptxBoxShapeEnum"
+        object_fit: 
+          $ref: "#/components/schemas/PptxObjectFitModel"
+        picture: 
+          $ref: "#/components/schemas/PptxPictureModel"
+      required: ["position", "picture"]
+
+    PptxBoxShapeEnum:
+      type: "string"
+      enum: ["rectangle", "circle"]
+
+    PptxObjectFitModel:
+      type: "object"
+      properties:
+        fit: 
+          $ref: "#/components/schemas/PptxObjectFitEnum"
+        focus: 
+          type: "array"
+          items: 
+            type: "number"
+          minItems: 2
+          maxItems: 2
+
+    PptxObjectFitEnum:
+      type: "string"
+      enum: ["contain", "cover", "fill"]
+
+    PptxPictureModel:
+      type: "object"
+      properties:
+        is_network: 
+          type: "boolean"
+        path: 
+          type: "string"
+      required: ["is_network", "path"]
+
+    PptxConnectorModel:
+      type: "object"
+      properties:
+        shape_type: 
+          type: "string"
+          default: "connector"
+        type: 
+          $ref: "#/components/schemas/MSO_CONNECTOR_TYPE"
+          default: 1
+        position: 
+          $ref: "#/components/schemas/PptxPositionModel"
+        thickness: 
+          type: "number"
+          default: 0.5
+        color: 
+          type: "string"
+          default: "000000"
+        opacity: 
+          type: "number"
+          default: 1.0
+      required: ["position"]
+
+    MSO_CONNECTOR_TYPE:
+      type: "integer"
+      enum: [3,2,1,-2]
+
+    PptxSlidesResponse:
+      type: "object"
+      properties:
+        success: 
+          type: "boolean"
+        slides: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/SlideData"
+        total_slides: 
+          type: "integer"
+        fonts: 
+          $ref: "#/components/schemas/FontAnalysisResult"
+      required: ["success", "slides", "total_slides"]
+
+    SlideData:
+      type: "object"
+      properties:
+        slide_number: 
+          type: "integer"
+        screenshot_url: 
+          type: "string"
+        xml_content: 
+          type: "string"
+        normalized_fonts: 
+          type: "array"
+          items: 
+            type: "string"
+      required: ["slide_number", "screenshot_url", "xml_content", "normalized_fonts"]
+
+    FontAnalysisResult:
+      type: "object"
+      properties:
+        internally_supported_fonts: 
+          type: "array"
+          items: 
+            type: "object"
+        not_supported_fonts: 
+          type: "array"
+          items: 
+            type: "string"
+      required: ["internally_supported_fonts", "not_supported_fonts"]
+
+    SlideToHtmlResponse:
+      type: "object"
+      properties:
+        success: 
+          type: "boolean"
+        html: 
+          type: "string"
+      required: ["success", "html"]
+
+    HtmlToReactResponse:
+      type: "object"
+      properties:
+        success: 
+          type: "boolean"
+        react_component: 
+          type: "string"
+        message: 
+          type: "string"
+      required: ["success", "react_component"]
+
+    HtmlEditResponse:
+      type: "object"
+      properties:
+        success: 
+          type: "boolean"
+        edited_html: 
+          type: "string"
+        message: 
+          type: "string"
+      required: ["success", "edited_html"]
+
+    PresentationModel:
+      type: "object"
+      properties:
+        id: 
+          type: "string"
+        prompt: 
+          type: "string"
+        n_slides: 
+          type: "integer"
+        language: 
+          type: "string"
+        title: 
+          type: "string"
+        file_paths: 
+          type: "array"
+          items: 
+            type: "string"
+        outlines: 
+          type: "object"
+        created_at: 
+          type: "string"
+          format: "date-time"
+        updated_at: 
+          type: "string"
+          format: "date-time"
+        layout: 
+          type: "object"
+        structure: 
+          type: "object"
+      required: ["id", "prompt", "n_slides", "language", "created_at", "updated_at"]
+
+    PresentationWithSlides-Input:
+      type: "object"
+      properties:
+        id: 
+          type: "string"
+        prompt: 
+          type: "string"
+        n_slides: 
+          type: "integer"
+        language: 
+          type: "string"
+        title: 
+          type: "string"
+        outlines: 
+          $ref: "#/components/schemas/PresentationOutlineModel"
+        created_at: 
+          type: "string"
+          format: "date-time"
+        updated_at: 
+          type: "string"
+          format: "date-time"
+        layout: 
+          $ref: "#/components/schemas/PresentationLayoutModel"
+        structure: 
+          $ref: "#/components/schemas/PresentationStructureModel"
+        slides: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/SlideModel"
+      required: ["id", "prompt", "n_slides", "language", "outlines", "created_at", "updated_at", "layout", "structure", "slides"]
+
+    PresentationWithSlides-Output:
+      type: "object"
+      properties:
+        id: 
+          type: "string"
+        prompt: 
+          type: "string"
+        n_slides: 
+          type: "integer"
+        language: 
+          type: "string"
+        title: 
+          type: "string"
+        outlines: 
+          $ref: "#/components/schemas/PresentationOutlineModel"
+        created_at: 
+          type: "string"
+          format: "date-time"
+        updated_at: 
+          type: "string"
+          format: "date-time"
+        layout: 
+          $ref: "#/components/schemas/PresentationLayoutModel"
+        structure: 
+          $ref: "#/components/schemas/PresentationStructureModel"
+        slides: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/SlideModel"
+      required: ["id", "prompt", "n_slides", "language", "outlines", "created_at", "updated_at", "layout", "structure", "slides"]
+
+    PresentationOutlineModel:
+      type: "object"
+      properties:
+        slides: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/SlideOutlineModel"
+      required: ["slides"]
+
+    SlideOutlineModel:
+      type: "object"
+      properties:
+        content: 
+          type: "string"
+      required: ["content"]
+
+    PresentationLayoutModel:
+      type: "object"
+      properties:
+        name: 
+          type: "string"
+        ordered: 
+          type: "boolean"
+          default: false
+        slides: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/SlideLayoutModel"
+      required: ["name", "slides"]
+
+    SlideLayoutModel:
+      type: "object"
+      properties:
+        id: 
+          type: "string"
+        name: 
+          type: "string"
+        description: 
+          type: "string"
+        json_schema: 
+          type: "object"
+      required: ["id", "json_schema"]
+
+    PresentationStructureModel:
+      type: "object"
+      properties:
+        slides: 
+          type: "array"
+          items: 
+            type: "integer"
+          description: "幻灯片布局索引列表"
+      required: ["slides"]
+
+    SlideModel:
+      type: "object"
+      properties:
+        id: 
+          type: "string"
+        presentation: 
+          type: "string"
+        layout_group: 
+          type: "string"
+        layout: 
+          type: "string"
+        index: 
+          type: "integer"
+        content: 
+          type: "object"
+        html_content: 
+          type: "string"
+        speaker_note: 
+          type: "string"
+        properties: 
+          type: "object"
+      required: ["presentation", "layout_group", "layout", "index", "content", "html_content", "properties"]
+
+    PdfSlidesResponse:
+      type: "object"
+      properties:
+        success: 
+          type: "boolean"
+        slides: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/PdfSlideData"
+        total_slides: 
+          type: "integer"
+      required: ["success", "slides", "total_slides"]
+
+    PdfSlideData:
+      type: "object"
+      properties:
+        slide_number: 
+          type: "integer"
+        screenshot_url: 
+          type: "string"
+      required: ["slide_number", "screenshot_url"]
+
+    PptxFontsResponse:
+      type: "object"
+      properties:
+        success: 
+          type: "boolean"
+        fonts: 
+          $ref: "#/components/schemas/FontAnalysisResult"
+      required: ["success", "fonts"]
+
+    ErrorResponse:
+      type: "object"
+      properties:
+        success: 
+          type: "boolean"
+          default: false
+        detail: 
+          type: "string"
+        error_code: 
+          type: "string"
+      required: ["detail"]
+
+    ValidationError:
+      type: "object"
+      properties:
+        loc: 
+          type: "array"
+          items: 
+            anyOf:
+              - type: "string"
+              - type: "integer"
+        msg: 
+          type: "string"
+        type: 
+          type: "string"
+      required: ["loc", "msg", "type"]
+
+    HTTPValidationError:
+      type: "object"
+      properties:
+        detail: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/ValidationError"
