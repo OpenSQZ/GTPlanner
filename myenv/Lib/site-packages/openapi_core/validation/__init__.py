@@ -1,0 +1,1 @@
+"""OpenAPI core validation module"""

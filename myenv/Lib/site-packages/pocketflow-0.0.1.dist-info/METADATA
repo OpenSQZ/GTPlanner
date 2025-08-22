@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: pocketflow
+Version: 0.0.1
+Summary: Minimalist LLM Framework in 100 Lines. Enable LLMs to Program Themselves.
+Home-page: https://github.com/miniLLMFlow/PocketFlow/
+Author: Zachary Huang
+Author-email: zh2408@columbia.edu
+License-File: LICENSE
+

@@ -1,0 +1,31 @@
+# Enhanced Language Detection System Dependencies
+# Additional dependencies for GTPlanner enhanced language detection
+
+# Core dependencies (already in main requirements.txt)
+openai>=1.0.0
+pyyaml>=6.0
+pocketflow==0.0.1
+aiohttp>=3.8.0
+json-repair>=0.45.0
+fastapi==0.115.9
+uvicorn==0.23.1
+uvicorn[standard]==0.23.1
+fastmcp
+python-dotenv>=1.0.0
+dynaconf>=3.1.12
+rich>=13.0.0
+
+# New dependencies for enhanced language detection
+psutil>=5.9.0  # System and process utilities for performance monitoring
+
+# Optional dependencies for advanced features
+# numpy>=1.21.0  # For advanced statistical analysis (future use)
+# scikit-learn>=1.0.0  # For machine learning integration (future use)
+
+# Development dependencies
+pytest>=7.0.0  # For running tests
+pytest-cov>=4.0.0  # For test coverage
+pytest-asyncio>=0.21.0  # For async test support
+black>=22.0.0  # Code formatting
+flake8>=5.0.0  # Linting
+mypy>=1.0.0  # Type checking

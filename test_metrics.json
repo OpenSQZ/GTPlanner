@@ -1,0 +1,12 @@
+{
+  "overall_stats": {
+    "total_calls": 2,
+    "success_rate": 1.0,
+    "average_execution_time": 0.07939338684082031,
+    "total_execution_time": 0.15878677368164062,
+    "min_execution_time": 0.0,
+    "max_execution_time": 0.15878677368164062,
+    "total_memory_usage": 0.00390625,
+    "average_memory_usage": 0.001953125,
+    "monitored_functions": 1,
+    "oldest_metric": 
