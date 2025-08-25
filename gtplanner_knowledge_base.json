@@ -1,0 +1,52 @@
+[
+  {
+    "id": "doc_1_1753749540",
+    "title": "Python编程基础",
+    "content": "Python是一种高级编程语言，由Guido van Rossum于1991年创建。Python具有简洁的语法和强大的功能，广泛应用于Web开发、数据科学、人工智能等领域。Python支持面向对象编程、函数式编程等多种编程范式。",
+    "metadata": {
+      "category": "programming",
+      "language": "Python"
+    },
+    "created_at": "2025-07-29T08:39:00.159271"
+  },
+  {
+    "id": "doc_2_1753749540",
+    "title": "机器学习入门",
+    "content": "机器学习是人工智能的一个重要分支，它使计算机能够在没有明确编程的情况下学习和改进。机器学习算法通过分析数据来识别模式，并基于这些模式做出预测或决策。常见的机器学习类型包括监督学习、无监督学习和强化学习。",
+    "metadata": {
+      "category": "AI",
+      "topic": "machine_learning"
+    },
+    "created_at": "2025-07-29T08:39:00.162942"
+  },
+  {
+    "id": "doc_3_1753749540",
+    "title": "数据结构与算法",
+    "content": "数据结构是计算机科学的基础，它定义了数据的组织、存储和访问方式。常见的数据结构包括数组、链表、栈、队列、树、图等。算法是解决问题的步骤和方法，好的算法能够高效地处理数据。",
+    "metadata": {
+      "category": "computer_science",
+      "topic": "data_structures"
+    },
+    "created_at": "2025-07-29T08:39:00.168083"
+  },
+  {
+    "id": "doc_4_1753749540",
+    "title": "深度学习基础",
+    "content": "深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的学习过程。深度学习在图像识别、自然语言处理、语音识别等领域取得了突破性进展。常见的深度学习框架包括TensorFlow、PyTorch等。",
+    "metadata": {
+      "category": "AI",
+      "topic": "deep_learning"
+    },
+    "created_at": "2025-07-29T08:39:00.172310"
+  },
+  {
+    "id": "doc_5_1753749540",
+    "title": "Web开发技术",
+    "content": "Web开发涉及前端和后端技术。前端技术包括HTML、CSS、JavaScript等，用于构建用户界面。后端技术包括服务器端编程、数据库设计、API开发等。现代Web开发还涉及响应式设计、单页应用等概念。",
+    "metadata": {
+      "category": "web_development",
+      "topic": "full_stack"
+    },
+    "created_at": "2025-07-29T08:39:00.175614"
+  }
+]

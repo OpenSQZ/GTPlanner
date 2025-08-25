@@ -1,0 +1,364 @@
+/* GTPlanner 自定义样式 */
+
+/* 全局样式 */
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+}
+
+/* 渐变背景 */
+.gradient-bg {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    min-height: 100vh;
+}
+
+/* 卡片样式 */
+.card-custom {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-custom:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+/* 按钮样式 */
+.btn-custom {
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-custom-primary {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+.btn-custom-success {
+    background: linear-gradient(45deg, var(--success-color), #20c997);
+    color: white;
+}
+
+.btn-custom-warning {
+    background: linear-gradient(45deg, var(--warning-color), #fd7e14);
+    color: white;
+}
+
+.btn-custom-danger {
+    background: linear-gradient(45deg, var(--danger-color), #e83e8c);
+    color: white;
+}
+
+/* 输入框样式 */
+.form-control-custom {
+    border-radius: 25px;
+    border: 2px solid #e9ecef;
+    padding: 12px 20px;
+    transition: all 0.3s ease;
+}
+
+.form-control-custom:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    transform: scale(1.02);
+}
+
+/* 聊天容器样式 */
+.chat-container {
+    height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 15px;
+    background: #f8f9fa;
+    padding: 15px;
+}
+
+.chat-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 3px;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+/* 消息样式 */
+.message {
+    margin: 10px 0;
+    padding: 12px 16px;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+    animation: fadeInUp 0.3s ease;
+}
+
+.user-message {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 5px;
+}
+
+.bot-message {
+    background: white;
+    border: 1px solid #e9ecef;
+    margin-right: auto;
+    border-bottom-left-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 反馈标签样式 */
+.feedback-badge {
+    font-size: 0.8em;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-top: 5px;
+    display: inline-block;
+    font-weight: 500;
+}
+
+.feedback-satisfied {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.feedback-unsatisfied {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.feedback-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* 统计卡片样式 */
+.stats-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 10px 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.stats-card h5 {
+    color: var(--dark-color);
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.stats-card h5 i {
+    margin-right: 8px;
+    color: var(--primary-color);
+}
+
+/* 状态指示器样式 */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+.status-ready {
+    background: var(--success-color);
+}
+
+.status-initializing {
+    background: var(--warning-color);
+}
+
+.status-error {
+    background: var(--danger-color);
+}
+
+/* 加载动画 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* 进度条样式 */
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    transition: width 0.6s ease;
+}
+
+/* 徽章样式 */
+.badge-custom {
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+/* 模态框样式 */
+.modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 15px 15px 0 0;
+}
+
+.modal-title {
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .chat-container {
+        height: 300px;
+    }
+    
+    .message {
+        max-width: 90%;
+    }
+    
+    .stats-card {
+        margin: 5px 0;
+        padding: 15px;
+    }
+    
+    .btn-custom {
+        padding: 8px 20px;
+        font-size: 0.9em;
+    }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+    .card-custom {
+        background: rgba(52, 58, 64, 0.95);
+        color: #f8f9fa;
+    }
+    
+    .bot-message {
+        background: #343a40;
+        color: #f8f9fa;
+        border-color: #495057;
+    }
+    
+    .stats-card {
+        background: #343a40;
+        color: #f8f9fa;
+    }
+    
+    .form-control-custom {
+        background: #495057;
+        border-color: #6c757d;
+        color: #f8f9fa;
+    }
+    
+    .form-control-custom:focus {
+        background: #495057;
+        color: #f8f9fa;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .navbar,
+    .btn,
+    .stats-card {
+        display: none !important;
+    }
+    
+    .chat-container {
+        height: auto;
+        border: none;
+    }
+    
+    .message {
+        max-width: 100%;
+        margin: 5px 0;
+    }
+} 

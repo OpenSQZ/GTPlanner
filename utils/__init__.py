@@ -11,7 +11,16 @@ __all__ = [
     'save_conversation_to_file',
     'save_conversation_to_file_async',
     'load_conversation_from_file',
-    'load_conversation_from_file_async'
+    'load_conversation_from_file_async',
+    'BadCase',
+    'JSONStorageEngine',
+    'BadCaseRecorder',
+    'BadCaseAnalyzer',
+    'Document',
+    'KnowledgeBase',
+    'SimpleKeywordRetriever',
+    'RAGEngine',
+    'mock_llm_api'
 ]
 
 # These will be imported when the functions are actually used,
@@ -26,4 +35,6 @@ from .store_conversation import (
     save_conversation_to_file_async,
     load_conversation_from_file,
     load_conversation_from_file_async
-) 
+)
+from .badcase_system import BadCase, JSONStorageEngine, BadCaseRecorder, BadCaseAnalyzer
+from .rag_system import Document, KnowledgeBase, SimpleKeywordRetriever, RAGEngine, mock_llm_api 
