@@ -40,7 +40,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
             "type": "function",
             "function": {
                 "name": "short_planning",
-                "description": "定义和细化项目范围的核心工具，在『范围确认』阶段使用。此工具旨在根据用户反馈被**重复调用**，直到与用户就项目范围达成最终共识。当用户提出修改意见时，应使用`improvement_points`参数来更新范围",
+                "description": "定义和细化项目范围的核心工具，支持两个阶段的规划：\n1. **初始规划阶段** (planning_stage='initial')：专注于需求分析和功能定义，不涉及技术选型\n2. **技术规划阶段** (planning_stage='technical')：在调用工具推荐后，整合推荐的技术栈和工具选择\n\n此工具旨在根据用户反馈被**重复调用**，直到与用户就项目范围达成最终共识。当用户提出修改意见时，应使用`improvement_points`参数来更新范围。",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -52,6 +52,11 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                             "type": "array",
                             "items": {"type": "string"},
                             "description": "需要改进的点或新的需求"
+                        },
+                        "planning_stage": {
+                            "type": "string",
+                            "enum": ["initial", "technical"],
+                            "description": "规划阶段：'initial'表示初始需求规划阶段，不涉及技术选型；'technical'表示技术规划阶段，需要整合推荐的技术栈和工具"
                         }
                     },
                     "required": ["user_requirements"]
@@ -191,9 +196,17 @@ async def execute_agent_tool(tool_name: str, arguments: Dict[str, Any], shared: 
 
 
 async def _execute_short_planning(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
-    """执行短期规划 - 基于项目状态和用户需求"""
+    """执行短期规划 - 基于项目状态和用户需求，支持不同规划阶段"""
     user_requirements = arguments.get("user_requirements", "")
     improvement_points = arguments.get("improvement_points", [])
+    planning_stage = arguments.get("planning_stage", "initial")  # 默认为初始阶段
+
+    # 验证planning_stage参数
+    if planning_stage not in ["initial", "technical"]:
+        return {
+            "success": False,
+            "error": "planning_stage must be either 'initial' or 'technical'"
+        }
 
     # 从shared字典中获取之前的规划结果
     previous_planning = ""
@@ -201,6 +214,13 @@ async def _execute_short_planning(arguments: Dict[str, Any], shared: Dict[str, A
         previous_planning_data = shared["short_planning"]
         if isinstance(previous_planning_data, str):
             previous_planning = previous_planning_data
+
+    # 如果是技术规划阶段，验证是否已有工具推荐结果
+    if planning_stage == "technical" and shared and not shared.get("recommended_tools"):
+        return {
+            "success": False,
+            "error": "技术规划阶段需要先调用 tool_recommend 工具获取技术栈推荐"
+        }
 
     # 如果没有用户需求且没有改进点，但有shared上下文，则可以继续执行
     if not user_requirements and not improvement_points and not shared:
@@ -218,6 +238,7 @@ async def _execute_short_planning(arguments: Dict[str, Any], shared: Dict[str, A
         shared["user_requirements"] = user_requirements
         shared["previous_planning"] = previous_planning
         shared["improvement_points"] = improvement_points
+        shared["planning_stage"] = planning_stage  # 添加规划阶段参数
 
         # 如果没有明确的用户需求，但有推荐工具，基于现有状态进行规划优化
         if not user_requirements and shared.get("recommended_tools"):
@@ -538,14 +559,23 @@ def validate_tool_arguments(tool_name: str, arguments: Dict[str, Any]) -> Dict[s
 # 便捷函数
 async def call_short_planning(
     user_requirements: str = "",
-    improvement_points: List[str] = None
+    improvement_points: List[str] = None,
+    planning_stage: str = "initial"
 ) -> Dict[str, Any]:
-    """便捷的短期规划调用 - 自动使用项目状态中的数据"""
+    """便捷的短期规划调用 - 自动使用项目状态中的数据
+
+    Args:
+        user_requirements: 用户需求描述
+        improvement_points: 改进点列表
+        planning_stage: 规划阶段，'initial'或'technical'
+    """
     arguments = {}
     if user_requirements:
         arguments["user_requirements"] = user_requirements
     if improvement_points:
         arguments["improvement_points"] = improvement_points
+    if planning_stage:
+        arguments["planning_stage"] = planning_stage
 
     return await execute_agent_tool("short_planning", arguments)
 

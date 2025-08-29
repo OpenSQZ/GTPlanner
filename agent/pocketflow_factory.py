@@ -151,40 +151,46 @@ class PocketFlowSharedFactory:
             if "short_planning" in shared:
                 tool_execution_results_updates["short_planning"] = shared["short_planning"]
 
-            # 检查设计文档相关字段 - 组织在 designs 命名空间下
+            # 检查设计文档相关字段 - 只保存元数据，不保存大型文档内容
             designs = {}
 
-            # 深度设计文档字段
+            # 只保存文档生成状态和元数据，不保存实际内容
+            design_status = {}
+
+            # 检查各种设计文档是否已生成（只记录状态，不保存内容）
             if "analysis_markdown" in shared:
-                designs["analysis_markdown"] = shared["analysis_markdown"]
+                design_status["analysis_completed"] = True
 
             if "nodes_markdown" in shared:
-                designs["nodes_markdown"] = shared["nodes_markdown"]
+                design_status["nodes_completed"] = True
 
             if "flow_markdown" in shared:
-                designs["flow_markdown"] = shared["flow_markdown"]
+                design_status["flow_completed"] = True
 
             if "data_structure_json" in shared:
-                designs["data_structure_json"] = shared["data_structure_json"]
+                design_status["data_structure_completed"] = True
 
             if "node_design_markdown" in shared:
-                designs["node_design_markdown"] = shared["node_design_markdown"]
+                design_status["node_design_completed"] = True
 
             if "agent_design_document" in shared:
-                designs["agent_design_document"] = shared["agent_design_document"]
+                design_status["agent_design_completed"] = True
 
-            # 快速设计文档字段
             if "requirements" in shared:
-                designs["requirements"] = shared["requirements"]
+                design_status["requirements_completed"] = True
 
             if "documentation" in shared:
-                designs["documentation"] = shared["documentation"]
+                design_status["documentation_completed"] = True
 
-            # 检查生成的文档文件信息
+            # 只保存文档文件信息（元数据），不保存实际内容
             if "generated_documents" in shared:
                 designs["generated_documents"] = shared["generated_documents"]
 
-            # 如果有设计文档，添加到工具执行结果中
+            # 保存设计状态
+            if design_status:
+                designs["status"] = design_status
+
+            # 如果有设计相关信息，添加到工具执行结果中
             if designs:
                 tool_execution_results_updates["designs"] = designs
 

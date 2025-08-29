@@ -1,0 +1,246 @@
+id: "openai-compatible.dalle-image-generation"
+type: "APIS"
+summary: "兼容 OpenAI DALL-E API 格式的图像生成服务，支持根据文本描述生成高质量图像。"
+description: |
+  兼容 OpenAI DALL-E API 格式的文本到图像生成服务，能够根据自然语言描述创建原创、逼真的图像和艺术作品。支持多种供应商和模型提供商。
+  
+  主要功能：
+  - 支持多种图像生成模型（如 DALL-E 3、DALL-E 2 等）
+  - 根据文本提示生成高质量图像
+  - 支持多种图像尺寸和质量设置
+  - 可生成多个图像变体
+  - 支持图像编辑和修复功能
+  - 内置内容安全过滤
+
+  技术特点：
+  - 兼容 OpenAI API 格式，支持多种供应商
+  - 支持 1024x1024、1792x1024、1024x1792 等多种尺寸
+  - 标准和高清质量选项
+  - 自然语言理解能力强
+  - 可通过环境变量配置不同的服务端点
+
+  适用场景：
+  - 创意设计和艺术创作
+  - 产品原型和概念图
+  - 营销素材和广告图片
+  - 教育和演示材料
+  - 个人创作和娱乐
+
+examples:
+  - title: "使用 cURL 生成图像"
+    content: |
+      curl ${OPENAI_BASE_URL}/images/generations \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $OPENAI_API_KEY" \
+        -d '{
+          "model": "dall-e-3",
+          "prompt": "一只穿着宇航服的猫在月球表面漫步，背景是地球和星空，超现实主义风格",
+          "n": 1,
+          "size": "1024x1024",
+          "quality": "standard"
+        }'
+
+  - title: "Python 示例"
+    content: |
+      import openai
+      import os
+      import requests
+      from PIL import Image
+      from io import BytesIO
+
+      # 设置 API 配置
+      openai.api_base = os.getenv("OPENAI_BASE_URL")
+      openai.api_key = os.getenv("OPENAI_API_KEY")
+
+      # 生成图像
+      response = openai.Image.create(
+          model="dall-e-3",
+          prompt="一个未来主义的城市天际线，有飞行汽车和霓虹灯，赛博朋克风格",
+          n=1,
+          size="1024x1024",
+          quality="hd"
+      )
+
+      # 获取图像 URL
+      image_url = response.data[0].url
+
+      # 下载并显示图像
+      image_response = requests.get(image_url)
+      image = Image.open(BytesIO(image_response.content))
+      image.show()
+
+      print(f"图像已生成: {image_url}")
+
+  - title: "批量生成多个图像"
+    content: |
+      import openai
+      import os
+
+      # 设置 API 配置
+      openai.api_base = os.getenv("OPENAI_BASE_URL")
+      openai.api_key = os.getenv("OPENAI_API_KEY")
+
+      # 生成多个图像变体
+      response = openai.Image.create(
+          model="dall-e-2",  # DALL-E 2 支持批量生成
+          prompt="可爱的卡通动物在森林中玩耍，儿童插画风格",
+          n=4,  # 生成 4 个变体
+          size="512x512"
+      )
+
+      # 保存所有图像
+      for i, image_data in enumerate(response.data):
+          print(f"图像 {i+1}: {image_data.url}")
+
+base_url: "${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+authentication:
+  type: "bearer"
+  header: "Authorization"
+  description: "需要兼容 OpenAI API 格式的密钥，格式：Bearer YOUR_API_KEY。支持通过环境变量 OPENAI_API_KEY 设置"
+
+endpoints:
+  - summary: "根据文本描述生成图像，支持 DALL-E 3 和 DALL-E 2 模型。"
+    method: "POST"
+    path: "/images/generations"
+    inputs:
+      type: "object"
+      properties:
+        model:
+          type: "string"
+          description: "要使用的模型"
+          enum: ["dall-e-3", "dall-e-2"]
+          default: "dall-e-3"
+        prompt:
+          type: "string"
+          description: "图像描述文本，最多 1000 字符（DALL-E 2）或 4000 字符（DALL-E 3）"
+          maxLength: 4000
+        n:
+          type: "integer"
+          description: "要生成的图像数量（DALL-E 3 只支持 1 张）"
+          minimum: 1
+          maximum: 10
+          default: 1
+        size:
+          type: "string"
+          description: "图像尺寸"
+          enum: ["256x256", "512x512", "1024x1024", "1792x1024", "1024x1792"]
+          default: "1024x1024"
+        quality:
+          type: "string"
+          description: "图像质量（仅 DALL-E 3 支持）"
+          enum: ["standard", "hd"]
+          default: "standard"
+        style:
+          type: "string"
+          description: "图像风格（仅 DALL-E 3 支持）"
+          enum: ["vivid", "natural"]
+          default: "vivid"
+        response_format:
+          type: "string"
+          description: "返回格式"
+          enum: ["url", "b64_json"]
+          default: "url"
+      required: ["prompt"]
+    outputs:
+      success_schema:
+        type: "object"
+        properties:
+          created: { type: "integer", description: "创建时间戳" }
+          data:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                url: { type: "string", description: "图像 URL（response_format=url 时）" }
+                b64_json: { type: "string", description: "Base64 编码的图像数据（response_format=b64_json 时）" }
+                revised_prompt: { type: "string", description: "修订后的提示词（DALL-E 3）" }
+      error_schema:
+        type: "object"
+        properties:
+          error:
+            type: "object"
+            properties:
+              message: { type: "string", description: "错误信息" }
+              type: { type: "string", description: "错误类型" }
+              code: { type: "string", description: "错误代码" }
+
+  - summary: "编辑现有图像，根据提示词修改图像的特定部分。"
+    method: "POST"
+    path: "/images/edits"
+    inputs:
+      type: "object"
+      properties:
+        image:
+          type: "string"
+          format: "binary"
+          description: "要编辑的图像文件（PNG 格式，最大 4MB）"
+        mask:
+          type: "string"
+          format: "binary"
+          description: "遮罩图像，指定要编辑的区域（PNG 格式）"
+        prompt:
+          type: "string"
+          description: "编辑描述文本"
+          maxLength: 1000
+        n:
+          type: "integer"
+          description: "要生成的图像数量"
+          minimum: 1
+          maximum: 10
+          default: 1
+        size:
+          type: "string"
+          description: "图像尺寸"
+          enum: ["256x256", "512x512", "1024x1024"]
+          default: "1024x1024"
+        response_format:
+          type: "string"
+          description: "返回格式"
+          enum: ["url", "b64_json"]
+          default: "url"
+      required: ["image", "prompt"]
+
+  - summary: "创建图像变体，基于现有图像生成相似的变体。"
+    method: "POST"
+    path: "/images/variations"
+    inputs:
+      type: "object"
+      properties:
+        image:
+          type: "string"
+          format: "binary"
+          description: "源图像文件（PNG 格式，最大 4MB）"
+        n:
+          type: "integer"
+          description: "要生成的变体数量"
+          minimum: 1
+          maximum: 10
+          default: 1
+        size:
+          type: "string"
+          description: "图像尺寸"
+          enum: ["256x256", "512x512", "1024x1024"]
+          default: "1024x1024"
+        response_format:
+          type: "string"
+          description: "返回格式"
+          enum: ["url", "b64_json"]
+          default: "url"
+      required: ["image"]
+
+pricing:
+  dall_e_3:
+    standard_1024x1024: "$0.040 / image"
+    standard_1024x1792: "$0.080 / image"
+    standard_1792x1024: "$0.080 / image"
+    hd_1024x1024: "$0.080 / image"
+    hd_1024x1792: "$0.120 / image"
+    hd_1792x1024: "$0.120 / image"
+  dall_e_2:
+    "1024x1024": "$0.020 / image"
+    "512x512": "$0.018 / image"
+    "256x256": "$0.016 / image"
+
+rate_limits:
+  requests_per_minute: 50
+  images_per_minute: 50

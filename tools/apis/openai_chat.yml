@@ -1,0 +1,210 @@
+id: "openai-compatible.chat-completions"
+type: "APIS"
+summary: "兼容 OpenAI API 格式的大语言模型聊天完成服务，支持多种模型的文本生成。"
+description: |
+  兼容 OpenAI Chat Completions API 格式的大语言模型服务，支持多种模型进行对话、文本生成、代码编写、翻译等任务。支持多种供应商和模型提供商。
+  
+  主要功能：
+  - 支持多种大语言模型（如 GPT-4、Claude、Llama 等）
+  - 多轮对话和单次文本生成
+  - 支持系统提示词、用户消息、助手回复等角色
+  - 可控制输出长度、温度、随机性等参数
+  - 支持流式输出和批量处理
+  - 内置内容安全过滤
+  - 兼容 OpenAI API 格式，支持多种供应商
+
+  适用场景：
+  - 智能对话系统
+  - 文本生成和改写
+  - 代码生成和解释
+  - 翻译和语言处理
+  - 创意写作和内容创作
+
+examples:
+  - title: "使用 cURL 调用 GPT-4"
+    content: |
+      curl ${OPENAI_BASE_URL}/chat/completions \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $OPENAI_API_KEY" \
+        -d '{
+          "model": "gpt-4",
+          "messages": [
+            {
+              "role": "system",
+              "content": "你是一个有用的AI助手。"
+            },
+            {
+              "role": "user",
+              "content": "解释什么是机器学习"
+            }
+          ],
+          "max_tokens": 1000,
+          "temperature": 0.7
+        }'
+
+  - title: "Python 示例"
+    content: |
+      import openai
+      import os
+
+      # 设置 API 配置
+      openai.api_base = os.getenv("OPENAI_BASE_URL")
+      openai.api_key = os.getenv("OPENAI_API_KEY")
+
+      # 调用 Chat Completions API
+      response = openai.ChatCompletion.create(
+          model="gpt-4",
+          messages=[
+              {"role": "system", "content": "你是一个专业的编程助手。"},
+              {"role": "user", "content": "用 Python 写一个快速排序算法"}
+          ],
+          max_tokens=1500,
+          temperature=0.3
+      )
+
+      print(response.choices[0].message.content)
+
+  - title: "多轮对话示例"
+    content: |
+      import openai
+      import os
+
+      # 设置 API 配置
+      openai.api_base = os.getenv("OPENAI_BASE_URL")
+      openai.api_key = os.getenv("OPENAI_API_KEY")
+
+      messages = [
+          {"role": "system", "content": "你是一个友好的AI助手。"},
+          {"role": "user", "content": "你好！"},
+          {"role": "assistant", "content": "你好！很高兴见到你。有什么我可以帮助你的吗？"},
+          {"role": "user", "content": "请推荐一些学习 Python 的资源"}
+      ]
+
+      response = openai.ChatCompletion.create(
+          model="gpt-3.5-turbo",
+          messages=messages,
+          max_tokens=800,
+          temperature=0.7
+      )
+
+      print(response.choices[0].message.content)
+
+base_url: "${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+authentication:
+  type: "bearer"
+  header: "Authorization"
+  description: "需要兼容 OpenAI API 格式的密钥，格式：Bearer YOUR_API_KEY。支持通过环境变量 OPENAI_API_KEY 设置"
+
+endpoints:
+  - summary: "创建聊天完成请求，支持多种 GPT 模型进行对话和文本生成。"
+    method: "POST"
+    path: "/chat/completions"
+    inputs:
+      type: "object"
+      properties:
+        model:
+          type: "string"
+          description: "要使用的模型名称，支持各种兼容 OpenAI API 的模型"
+          examples: ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo", "claude-3", "llama-2", "qwen", "glm-4"]
+          default: "gpt-3.5-turbo"
+        messages:
+          type: "array"
+          description: "对话消息列表"
+          items:
+            type: "object"
+            properties:
+              role:
+                type: "string"
+                enum: ["system", "user", "assistant"]
+                description: "消息角色：system(系统)、user(用户)、assistant(助手)"
+              content:
+                type: "string"
+                description: "消息内容"
+            required: ["role", "content"]
+        max_tokens:
+          type: "integer"
+          description: "生成的最大 token 数量"
+          minimum: 1
+          maximum: 4096
+          default: 1000
+        temperature:
+          type: "number"
+          description: "控制输出随机性，0-2 之间，越高越随机"
+          minimum: 0
+          maximum: 2
+          default: 0.7
+        top_p:
+          type: "number"
+          description: "核采样参数，0-1 之间"
+          minimum: 0
+          maximum: 1
+          default: 1
+        frequency_penalty:
+          type: "number"
+          description: "频率惩罚，-2.0 到 2.0 之间"
+          minimum: -2
+          maximum: 2
+          default: 0
+        presence_penalty:
+          type: "number"
+          description: "存在惩罚，-2.0 到 2.0 之间"
+          minimum: -2
+          maximum: 2
+          default: 0
+        stream:
+          type: "boolean"
+          description: "是否启用流式输出"
+          default: false
+      required: ["model", "messages"]
+    outputs:
+      success_schema:
+        type: "object"
+        properties:
+          id: { type: "string", description: "请求唯一标识符" }
+          object: { type: "string", description: "对象类型" }
+          created: { type: "integer", description: "创建时间戳" }
+          model: { type: "string", description: "使用的模型" }
+          choices:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                index: { type: "integer", description: "选择索引" }
+                message:
+                  type: "object"
+                  properties:
+                    role: { type: "string", description: "角色" }
+                    content: { type: "string", description: "生成的内容" }
+                finish_reason: { type: "string", description: "完成原因" }
+          usage:
+            type: "object"
+            properties:
+              prompt_tokens: { type: "integer", description: "输入 token 数" }
+              completion_tokens: { type: "integer", description: "输出 token 数" }
+              total_tokens: { type: "integer", description: "总 token 数" }
+      error_schema:
+        type: "object"
+        properties:
+          error:
+            type: "object"
+            properties:
+              message: { type: "string", description: "错误信息" }
+              type: { type: "string", description: "错误类型" }
+              code: { type: "string", description: "错误代码" }
+
+pricing:
+  model_pricing:
+    gpt-4:
+      input: "$0.03 / 1K tokens"
+      output: "$0.06 / 1K tokens"
+    gpt-4-turbo:
+      input: "$0.01 / 1K tokens"
+      output: "$0.03 / 1K tokens"
+    gpt-3.5-turbo:
+      input: "$0.0015 / 1K tokens"
+      output: "$0.002 / 1K tokens"
+
+rate_limits:
+  requests_per_minute: 3500
+  tokens_per_minute: 90000
+  requests_per_day: 10000

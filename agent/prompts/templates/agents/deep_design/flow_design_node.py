@@ -80,8 +80,11 @@ class AgentsDeepDesignFlowDesignNodeTemplates:
 
 ```mermaid
 flowchart TD
-    [在这里生成完整的Mermaid flowchart TD代码]
+    [在这里生成完整的Mermaid flowchart TD代码] 
+    ps: 避免使用如 end、subgraph、flowchart 等保留字作为节点或类的名称
 ```
+
+
 
 ## 节点连接关系
 

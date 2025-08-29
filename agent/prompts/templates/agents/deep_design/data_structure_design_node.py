@@ -69,10 +69,10 @@ class AgentsDeepDesignDataStructureDesignNodeTemplates:
 
 请严格按照以下JSON格式输出数据结构设计：
 
-{
+{{
     "shared_structure_description": "shared存储的整体描述",
     "shared_fields": [
-        {
+        {{
             "field_name": "字段名称",
             "data_type": "数据类型（如：str, dict, list等）",
             "description": "字段描述",
@@ -81,22 +81,22 @@ class AgentsDeepDesignDataStructureDesignNodeTemplates:
             "written_by_nodes": ["写入此字段的Node列表"],
             "example_value": "示例值或结构",
             "required": true/false
-        }
+        }}
     ],
     "data_flow_patterns": [
-        {
+        {{
             "pattern_name": "数据流模式名称",
             "description": "数据流描述",
             "involved_fields": ["涉及的字段"],
             "flow_sequence": ["数据流转顺序"]
-        }
+        }}
     ],
-    "shared_example": {
+    "shared_example": {{
         "field1": "示例值1",
-        "field2": {},
+        "field2": {{}},
         "field3": []
-    }
-}
+    }}
+}}
 
 对于数据结构设计，请提供：
 - 完整的数据结构定义（JSON Schema格式）
@@ -166,6 +166,37 @@ Please perform the following data structure design work:
    - Design cache data structures and strategies
    - Optimize data formats for large data volume processing
    - Consider memory usage and access efficiency
+
+Please strictly output the data structure design in the following JSON format:
+
+{{
+    "shared_structure_description": "Overall description of shared storage",
+    "shared_fields": [
+        {{
+            "field_name": "field name",
+            "data_type": "data type (e.g., str, dict, list, etc.)",
+            "description": "field description",
+            "purpose": "field purpose",
+            "read_by_nodes": ["list of nodes that read this field"],
+            "written_by_nodes": ["list of nodes that write this field"],
+            "example_value": "example value or structure",
+            "required": true/false
+        }}
+    ],
+    "data_flow_patterns": [
+        {{
+            "pattern_name": "data flow pattern name",
+            "description": "data flow description",
+            "involved_fields": ["involved fields"],
+            "flow_sequence": ["data flow sequence"]
+        }}
+    ],
+    "shared_example": {{
+        "field1": "example value 1",
+        "field2": {{}},
+        "field3": []
+    }}
+}}
 
 For data structure design, please provide:
 - Complete data structure definitions (JSON Schema format)

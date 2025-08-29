@@ -47,6 +47,9 @@ class ShortPlanningNode(AsyncNode):
             # 获取改进点（可选）
             improvement_points = shared.get("improvement_points", [])
 
+            # 获取规划阶段（新增）
+            planning_stage = shared.get("planning_stage", "initial")
+
             # 获取推荐工具信息（用于增强规划）
             recommended_tools = shared.get("recommended_tools", [])
 
@@ -74,6 +77,7 @@ class ShortPlanningNode(AsyncNode):
                 "user_requirements": user_requirements,
                 "previous_planning": previous_planning,
                 "improvement_points": improvement_points,
+                "planning_stage": planning_stage,  # 添加规划阶段
                 "recommended_tools": recommended_tools,
                 "research_findings": research_findings,
                 "language": language,  # 添加语言设置
@@ -92,6 +96,7 @@ class ShortPlanningNode(AsyncNode):
             user_requirements = prep_result["user_requirements"]
             previous_planning = prep_result["previous_planning"]
             improvement_points = prep_result["improvement_points"]
+            planning_stage = prep_result["planning_stage"]  # 获取规划阶段
             recommended_tools = prep_result["recommended_tools"]
             research_findings = prep_result["research_findings"]
             language = prep_result["language"]  # 从prep_result获取语言设置
@@ -103,7 +108,8 @@ class ShortPlanningNode(AsyncNode):
                 improvement_points,
                 recommended_tools,
                 research_findings,
-                language  # 传递语言设置
+                language,  # 传递语言设置
+                planning_stage  # 传递规划阶段
             )
 
             return {
@@ -132,7 +138,8 @@ class ShortPlanningNode(AsyncNode):
                                         improvement_points: list = None,
                                         recommended_tools: list = None,
                                         research_findings: dict = None,
-                                        language: str = None) -> str:
+                                        language: str = None,
+                                        planning_stage: str = "initial") -> str:
         """使用异步LLM生成步骤化的规划文档（纯文本），结合推荐工具和研究结果。"""
 
         # 构建LLM提示词，包含推荐工具和研究结果
@@ -142,7 +149,8 @@ class ShortPlanningNode(AsyncNode):
             improvement_points or [],
             recommended_tools or [],
             research_findings or {},
-            language
+            language,
+            planning_stage
         )
 
         # 调用异步LLM，不再要求JSON格式
@@ -160,7 +168,8 @@ class ShortPlanningNode(AsyncNode):
                              improvement_points: list = None,
                              recommended_tools: list = None,
                              research_findings: dict = None,
-                             language: str = None) -> str:
+                             language: str = None,
+                             planning_stage: str = "initial") -> str:
         """
         构建生成步骤化流程的LLM提示词，使用多语言模板系统。
         """
@@ -192,7 +201,8 @@ class ShortPlanningNode(AsyncNode):
             language=language,
             req_content=req_content,
             tools_content=tools_content,
-            research_content=research_content
+            research_content=research_content,
+            planning_stage=planning_stage  # 传递规划阶段参数
         )
 
         return prompt

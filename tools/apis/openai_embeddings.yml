@@ -1,0 +1,254 @@
+id: "openai-compatible.embeddings"
+type: "APIS"
+summary: "兼容 OpenAI API 格式的文本向量化服务，将文本转换为高维向量表示，用于语义搜索和相似度计算。"
+description: |
+  兼容 OpenAI Embeddings API 格式的文本向量化服务，能够将文本转换为高质量的数值向量表示，捕获文本的语义信息。支持多种供应商和模型提供商。
+  
+  主要功能：
+  - 支持多种文本向量化模型（如 text-embedding-3、bge、m3e 等）
+  - 高质量的文本向量表示
+  - 支持批量文本处理
+  - 可调节向量维度
+  - 多语言支持
+  - 高效的语义相似度计算
+  - 兼容 OpenAI API 格式，支持多种供应商
+
+  技术特点：
+  - 支持不同维度的向量输出（512、1024、1536、3072 等）
+  - 支持最多 8191 个 token 的输入
+  - 向量维度可调节
+  - 可通过环境变量配置不同的服务端点
+
+  适用场景：
+  - 语义搜索和信息检索
+  - 文档相似度计算
+  - 推荐系统
+  - 聚类和分类
+  - RAG（检索增强生成）系统
+  - 知识库构建
+
+examples:
+  - title: "使用 cURL 获取文本向量"
+    content: |
+      curl ${OPENAI_BASE_URL}/embeddings \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $OPENAI_API_KEY" \
+        -d '{
+          "model": "text-embedding-3-large",
+          "input": "机器学习是人工智能的一个重要分支",
+          "encoding_format": "float"
+        }'
+
+  - title: "Python 示例"
+    content: |
+      import openai
+      import os
+      import numpy as np
+      from sklearn.metrics.pairwise import cosine_similarity
+
+      # 设置 API 配置
+      openai.api_base = os.getenv("OPENAI_BASE_URL")
+      openai.api_key = os.getenv("OPENAI_API_KEY")
+
+      # 获取文本向量
+      def get_embedding(text, model="text-embedding-3-large"):
+          response = openai.Embedding.create(
+              model=model,
+              input=text
+          )
+          return response.data[0].embedding
+
+      # 示例文本
+      texts = [
+          "机器学习是人工智能的重要分支",
+          "深度学习使用神经网络进行学习",
+          "今天天气很好，适合出门散步"
+      ]
+
+      # 获取向量
+      embeddings = [get_embedding(text) for text in texts]
+
+      # 计算相似度
+      similarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
+      print(f"文本1和文本2的相似度: {similarity:.4f}")
+
+  - title: "批量处理示例"
+    content: |
+      import openai
+      import os
+
+      # 设置 API 配置
+      openai.api_base = os.getenv("OPENAI_BASE_URL")
+      openai.api_key = os.getenv("OPENAI_API_KEY")
+
+      # 批量获取多个文本的向量
+      texts = [
+          "人工智能技术发展迅速",
+          "机器学习算法不断改进",
+          "深度学习在图像识别中表现出色",
+          "自然语言处理技术日趋成熟"
+      ]
+
+      response = openai.Embedding.create(
+          model="text-embedding-3-small",
+          input=texts
+      )
+
+      # 处理结果
+      for i, embedding_data in enumerate(response.data):
+          print(f"文本 {i+1} 向量维度: {len(embedding_data.embedding)}")
+          print(f"前5个维度值: {embedding_data.embedding[:5]}")
+
+  - title: "语义搜索示例"
+    content: |
+      import openai
+      import numpy as np
+      from sklearn.metrics.pairwise import cosine_similarity
+      
+      # 文档库
+      documents = [
+          "Python是一种高级编程语言",
+          "机器学习算法可以从数据中学习",
+          "深度学习是机器学习的子集",
+          "自然语言处理处理人类语言",
+          "计算机视觉让机器理解图像"
+      ]
+      
+      # 获取文档向量
+      doc_embeddings = []
+      for doc in documents:
+          response = openai.Embedding.create(
+              model="text-embedding-3-small",
+              input=doc
+          )
+          doc_embeddings.append(response.data[0].embedding)
+      
+      # 查询
+      query = "什么是深度学习？"
+      query_response = openai.Embedding.create(
+          model="text-embedding-3-small",
+          input=query
+      )
+      query_embedding = query_response.data[0].embedding
+      
+      # 计算相似度并排序
+      similarities = cosine_similarity([query_embedding], doc_embeddings)[0]
+      ranked_docs = sorted(zip(documents, similarities), key=lambda x: x[1], reverse=True)
+      
+      print("最相关的文档:")
+      for doc, score in ranked_docs[:3]:
+          print(f"相似度 {score:.4f}: {doc}")
+
+base_url: "${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+authentication:
+  type: "bearer"
+  header: "Authorization"
+  description: "需要兼容 OpenAI API 格式的密钥，格式：Bearer YOUR_API_KEY。支持通过环境变量 OPENAI_API_KEY 设置"
+
+endpoints:
+  - summary: "将文本转换为向量表示，支持单个文本或批量文本处理。"
+    method: "POST"
+    path: "/embeddings"
+    inputs:
+      type: "object"
+      properties:
+        model:
+          type: "string"
+          description: "要使用的嵌入模型，支持各种兼容 OpenAI API 的向量化模型"
+          examples: ["text-embedding-3-large", "text-embedding-3-small", "text-embedding-ada-002", "bge-large-zh", "m3e-base"]
+          default: "text-embedding-3-small"
+        input:
+          oneOf:
+            - type: "string"
+              description: "单个文本输入"
+            - type: "array"
+              items:
+                type: "string"
+              description: "批量文本输入"
+          description: "要转换为向量的文本，最多 8191 个 token"
+        encoding_format:
+          type: "string"
+          description: "向量编码格式"
+          enum: ["float", "base64"]
+          default: "float"
+        dimensions:
+          type: "integer"
+          description: "输出向量的维度（仅支持 text-embedding-3 模型）"
+          minimum: 1
+          maximum: 3072
+        user:
+          type: "string"
+          description: "用户标识符，用于监控和滥用检测"
+      required: ["model", "input"]
+    outputs:
+      success_schema:
+        type: "object"
+        properties:
+          object: { type: "string", description: "对象类型" }
+          model: { type: "string", description: "使用的模型" }
+          data:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                object: { type: "string", description: "数据对象类型" }
+                index: { type: "integer", description: "输入文本的索引" }
+                embedding:
+                  type: "array"
+                  items:
+                    type: "number"
+                  description: "文本的向量表示"
+          usage:
+            type: "object"
+            properties:
+              prompt_tokens: { type: "integer", description: "输入 token 数" }
+              total_tokens: { type: "integer", description: "总 token 数" }
+      error_schema:
+        type: "object"
+        properties:
+          error:
+            type: "object"
+            properties:
+              message: { type: "string", description: "错误信息" }
+              type: { type: "string", description: "错误类型" }
+              code: { type: "string", description: "错误代码" }
+
+model_specifications:
+  text-embedding-3-large:
+    dimensions: 3072
+    max_tokens: 8191
+    description: "最新最强的嵌入模型，提供最高质量的向量表示"
+  text-embedding-3-small:
+    dimensions: 1536
+    max_tokens: 8191
+    description: "高性能嵌入模型，在质量和成本之间取得良好平衡"
+  text-embedding-ada-002:
+    dimensions: 1536
+    max_tokens: 8191
+    description: "经典嵌入模型，稳定可靠"
+
+pricing:
+  text-embedding-3-large: "$0.00013 / 1K tokens"
+  text-embedding-3-small: "$0.00002 / 1K tokens"
+  text-embedding-ada-002: "$0.00010 / 1K tokens"
+
+rate_limits:
+  requests_per_minute: 3000
+  tokens_per_minute: 1000000
+
+use_cases:
+  semantic_search:
+    description: "语义搜索和信息检索"
+    example: "在文档库中找到与查询最相关的内容"
+  similarity_calculation:
+    description: "文本相似度计算"
+    example: "比较两个文档的语义相似性"
+  clustering:
+    description: "文本聚类和分类"
+    example: "将相似的文档自动分组"
+  recommendation:
+    description: "推荐系统"
+    example: "基于用户偏好推荐相关内容"
+  rag_systems:
+    description: "检索增强生成（RAG）"
+    example: "为 LLM 提供相关上下文信息"

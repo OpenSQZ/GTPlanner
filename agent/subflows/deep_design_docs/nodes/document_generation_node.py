@@ -183,7 +183,7 @@ class DocumentGenerationNode(AsyncNode):
             user_requirements=user_requirements if user_requirements else no_requirements_text,
             short_planning=short_planning if short_planning else no_planning_text,
             tools_info=tools_info if tools_info else no_tools_text,
-            research_info=research_info,
+            research_findings=research_info,
             analysis_markdown=analysis_markdown,
             nodes_markdown=nodes_markdown,
             flow_markdown=flow_markdown,
