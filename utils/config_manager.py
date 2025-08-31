@@ -235,7 +235,7 @@ class MultilingualConfig:
                 config.update({
                     "base_url": self._settings.get("vector_service.base_url"),
                     "timeout": self._settings.get("vector_service.timeout", 30),
-                    "index_name": self._settings.get("vector_service.index_name", "default"),
+                    "tools_index_name": self._settings.get("vector_service.tools_index_name", "tools_index"),
                     "vector_field": self._settings.get("vector_service.vector_field", "combined_text")
                 })
             except Exception as e:
@@ -245,34 +245,8 @@ class MultilingualConfig:
         config.update({
             "base_url": config.get("base_url") or os.getenv("VECTOR_SERVICE_BASE_URL") or os.getenv("GTPLANNER_VECTOR_SERVICE_BASE_URL"),
             "timeout": config.get("timeout") or int(os.getenv("VECTOR_SERVICE_TIMEOUT", "30")),
-            "index_name": config.get("index_name") or os.getenv("VECTOR_SERVICE_INDEX_NAME", "default"),
+            "tools_index_name": config.get("tools_index_name") or os.getenv("VECTOR_SERVICE_TOOLS_INDEX_NAME", "tools_index"),
             "vector_field": config.get("vector_field") or os.getenv("VECTOR_SERVICE_VECTOR_FIELD", "combined_text")
-        })
-
-        return {k: v for k, v in config.items() if v is not None}
-
-    def get_vector_service_config(self) -> Dict[str, Any]:
-        """Get vector service configuration.
-
-        Returns:
-            Dictionary containing vector service configuration
-        """
-        config = {}
-
-        # Try dynaconf settings first
-        if self._settings:
-            try:
-                config.update({
-                    "base_url": self._settings.get("vector_service.base_url"),
-                    "timeout": self._settings.get("vector_service.timeout", 30)
-                })
-            except Exception as e:
-                logger.warning(f"Error reading vector service config from settings: {e}")
-
-        # Try environment variables with fallbacks
-        config.update({
-            "base_url": config.get("base_url") or os.getenv("VECTOR_SERVICE_BASE_URL") or os.getenv("GTPLANNER_VECTOR_SERVICE_BASE_URL"),
-            "timeout": config.get("timeout") or int(os.getenv("VECTOR_SERVICE_TIMEOUT", "30"))
         })
 
         return {k: v for k, v in config.items() if v is not None}

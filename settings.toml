@@ -25,4 +25,8 @@ supported_languages = ["en", "zh", "es", "fr", "ja"]
 # Vector service configuration for tool recommendation
 base_url = "http://nodeport.sensedeal.vip:32421"
 timeout = 30
+# Index name for tools
+tools_index_name = "document_20250831_f08b948e"
+# Vector field name for document embedding
+vector_field = "combined_text"
 

@@ -40,9 +40,9 @@ class NodeToolRecommend(Node):
         self.vector_service_url = vector_config.get("base_url", "http://nodeport.sensedeal.vip:32421")
         self.timeout = vector_config.get("timeout", 30)
 
-        # 这些参数保持硬编码，不从配置文件读取
-        self.index_name = "default"  # 使用默认索引名
-        self.vector_field = "combined_text"
+        # 从配置文件读取索引相关参数
+        self.index_name = vector_config.get("tools_index_name", "tools_index")
+        self.vector_field = vector_config.get("vector_field", "combined_text")
 
         # 推荐配置
         self.default_top_k = 5
@@ -554,7 +554,6 @@ if __name__ == '__main__':
     recommend_node = NodeToolRecommend()
     shared_with_init = {
         "tools_dir":"/home/tang/pyprojects/OpenSQZ-GTPlanner/GTPlanner/tools",
-        "index_name":"",
         "force_reindex":True
     }
     prep_init_result = init_node.prep(shared_with_init)
@@ -564,8 +563,8 @@ if __name__ == '__main__':
     shared_with_llm = {
         "query": "我想解析视频字幕",
         "top_k": 10,
-        "index_name": exec_init_result.get("index_name", "default"),  # 使用之前创建的索引
-        "use_llm_filter": True  
+        "index_name": exec_init_result.get("index_name", recommend_node.index_name),  # 使用配置的索引名称
+        "use_llm_filter": True
     }
     prep_result = recommend_node.prep(shared=shared_with_llm)
     exec_result = recommend_node.exec(prep_result)

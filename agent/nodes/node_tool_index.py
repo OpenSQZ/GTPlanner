@@ -41,9 +41,9 @@ class NodeToolIndex(Node):
         self.vector_service_url = vector_config.get("base_url", "http://nodeport.sensedeal.vip:32421")
         self.timeout = vector_config.get("timeout", 30)
 
-        # 这些参数保持硬编码，不从配置文件读取
-        self.index_name = "tools_index"
-        self.vector_field = "combined_text"
+        # 从配置文件读取索引相关参数
+        self.index_name = vector_config.get("tools_index_name", "tools_index")
+        self.vector_field = vector_config.get("vector_field", "combined_text")
         
         # 工具目录配置
         self.tools_dir = "tools"
@@ -125,48 +125,54 @@ class NodeToolIndex(Node):
     def exec(self, prep_res: Dict[str, Any]) -> Dict[str, Any]:
         """
         执行阶段：调用向量服务进行工具索引
-        
+
         Args:
             prep_res: 准备阶段的结果
-            
+
         Returns:
             执行结果字典
         """
         if "error" in prep_res:
             raise ValueError(prep_res["error"])
-        
+
         parsed_tools = prep_res["parsed_tools"]
         index_name = prep_res["index_name"]
-        
+        force_reindex = prep_res.get("force_reindex", False)
+
         if not parsed_tools:
             raise ValueError("No tools to index")
-        
+
         if not self.vector_service_available:
             raise RuntimeError("Vector service is not available")
-        
+
         try:
             start_time = time.time()
-            
+
+            # 如果需要强制重建索引，先清除现有索引数据
+            if force_reindex:
+                self._clear_index(index_name)
+
             # 构建文档列表
             documents = []
             for tool in parsed_tools:
                 doc = self._build_document(tool)
                 documents.append(doc)
-            
+
             # 调用向量服务进行批量索引
             index_result = self._index_documents(documents, index_name)
-            
+
             index_time = time.time() - start_time
-            
+
             return {
                 "indexed_count": index_result.get("count", len(documents)),
                 "index_name": index_result.get("index", index_name),
                 "index_time": round(index_time * 1000),  # 转换为毫秒
                 "documents": documents,
                 "failed_tools": prep_res.get("failed_files", []),
-                "total_processed": prep_res["tools_count"]
+                "total_processed": prep_res["tools_count"],
+                "force_reindex": force_reindex
             }
-            
+
         except Exception as e:
             raise RuntimeError(f"Tool indexing execution failed: {str(e)}")
     
@@ -357,6 +363,34 @@ class NodeToolIndex(Node):
 
         return doc
 
+    def _clear_index(self, index_name: str) -> None:
+        """清除指定索引的所有数据"""
+        try:
+            print(f"🗑️ 清除索引数据: {index_name}")
+
+            # 调用向量服务清除索引
+            response = requests.delete(
+                f"{self.vector_service_url}/index/{index_name}/clear",
+                timeout=self.timeout,
+                headers={"accept": "application/json"}
+            )
+
+            if response.status_code == 200:
+                print(f"✅ 成功清除索引 {index_name} 的数据")
+            else:
+                # 如果索引不存在，通常返回404，这是正常的
+                if response.status_code == 404:
+                    print(f"ℹ️ 索引 {index_name} 不存在或已为空")
+                else:
+                    error_msg = f"清除索引失败: {response.status_code}, {response.text}"
+                    print(f"⚠️ {error_msg}")
+                    # 不抛出异常，因为清除失败不应该阻止后续的索引操作
+
+        except requests.exceptions.RequestException as e:
+            error_msg = f"调用清除索引API失败: {str(e)}"
+            print(f"⚠️ {error_msg}")
+            # 不抛出异常，因为清除失败不应该阻止后续的索引操作
+
     def _index_documents(self, documents: List[Dict[str, Any]], index_name: str) -> Dict[str, Any]:
         """调用向量服务进行文档索引"""
         try:
@@ -369,7 +403,6 @@ class NodeToolIndex(Node):
             # 只有在指定了索引名时才添加index字段
             if index_name:
                 request_data["index"] = index_name
-
             # 调用向量服务
             response = requests.post(
                 f"{self.vector_service_url}/documents",
