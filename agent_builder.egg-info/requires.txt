@@ -1,6 +1,0 @@
-openai>=1.0.0
-pyyaml>=6.0
-pocketflow==0.0.1
-aiohttp>=3.8.0
-json-repair>=0.45.0
-dynaconf>=3.1.12

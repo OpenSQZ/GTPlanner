@@ -86,7 +86,6 @@ Thumbs.db
 .uv-cache/
 
 # 开发专用文件
-start_cli.bat
 test-docker.sh
 *.bak
-*.orig 
+*.orig

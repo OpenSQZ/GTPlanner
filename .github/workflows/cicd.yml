@@ -38,20 +38,58 @@ jobs:
       run: |
         uv venv
         source .venv/bin/activate
-        uv pip install  -r pyproject.toml
+        uv pip install -e .
+        uv pip install --group dev
         
     - name: 代码质量检查
       run: |
         source .venv/bin/activate
-        # 这里可以添加代码质量检查工具，如flake8, black等
-        python -m py_compile main.py
+        # 编译检查主要 Python 文件
+        echo "检查主要 Python 文件语法..."
+        python -m py_compile gtplanner.py
         python -m py_compile fastapi_main.py
+
+        # 检查核心模块
+        echo "检查核心模块..."
+        python -c "import agent; print('agent 模块导入成功')" || echo "agent 模块导入失败"
+        python -c "import utils; print('utils 模块导入成功')" || echo "utils 模块导入失败"
+
+        # 检查关键文件语法
+        echo "检查关键文件语法..."
+        find agent -name "*.py" -exec python -m py_compile {} \; || echo "部分 agent 文件编译失败"
+        find utils -name "*.py" -exec python -m py_compile {} \; || echo "部分 utils 文件编译失败"
         
     - name: 运行测试
       run: |
         source .venv/bin/activate
-        # 运行测试套件
-        python -m pytest tests/ -v || echo "测试完成"
+        # 检查是否存在测试目录
+        if [ -d "tests" ]; then
+          echo "运行测试套件..."
+          python -m pytest tests/ -v || echo "部分测试失败，但继续构建"
+        else
+          echo "未找到测试目录，跳过测试"
+        fi
+
+        # 运行基本功能测试
+        echo "运行基本功能测试..."
+        python -c "
+import sys
+try:
+    import gtplanner
+    print('✅ gtplanner 模块导入成功')
+except Exception as e:
+    print(f'❌ gtplanner 模块导入失败: {e}')
+    sys.exit(1)
+
+try:
+    import fastapi_main
+    print('✅ fastapi_main 模块导入成功')
+except Exception as e:
+    print(f'❌ fastapi_main 模块导入失败: {e}')
+    sys.exit(1)
+
+print('✅ 所有基本功能测试通过')
+"
 
 
   docker-build-push:

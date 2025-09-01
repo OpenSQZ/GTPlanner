@@ -1,8 +1,23 @@
 [default]
-debug = false
+debug = true
+
+[default.logging]
+level = "INFO"
+file_enabled = true
+console_enabled = false  # 关闭控制台输出
+max_file_size = 10485760  # 10MB
+backup_count = 5
+
+[default.openai]
+debug_enabled = true
+log_requests = true
+log_responses = true
+log_level = "DEBUGE"
+log_to_file = true
+log_to_console = false  # 关闭控制台输出
 
 [default.llm]
-base_url = "https://gateway.chat.sensedeal.vip/v1"
+base_url = "@format {env[LLM_BASE_URL]}"
 api_key = "@format {env[LLM_API_KEY]}"
 model = "@format {env[LLM_MODEL]}"
 
@@ -23,10 +38,16 @@ supported_languages = ["en", "zh", "es", "fr", "ja"]
 
 [default.vector_service]
 # Vector service configuration for tool recommendation
-base_url = "http://nodeport.sensedeal.vip:32421"
+base_url = "@format {env[VECTOR_SERVICE_BASE_URL]}"
 timeout = 30
 # Index name for tools
 tools_index_name = "document_20250831_f08b948e"
 # Vector field name for document embedding
 vector_field = "combined_text"
+
+[default.deep_design_docs]
+# Deep design documents configuration
+# Enable deep design docs feature (uses architecture module's progressive design logic)
+# When false, falls back to planning.py logic for compatibility
+enable_deep_design_docs = false
 

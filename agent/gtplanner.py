@@ -4,9 +4,10 @@ GTPlanner 主入口类
 提供GTPlanner系统的主要接口，封装整个处理流程。
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Union
+from datetime import datetime
 from .shared import get_shared_state, reset_shared_state
-# from .flows import OrchestratorReActFlow
+from .flows import ReActOrchestratorRefactored
 
 
 class GTPlanner:
@@ -23,16 +24,15 @@ class GTPlanner:
             reset_shared_state()
             
         self.shared_state = get_shared_state()
-        self.orchestrator_flow = OrchestratorReActFlow()
+        self.orchestrator = ReActOrchestratorRefactored()
         
-    def process_user_request(self, user_input: str, **kwargs) -> Dict[str, Any]:
+    def process_user_request(self, user_input: str) -> Dict[str, Any]:
         """
         处理用户请求
-        
+
         Args:
             user_input: 用户输入的需求描述
-            **kwargs: 其他参数
-            
+
         Returns:
             处理结果字典
         """
@@ -44,7 +44,7 @@ class GTPlanner:
             self.shared_state.update_stage("processing_user_request")
             
             # 执行主流程
-            result = self.orchestrator_flow.run(self.shared_state)
+            result = self.orchestrator.run(self.shared_state)
             
             # 更新处理阶段
             self.shared_state.update_stage("completed")
@@ -53,7 +53,8 @@ class GTPlanner:
                 "success": True,
                 "result": result,
                 "session_id": self.shared_state.session_id,
-                "final_stage": self.shared_state.current_stage
+                "timestamp": datetime.now().isoformat(),
+                "error_count": self.shared_state.error_count
             }
             
         except Exception as e:
@@ -63,10 +64,12 @@ class GTPlanner:
             
             return {
                 "success": False,
-                "error": str(e),
-                "error_type": type(e).__name__,
+                "result": None,
                 "session_id": self.shared_state.session_id,
-                "error_count": self.shared_state.error_count
+                "timestamp": datetime.now().isoformat(),
+                "error_count": self.shared_state.error_count,
+                "error": str(e),
+                "error_type": type(e).__name__
             }
     
     def get_state(self) -> Dict[str, Any]:
@@ -77,19 +80,17 @@ class GTPlanner:
         """保存状态到文件"""
         self.shared_state.save_to_file(filepath)
     
-    def get_dialogue_history(self) -> Dict[str, Any]:
+    def get_dialogue_history(self) -> Union[Dict[str, Any], list]:
         """获取对话历史"""
         return self.shared_state.dialogue_history
 
-    def get_requirements(self) -> Dict[str, Any]:
-        """获取结构化需求"""
-        return self.shared_state.structured_requirements
 
-    def get_research_findings(self) -> Dict[str, Any]:
+
+    def get_research_findings(self) -> Union[Dict[str, Any], None]:
         """获取研究发现"""
         return self.shared_state.research_findings
 
-    def get_architecture_draft(self) -> Dict[str, Any]:
+    def get_architecture_draft(self) -> Union[Dict[str, Any], None]:
         """获取架构草稿"""
         return self.shared_state.architecture_draft
     
@@ -99,13 +100,3 @@ class GTPlanner:
         self.shared_state = get_shared_state()
 
 
-# 便捷函数
-def create_planner(**kwargs) -> GTPlanner:
-    """创建GTPlanner实例的便捷函数"""
-    return GTPlanner(**kwargs)
-
-
-def quick_process(user_input: str, **kwargs) -> Dict[str, Any]:
-    """快速处理用户请求的便捷函数"""
-    planner = create_planner()
-    return planner.process_user_request(user_input, **kwargs)

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTPlanner SSE 测试页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .output-section {
+            padding: 30px;
+            background: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .config-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .config-section h3 {
+            margin-bottom: 15px;
+            color: #495057;
+            font-size: 1.1em;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4facfe;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .output {
+            height: 500px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f8f9fa;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .event {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .event-type {
+            color: #007bff;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .event-time {
+            color: #6c757d;
+            font-size: 11px;
+        }
+
+        .event-content {
+            color: #495057;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .event.error {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .event.error .event-type {
+            color: #dc3545;
+        }
+
+        .event.success {
+            border-left-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .event.success .event-type {
+            color: #28a745;
+        }
+
+        .event.tool {
+            border-left-color: #ffc107;
+            background: #fffdf5;
+        }
+
+        .event.tool .event-type {
+            color: #ffc107;
+        }
+
+        .status-bar {
+            padding: 15px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+
+        .status-dot.connected {
+            background: #28a745;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-section {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 GTPlanner SSE 测试</h1>
+            <p>实时流式响应测试页面 - 体验智能规划助手的强大功能</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="userInput">💬 输入您的需求</label>
+                    <input type="text" id="userInput" placeholder="例如：设计一个用户管理系统" />
+                </div>
+
+                <div class="config-section">
+                    <h3>⚙️ 配置选项</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="includeMetadata" />
+                            <label for="includeMetadata">显示详细元数据</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="bufferEvents" />
+                            <label for="bufferEvents">启用事件缓冲</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="sendRequest()" id="sendBtn">
+                        发送请求
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearOutput()">
+                        清空输出
+                    </button>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <h3>📡 实时响应</h3>
+                <div id="output" class="output"></div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">未连接</span>
+            </div>
+            <div class="stats">
+                <span>事件数: <span id="eventCount">0</span></span>
+                <span>连接时间: <span id="connectionTime">-</span></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let eventCount = 0;
+        let connectionStartTime = null;
+        let currentReader = null;
+
+        function updateStatus(connected, text) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            if (connected) {
+                statusDot.classList.add('connected');
+                connectionStartTime = new Date();
+            } else {
+                statusDot.classList.remove('connected');
+                connectionStartTime = null;
+            }
+            
+            statusText.textContent = text;
+            updateConnectionTime();
+        }
+
+        function updateConnectionTime() {
+            const connectionTimeEl = document.getElementById('connectionTime');
+            if (connectionStartTime) {
+                const elapsed = Math.floor((new Date() - connectionStartTime) / 1000);
+                connectionTimeEl.textContent = `${elapsed}s`;
+            } else {
+                connectionTimeEl.textContent = '-';
+            }
+        }
+
+        function addEvent(content, type = 'info', eventType = '') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `event ${type}`;
+            
+            const header = document.createElement('div');
+            header.className = 'event-header';
+            
+            const typeSpan = document.createElement('span');
+            typeSpan.className = 'event-type';
+            typeSpan.textContent = eventType || type;
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'event-time';
+            timeSpan.textContent = new Date().toLocaleTimeString();
+            
+            header.appendChild(typeSpan);
+            header.appendChild(timeSpan);
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'event-content';
+            contentDiv.textContent = content;
+            
+            div.appendChild(header);
+            div.appendChild(contentDiv);
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+            
+            eventCount++;
+            document.getElementById('eventCount').textContent = eventCount;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+            eventCount = 0;
+            document.getElementById('eventCount').textContent = eventCount;
+        }
+
+        async function sendRequest() {
+            const input = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const userInput = input.value.trim();
+            
+            if (!userInput) {
+                addEvent('请输入内容', 'error', 'INPUT_ERROR');
+                return;
+            }
+
+            // 关闭之前的连接
+            if (currentReader) {
+                try {
+                    await currentReader.cancel();
+                } catch (e) {
+                    // 忽略取消错误
+                }
+                currentReader = null;
+            }
+
+            const includeMetadata = document.getElementById('includeMetadata').checked;
+            const bufferEvents = document.getElementById('bufferEvents').checked;
+            
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading"></span> 处理中...';
+            
+            addEvent(`发送请求: ${userInput}`, 'info', 'REQUEST_START');
+            
+            try {
+                // 准备请求数据
+                const requestData = {
+                    user_input: userInput,
+                    include_metadata: includeMetadata,
+                    buffer_events: bufferEvents,
+                    heartbeat_interval: 30
+                };
+
+                addEvent(`准备发送请求: ${JSON.stringify(requestData, null, 2)}`, 'info', 'PREPARING');
+
+                // 使用 fetch 发送 POST 请求来建立 SSE 连接
+                const response = await fetch('/api/chat/agent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                addEvent('SSE 连接建立中...', 'info', 'CONNECTING');
+
+                // 创建 ReadableStream 读取器来处理 SSE 数据
+                const reader = response.body.getReader();
+                currentReader = reader;
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                updateStatus(true, '已连接');
+                addEvent('SSE 连接建立成功', 'success', 'CONNECTION_OPEN');
+
+
+
+                // 处理 SSE 事件的函数
+                function handleSSEEvent(eventType, eventData) {
+                    try {
+                        if (!eventData) {
+                            addEvent(`${eventType}: 空数据`, 'info', eventType.toUpperCase());
+                            return;
+                        }
+
+                        const data = JSON.parse(eventData);
+                        let displayType = 'info';
+
+                        if (eventType === 'error') {
+                            displayType = 'error';
+                        } else if (eventType === 'complete' || eventType === 'conversation_end') {
+                            displayType = 'success';
+                            if (eventType === 'complete') {
+                                isCompleted = true;
+                            }
+                        } else if (eventType === 'close') {
+                            displayType = 'success';
+                            isCompleted = true;
+                            // 服务器主动关闭连接
+                            setTimeout(() => {
+                                updateStatus(false, '请求完成');
+                                sendBtn.disabled = false;
+                                sendBtn.textContent = '发送请求';
+                                addEvent('连接正常关闭', 'success', 'STREAM_COMPLETED');
+                            }, 100);
+                        } else if (eventType.startsWith('tool_call')) {
+                            displayType = 'tool';
+                        }
+
+                        addEvent(JSON.stringify(data, null, 2), displayType, eventType.toUpperCase());
+                    } catch (e) {
+                        const errorMsg = e && e.message ? e.message : 'unknown error';
+                        addEvent(`${eventType}: ${eventData} (解析错误: ${errorMsg})`, 'info', eventType.toUpperCase());
+                    }
+                }
+
+                let isCompleted = false;
+
+                // 处理 SSE 数据流
+                async function processSSEStream() {
+                    try {
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) {
+                                addEvent('数据流结束', 'success', 'STREAM_END');
+                                break;
+                            }
+
+                            // 解码数据并添加到缓冲区
+                            buffer += decoder.decode(value, { stream: true });
+
+                            // 处理缓冲区中的完整行
+                            const lines = buffer.split('\n');
+                            buffer = lines.pop() || ''; // 保留最后一个不完整的行
+
+                            let currentEvent = null;
+                            let currentData = null;
+
+                            for (const line of lines) {
+                                if (line.startsWith('event: ')) {
+                                    currentEvent = line.substring(7).trim();
+                                } else if (line.startsWith('data: ')) {
+                                    currentData = line.substring(6).trim();
+
+                                    // 当我们有事件类型和数据时，处理事件
+                                    if (currentEvent && currentData) {
+                                        handleSSEEvent(currentEvent, currentData);
+                                        currentEvent = null;
+                                        currentData = null;
+                                    }
+                                } else if (line.trim() === '' && currentData) {
+                                    // 空行表示事件结束，处理没有明确事件类型的数据
+                                    handleSSEEvent('message', currentData);
+                                    currentData = null;
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        if (!isCompleted) {
+                            addEvent(`读取数据流错误: ${error.message}`, 'error', 'STREAM_ERROR');
+                        }
+                    } finally {
+                        updateStatus(false, '请求完成');
+                        sendBtn.disabled = false;
+                        sendBtn.textContent = '发送请求';
+                    }
+                }
+
+                // 启动数据流处理
+                processSSEStream();
+                
+            } catch (error) {
+                addEvent(`请求失败: ${error.message}`, 'error', 'REQUEST_ERROR');
+                updateStatus(false, '请求失败');
+                sendBtn.disabled = false;
+                sendBtn.textContent = '发送请求';
+            }
+        }
+
+        // 监听完成事件来重新启用按钮
+        document.addEventListener('DOMContentLoaded', function() {
+            // 回车发送
+            document.getElementById('userInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !document.getElementById('sendBtn').disabled) {
+                    sendRequest();
+                }
+            });
+            
+            // 定期更新连接时间
+            setInterval(updateConnectionTime, 1000);
+        });
+
+        // 页面卸载时关闭连接
+        window.addEventListener('beforeunload', function() {
+            if (currentReader) {
+                try {
+                    currentReader.cancel();
+                } catch (e) {
+                    // 忽略取消错误
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,7 +1,0 @@
-README.md
-pyproject.toml
-agent_builder.egg-info/PKG-INFO
-agent_builder.egg-info/SOURCES.txt
-agent_builder.egg-info/dependency_links.txt
-agent_builder.egg-info/requires.txt
-agent_builder.egg-info/top_level.txt

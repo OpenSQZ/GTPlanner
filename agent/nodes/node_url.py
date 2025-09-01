@@ -15,11 +15,15 @@ URL解析节点 (Node_URL)
 import time
 from typing import Dict, List, Any, Optional
 from urllib.parse import urlparse
-from pocketflow import Node
+from pocketflow import AsyncNode
 from ..utils.URL_to_Markdown import JinaWebClient
+from agent.streaming import (
+    emit_processing_status,
+    emit_error
+)
 
 
-class NodeURL(Node):
+class NodeURL(AsyncNode):
     """URL解析节点"""
     
     def __init__(self, max_retries: int = 2, wait: float = 1.0):
@@ -31,6 +35,7 @@ class NodeURL(Node):
             wait: 重试等待时间
         """
         super().__init__(max_retries=max_retries, wait=wait)
+        self.name = "NodeURL"
 
         # 初始化Jina Web客户端
         try:
@@ -39,12 +44,12 @@ class NodeURL(Node):
         except ValueError:
             self.web_client = None
             self.client_available = False
-            print("⚠️ URL解析API未配置，将使用模拟结果")
+            # 注意：初始化阶段无法发送流式事件
 
         # 配置
         self.max_content_length = 10000  # 默认最大内容长度
     
-    def prep(self, shared) -> Dict[str, Any]:
+    async def prep_async(self, shared) -> Dict[str, Any]:
         """
         准备阶段：从pocketflow字典共享变量获取URL和解析配置
 
@@ -68,24 +73,12 @@ class NodeURL(Node):
 
             # 验证URL
             if not url:
-                return {
-                    "error": "No URL provided",
-                    "url": "",
-                    "extraction_type": extraction_type,
-                    "target_selectors": target_selectors,
-                    "max_content_length": max_content_length
-                }
+                return self._create_error_result("No URL provided", "", extraction_type)
             
             # URL格式验证
             parsed_url = urlparse(url)
             if not parsed_url.scheme or not parsed_url.netloc:
-                return {
-                    "error": f"Invalid URL format: {url}",
-                    "url": url,
-                    "extraction_type": extraction_type,
-                    "target_selectors": target_selectors,
-                    "max_content_length": max_content_length
-                }
+                return self._create_error_result(f"Invalid URL format: {url}", url, extraction_type)
             
             return {
                 "url": url,
@@ -96,15 +89,9 @@ class NodeURL(Node):
             }
             
         except Exception as e:
-            return {
-                "error": f"URL preparation failed: {str(e)}",
-                "url": "",
-                "extraction_type": "full",
-                "target_selectors": [],
-                "max_content_length": self.max_content_length
-            }
+            return self._create_error_result(f"URL preparation failed: {str(e)}")
     
-    def exec(self, prep_res: Dict[str, Any]) -> Dict[str, Any]:
+    async def exec_async(self, prep_res: Dict[str, Any]) -> Dict[str, Any]:
         """
         执行阶段：执行URL解析
         
@@ -118,16 +105,14 @@ class NodeURL(Node):
             raise ValueError(prep_res["error"])
         
         url = prep_res["url"]
-        extraction_type = prep_res["extraction_type"]
-        target_selectors = prep_res["target_selectors"]
         max_content_length = prep_res["max_content_length"]
         
         try:
             start_time = time.time()
 
             if self.client_available and self.web_client:
-                # 使用Jina Web API
-                page_info = self.web_client.get_page_info(url)
+                # 使用Jina Web API - 异步调用
+                page_info = await self.web_client.get_page_info(url)
 
                 # 处理内容长度限制
                 content = page_info.get("content", "")
@@ -149,6 +134,7 @@ class NodeURL(Node):
                     "title": page_info.get("title", "无标题"),
                     "content": content,
                     "metadata": metadata,
+                    "extracted_sections": [],  # 添加缺失的字段
                     "processing_status": "success",
                     "processing_time": round(processing_time * 1000),
                     "content_length": len(content)
@@ -160,7 +146,7 @@ class NodeURL(Node):
         except Exception as e:
             raise RuntimeError(f"URL parsing failed: {str(e)}")
     
-    def post(self, shared, prep_res: Dict[str, Any], exec_res: Dict[str, Any]) -> str:
+    async def post_async(self, shared, prep_res: Dict[str, Any], exec_res: Dict[str, Any]) -> str:
         """
         后处理阶段：将解析结果存储到共享状态
         
@@ -174,21 +160,20 @@ class NodeURL(Node):
         """
         try:
             if "error" in exec_res:
-                if hasattr(shared, 'record_error'):
-                    shared.record_error(Exception(exec_res["error"]), "NodeURL.exec")
+                # 记录错误到shared字典
+                if "errors" not in shared:
+                    shared["errors"] = []
+                shared["errors"].append({
+                    "source": "NodeURL.exec",
+                    "error": exec_res["error"],
+                    "timestamp": prep_res.get("timestamp", "")
+                })
                 return "error"
 
-            # 检查是否是子流程的共享变量（字典类型）
-            if isinstance(shared, dict):
-                # 子流程模式：保存URL内容到共享变量
-                shared["url_content"] = exec_res["content"]
-                shared["url_title"] = exec_res["title"]
-                shared["url_metadata"] = exec_res.get("metadata", {})
-                return "success"
-
-            # 主流程模式：保存到研究发现
-            if not hasattr(shared.research_findings, 'url_contents'):
-                shared.research_findings.url_contents = []
+            # 统一使用字典模式保存URL内容
+            shared["url_content"] = exec_res["content"]
+            shared["url_title"] = exec_res["title"]
+            shared["url_metadata"] = exec_res.get("metadata", {})
 
             # 创建内容记录
             content_record = {
@@ -202,30 +187,31 @@ class NodeURL(Node):
                 "extracted_at": time.time()
             }
 
-            shared.research_findings.url_contents.append(content_record)
-            
-            # 更新研究元数据
-            shared.research_findings.research_metadata.update({
-                "last_url_extraction_time": time.time(),
-                "total_url_extractions": len(shared.research_findings.url_contents)
-            })
-
-            # 添加系统消息记录解析结果
-            shared.add_system_message(
-                f"URL解析完成: {exec_res['title'][:50]}...",
-                agent_source="NodeURL",
-                url=exec_res["url"],
-                content_length=exec_res["content_length"],
-                processing_time_ms=exec_res["processing_time"]
-            )
-
-            return "success"
+            return "url_parsed"
 
         except Exception as e:
-            if hasattr(shared, 'record_error'):
-                shared.record_error(e, "NodeURL.post")
+            # 发送错误事件
+            await emit_error(shared, f"❌ NodeURL post处理失败: {e}")
+            # 记录错误到shared字典
+            if "errors" not in shared:
+                shared["errors"] = []
+            shared["errors"].append({
+                "source": "NodeURL.post",
+                "error": str(e),
+                "timestamp": prep_res.get("timestamp", "")
+            })
             return "error"
-    
+
+    def _create_error_result(self, error_message: str, url: str = "", extraction_type: str = "full") -> Dict[str, Any]:
+        """创建标准错误结果字典"""
+        return {
+            "error": error_message,
+            "url": url,
+            "extraction_type": extraction_type,
+            "target_selectors": [],
+            "max_content_length": self.max_content_length
+        }
+
     def exec_fallback(self, prep_res: Dict[str, Any], exc: Exception) -> Dict[str, Any]:
         """
         执行失败时的降级处理 - 直接返回错误
@@ -244,7 +230,3 @@ class NodeURL(Node):
             "url": url,
             "processing_status": "failed"
         }
-    
-
-
-

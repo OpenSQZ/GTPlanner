@@ -1,14 +1,12 @@
 """
-GTPlanner 主流程模块
+GTPlanner 主控制流程模块
 
-本模块包含系统的主要流程实现，特别是Orchestrator Agent的ReAct循环流程。
-
-主流程列表：
-- OrchestratorReActFlow: 主控制器ReAct循环流程
+基于ReAct模式的智能主控制器，参考demo代码重构。
+通过观察shared状态来智能决策，而不是复杂的思考-行动-观察循环。
 """
 
-# from .orchestrator_react_flow import OrchestratorReActFlow
+from .react_orchestrator_refactored import ReActOrchestratorRefactored
 
 __all__ = [
-    # 'OrchestratorReActFlow'
+    'ReActOrchestratorRefactored'
 ]

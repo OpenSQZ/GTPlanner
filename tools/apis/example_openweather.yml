@@ -94,3 +94,4 @@ endpoints:
                 type: "array"
                 items: { type: "number" }
                 description: "10米高度风速序列 (km/h)"
+

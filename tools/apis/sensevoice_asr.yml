@@ -1,0 +1,206 @@
+id: "sensevoice.asr-api"
+type: "APIS"
+summary: "SenseVoice 多语言语音识别服务，支持ASR、语种识别、情感识别和声学事件检测。"
+description: |
+  SenseVoice 是一个具有音频理解能力的多语言语音识别服务，支持语音识别（ASR）、
+  语种识别（LID）、语音情感识别（SER）和声学事件检测（AED），能够识别超过 50 种语言，
+  并具备情感分析和音频事件检测能力。
+
+  主要功能：
+  - 多语言语音识别（支持中文、英文、粤语、日语、韩语等50+种语言）
+  - 自动语种识别
+  - 语音情感识别
+  - 声学事件检测
+  - 支持多种音频格式（WAV, MP3, FLAC, M4A等）
+  - 自动重采样和声道转换
+
+  技术特点：
+  - 采样率：16kHz（推荐），支持自动重采样
+  - 声道：支持单声道和立体声（自动转换为单声道）
+  - 时长限制：建议单个音频文件不超过 30 秒（API 模式）
+
+  环境变量配置：
+  - SENSEVOICE_ASR_BASE_URL: SenseVoice ASR 服务的基础 URL（默认: http://localhost:50000）
+
+examples:
+  - title: "使用 cURL 上传音频文件进行语音识别"
+    content: |
+      curl -X POST "${SENSEVOICE_ASR_BASE_URL}/api/v1/asr" \
+        -H "Content-Type: multipart/form-data" \
+        -F "files=@test.wav" \
+        -F "keys=test_audio" \
+        -F "lang=auto"
+  - title: "Python 示例 - 语音识别"
+    content: |
+      import requests
+      import os
+
+      # 准备音频文件
+      files = {'files': open('test.mp3', 'rb')}
+      data = {
+          'keys': 'test_audio',
+          'lang': 'auto'  # 自动检测语言
+      }
+
+      # 发送请求
+      base_url = os.getenv('SENSEVOICE_ASR_BASE_URL', 'http://localhost:50000')
+      response = requests.post(
+          f'{base_url}/api/v1/asr',
+          files=files,
+          data=data
+      )
+
+      # 查看结果
+      result = response.json()
+      print(f"识别结果: {result}")
+
+  - title: "Python 示例 - 指定语言识别"
+    content: |
+      import requests
+      import os
+
+      # 中文语音识别
+      files = {'files': open('chinese_audio.wav', 'rb')}
+      data = {
+          'keys': 'chinese_test',
+          'lang': 'zh'  # 指定中文
+      }
+
+      base_url = os.getenv('SENSEVOICE_ASR_BASE_URL', 'http://localhost:50000')
+      response = requests.post(
+          f'{base_url}/api/v1/asr',
+          files=files,
+          data=data
+      )
+
+      result = response.json()
+      print(f"中文识别结果: {result}")
+
+base_url: "${SENSEVOICE_ASR_BASE_URL}/api/v1"
+endpoints:
+  - summary: "语音识别服务，支持多语言音频转文字。"
+    method: "POST"
+    path: "/asr"
+    content_type: "multipart/form-data"
+    inputs:
+      type: "object"
+      properties:
+        files:
+          type: "string"
+          format: "binary"
+          description: "音频文件，支持 WAV, MP3, FLAC, M4A 等格式"
+        keys:
+          type: "string"
+          description: "音频文件的标识键，用于区分不同的音频文件"
+        lang:
+          type: "string"
+          description: "语言代码，支持: zh(中文), en(英文), yue(粤语), ja(日语), ko(韩语), auto(自动检测)"
+          enum: ["zh", "en", "yue", "ja", "ko", "auto"]
+          default: "auto"
+        hotwords:
+          type: "string"
+          description: "热词列表，用空格分隔，可提高特定词汇的识别准确率"
+        use_itn:
+          type: "boolean"
+          description: "是否使用逆文本标准化（如将'一二三'转换为'123'）"
+          default: true
+      required: ["files", "keys"]
+    outputs:
+      success_schema:
+        type: "object"
+        properties:
+          code:
+            type: "integer"
+            description: "响应状态码，0表示成功"
+          message:
+            type: "string"
+            description: "响应消息"
+          result:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                key:
+                  type: "string"
+                  description: "音频文件标识键"
+                text:
+                  type: "string"
+                  description: "识别出的文字内容"
+                language:
+                  type: "string"
+                  description: "检测到的语言"
+                emotion:
+                  type: "string"
+                  description: "情感分析结果"
+                event:
+                  type: "array"
+                  items:
+                    type: "string"
+                  description: "检测到的声学事件"
+                confidence:
+                  type: "number"
+                  description: "识别置信度"
+                duration:
+                  type: "number"
+                  description: "音频时长（秒）"
+      error_schema:
+        type: "object"
+        properties:
+          code:
+            type: "integer"
+            description: "错误代码"
+          message:
+            type: "string"
+            description: "错误信息"
+          details:
+            type: "string"
+            description: "详细错误描述"
+
+supported_languages:
+  - code: "zh"
+    name: "中文（普通话）"
+    description: "支持简体中文和繁体中文"
+  - code: "en"
+    name: "英文"
+    description: "支持美式英语和英式英语"
+  - code: "yue"
+    name: "粤语"
+    description: "支持粤语方言"
+  - code: "ja"
+    name: "日语"
+    description: "支持日本语"
+  - code: "ko"
+    name: "韩语"
+    description: "支持韩国语"
+  - code: "auto"
+    name: "自动检测"
+    description: "自动检测音频语言，支持50+种语言"
+
+audio_formats:
+  supported: ["WAV", "MP3", "FLAC", "M4A", "AAC", "OGG"]
+  recommended_sample_rate: "16kHz"
+  channels: "单声道或立体声（自动转换）"
+  max_duration: "30秒（推荐）"
+  max_file_size: "10MB"
+
+usage_notes: |
+  使用建议：
+  1. 音频质量：建议使用清晰、无噪音的音频文件
+  2. 文件大小：单个文件建议不超过10MB
+  3. 时长限制：建议单次识别音频不超过30秒
+  4. 语言选择：如果明确知道语言类型，建议指定具体语言代码以提高准确率
+  5. 热词功能：对于专业术语或特定词汇，可使用hotwords参数提高识别准确率
+  6. 网络环境：确保网络连接稳定，大文件上传可能需要较长时间
+
+environment_variables:
+  SENSEVOICE_ASR_BASE_URL:
+    description: "SenseVoice ASR 服务的基础 URL"
+    default: "http://localhost:50000"
+    required: false
+    examples:
+      - "http://192.168.0.1:50000"
+      - "https://sensevoice.example.com"
+      - "http://localhost:50000"
+    notes: |
+      配置 SenseVoice ASR 服务的访问地址。如果服务部署在其他主机或端口，
+      请相应修改此环境变量。确保 URL 不包含 /api/v1 路径，因为这部分会自动添加。

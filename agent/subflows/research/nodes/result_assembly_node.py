@@ -5,13 +5,17 @@
 """
 
 import time
-from pocketflow import Node
+from pocketflow import AsyncNode
 
 
-class ResultAssemblyNode(Node):
+class ResultAssemblyNode(AsyncNode):
     """结果组装节点 - 2d步骤"""
     
-    def prep(self, shared):
+    def __init__(self):
+        super().__init__()
+        self.name = "ResultAssemblyNode"
+    
+    async def prep_async(self, shared):
         """准备结果组装"""
         # 从共享变量中获取所有必要数据
         current_keyword = shared.get("current_keyword", "")
@@ -27,26 +31,49 @@ class ResultAssemblyNode(Node):
             "analysis": llm_analysis
         }
     
-    def exec(self, prep_res):
+    async def exec_async(self, prep_res):
         """执行结果组装"""
-        # 组装单个关键词的完整报告
+        # 简化的关键词报告结构
+        analysis = prep_res.get("analysis", {})
+
         keyword_report = {
             "keyword": prep_res["keyword"],
-            "url": prep_res["url"],
-            "title": prep_res["title"],
-            "content": prep_res["content"][:1000] + "..." if len(prep_res["content"]) > 1000 else prep_res["content"],
-            "analysis": prep_res["analysis"],
+            "source": {
+                "url": prep_res["url"],
+                "title": prep_res["title"]
+            },
+            "summary": analysis.get("summary", ""),
+            "key_points": analysis.get("key_points", []),
+            "recommendations": analysis.get("recommendations", []),
             "processed_at": time.time()
         }
-        
+
         return {"keyword_report": keyword_report}
     
-    def post(self, shared, prep_res, exec_res):
+    async def post_async(self, shared, prep_res, exec_res):
         """保存组装结果到共享变量"""
         if "error" in exec_res:
+            # 记录错误到shared字典
+            if "errors" not in shared:
+                shared["errors"] = []
+            shared["errors"].append({
+                "source": "ResultAssemblyNode",
+                "error": exec_res["error"],
+                "timestamp": time.time()
+            })
             return "error"
-        
-        # 保存单个关键词报告到共享变量
-        shared["keyword_report"] = exec_res["keyword_report"]
-        
-        return "success"
+
+        # 保存关键词报告
+        keyword_report = exec_res["keyword_report"]
+        shared["keyword_report"] = keyword_report
+
+        # 简化的research_findings格式
+        shared["research_findings"] = {
+            "keyword": keyword_report["keyword"],
+            "summary": keyword_report["summary"],
+            "key_points": keyword_report["key_points"],
+            "recommendations": keyword_report["recommendations"],
+            "source": keyword_report["source"]
+        }
+
+        return "assembly_complete"

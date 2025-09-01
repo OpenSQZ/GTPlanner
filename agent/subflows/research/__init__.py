@@ -11,11 +11,9 @@ Research Agent 子流程包
 
 from .flows import ResearchFlow, create_keyword_research_subflow
 from .nodes import LLMAnalysisNode, ResultAssemblyNode
-from .nodes.process_research_node import ProcessResearch  # 单独导入避免循环
 from .utils import ResearchAggregator
 
 __all__ = [
-    'ProcessResearch',
     'ResearchFlow',
     'create_keyword_research_subflow',
     'LLMAnalysisNode',

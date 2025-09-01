@@ -5,11 +5,44 @@
 搜索 → URL解析 → LLM分析 → 结果组装
 """
 
-from pocketflow import Flow
+from pocketflow import AsyncFlow
+from pocketflow_tracing import trace_flow
 from ....nodes.node_search import NodeSearch
 from ....nodes.node_url import NodeURL
 from ..nodes.llm_analysis_node import LLMAnalysisNode
 from ..nodes.result_assembly_node import ResultAssemblyNode
+
+
+@trace_flow(flow_name="KeywordResearchFlow")
+class TracedKeywordResearchFlow(AsyncFlow):
+    """带有tracing的关键词研究流程"""
+
+    async def prep_async(self, shared):
+        """流程级准备"""
+        keyword = shared.get("current_keyword", "未知关键词")
+        shared["subflow_start_time"] = __import__('asyncio').get_event_loop().time()
+
+        return {
+            "subflow_id": f"keyword_research_{keyword}",
+            "start_time": shared["subflow_start_time"],
+            "keyword": keyword
+        }
+
+    async def post_async(self, shared, prep_result, exec_result):
+        """流程级后处理"""
+        flow_duration = __import__('asyncio').get_event_loop().time() - prep_result["start_time"]
+        keyword = prep_result["keyword"]
+
+        shared["subflow_metadata"] = {
+            "subflow_id": prep_result["subflow_id"],
+            "duration": flow_duration,
+            "status": "completed",
+            "keyword": keyword
+        }
+
+        # 研究结果已经保存在 shared["research_findings"] 中
+        # 主流程会直接从 shared 中获取，不需要特殊的返回格式
+        return exec_result
 
 
 def create_keyword_research_subflow():
@@ -31,15 +64,15 @@ def create_keyword_research_subflow():
     llm_analysis_node.name = "llm_analysis"
     assembly_node.name = "result_assembly"
     
-    # 使用pocketflow的条件转换语法 - 基于demo最佳实践
-    search_node - "success" >> url_node
-    url_node - "success" >> llm_analysis_node
-    llm_analysis_node - "success" >> assembly_node
+    # 使用pocketflow的条件转换语法 - 事件字符串表示状态
+    search_node - "search_complete" >> url_node
+    url_node - "url_parsed" >> llm_analysis_node
+    llm_analysis_node - "analysis_complete" >> assembly_node
 
     # 错误处理：任何节点返回"error"都结束流程
     # pocketflow会自动处理没有后续节点的情况
 
-    # 创建子流程
-    subflow = Flow(start=search_node)
+    # 创建带tracing的异步子流程
+    subflow = TracedKeywordResearchFlow(start=search_node)
 
     return subflow

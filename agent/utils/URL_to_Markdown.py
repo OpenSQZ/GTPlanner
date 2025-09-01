@@ -3,7 +3,8 @@ Jina URL转Markdown工具
 """
 
 import os
-import requests
+import aiohttp
+import asyncio
 from typing import Dict, Optional, Any
 from utils.config_manager import get_jina_api_key
 
@@ -36,38 +37,40 @@ class JinaWebClient:
             "Authorization": f"Bearer {self.api_key}"
         }
     
-    def url_to_markdown(
+    async def url_to_markdown(
         self,
         url: str,
         **kwargs
     ) -> Dict[str, Any]:
         """
-        将URL转换为Markdown格式
-        
+        将URL转换为Markdown格式 - 异步版本
+
         Args:
             url: 要转换的URL
             **kwargs: 其他请求参数
-            
+
         Returns:
             包含转换结果的字典
         """
         try:
             # 构建完整的API URL
             api_url = f"{self.base_url}/{url}"
-            
-            # 发送请求
-            response = requests.get(
-                api_url,
-                headers=self.headers,
-                timeout=self.timeout,
-                params=kwargs
-            )
-            
-            response.raise_for_status()
-            return response.json()
-            
-        except requests.exceptions.RequestException as e:
+
+            # 使用异步HTTP客户端发送请求
+            timeout = aiohttp.ClientTimeout(total=self.timeout)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(
+                    api_url,
+                    headers=self.headers,
+                    params=kwargs
+                ) as response:
+                    response.raise_for_status()
+                    return await response.json()
+
+        except aiohttp.ClientError as e:
             raise Exception(f"Jina Web API调用失败: {str(e)}")
+        except asyncio.TimeoutError as e:
+            raise Exception(f"Jina Web API超时: {str(e)}")
         except Exception as e:
             raise Exception(f"URL转换过程中发生错误: {str(e)}")
     
@@ -94,26 +97,26 @@ class JinaWebClient:
         data = result.get("data", {})
         return data.get("content", "")
     
-    def get_page_info(
+    async def get_page_info(
         self,
         url: str,
         **kwargs
     ) -> Dict[str, str]:
         """
-        获取页面基本信息
-        
+        获取页面基本信息 - 异步版本
+
         Args:
             url: 要获取信息的URL
             **kwargs: 其他请求参数
-            
+
         Returns:
             包含title、description、url、content的字典
         """
-        result = self.url_to_markdown(url, **kwargs)
-        
+        result = await self.url_to_markdown(url, **kwargs)
+
         if result.get("code") != 200:
             raise Exception(f"获取页面信息失败: {result.get('status', 'Unknown error')}")
-        
+
         data = result.get("data", {})
         return {
             "title": data.get("title", ""),

@@ -3,7 +3,8 @@ Jina 搜索引擎客户端工具
 """
 
 import os
-import requests
+import aiohttp
+import asyncio
 from typing import Dict, List, Optional, Any
 from utils.config_manager import get_jina_api_key
 
@@ -38,7 +39,7 @@ class JinaSearchClient:
             "X-Respond-With": "no-content"
         }
     
-    def search(
+    async def search(
         self,
         query: str,
         count: int = 10,
@@ -46,7 +47,7 @@ class JinaSearchClient:
         **kwargs
     ) -> Dict[str, Any]:
         """
-        执行搜索查询
+        执行搜索查询 - 异步版本
 
         Args:
             query: 搜索查询字符串
@@ -69,47 +70,46 @@ class JinaSearchClient:
             if site:
                 params["site"] = site
 
+            # 使用异步HTTP客户端
+            timeout = aiohttp.ClientTimeout(total=self.timeout)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(
+                    self.base_url,
+                    params=params,
+                    headers=self.headers
+                ) as response:
+                    response.raise_for_status()
+                    result = await response.json()
+                    return result
 
-          
-            response = requests.get(
-                self.base_url,
-                params=params,
-                headers=self.headers,
-                timeout=self.timeout
-            )
-
-    
-
-            response.raise_for_status()
-            result = response.json()
-
-            return result
-
-        except requests.exceptions.RequestException as e:
+        except aiohttp.ClientError as e:
             print(f"❌ Jina搜索API请求异常: {str(e)}")
             print(f"❌ 异常类型: {type(e).__name__}")
             raise Exception(f"Jina搜索API调用失败: {str(e)}")
+        except asyncio.TimeoutError as e:
+            print(f"❌ Jina搜索API超时: {str(e)}")
+            raise Exception(f"Jina搜索API超时: {str(e)}")
         except Exception as e:
             print(f"❌ 搜索过程中发生未知错误: {str(e)}")
             print(f"❌ 异常类型: {type(e).__name__}")
             raise Exception(f"搜索过程中发生错误: {str(e)}")
     
-    def search_simple(
+    async def search_simple(
         self,
         query: str,
         count: int = 5
     ) -> List[Dict[str, str]]:
         """
-        简化的搜索接口，只返回基本信息
-        
+        简化的搜索接口，只返回基本信息 - 异步版本
+
         Args:
             query: 搜索查询字符串
             count: 返回结果数量
-            
+
         Returns:
             包含title、url、description的结果列表
         """
-        result = self.search(query, count=count)
+        result = await self.search(query, count=count)
         
         if result.get("code") != 200:
             raise Exception(f"搜索失败: {result.get('status', 'Unknown error')}")
@@ -126,48 +126,50 @@ class JinaSearchClient:
         
         return simplified_results
     
-    def search_with_content(
+    async def search_with_content(
         self,
         query: str,
         count: int = 5
     ) -> List[Dict[str, str]]:
         """
-        搜索并返回包含内容的结果
-        
+        搜索并返回包含内容的结果 - 异步版本
+
         Args:
             query: 搜索查询字符串
             count: 返回结果数量
-            
+
         Returns:
             包含完整内容的结果列表
         """
         # 移除 X-Respond-With: no-content 头部以获取内容
         headers = self.headers.copy()
         headers.pop("X-Respond-With", None)
-        
+
         try:
             params = {
                 "q": query,
                 "count": count
             }
-            
-            response = requests.get(
-                self.base_url,
-                params=params,
-                headers=headers,
-                timeout=self.timeout
-            )
-            
-            response.raise_for_status()
-            result = response.json()
-            
-            if result.get("code") != 200:
-                raise Exception(f"搜索失败: {result.get('status', 'Unknown error')}")
-            
-            return result.get("data", [])
-            
-        except requests.exceptions.RequestException as e:
+
+            timeout = aiohttp.ClientTimeout(total=self.timeout)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(
+                    self.base_url,
+                    params=params,
+                    headers=headers
+                ) as response:
+                    response.raise_for_status()
+                    result = await response.json()
+
+                    if result.get("code") != 200:
+                        raise Exception(f"搜索失败: {result.get('status', 'Unknown error')}")
+
+                    return result.get("data", [])
+
+        except aiohttp.ClientError as e:
             raise Exception(f"Jina搜索API调用失败: {str(e)}")
+        except asyncio.TimeoutError as e:
+            raise Exception(f"Jina搜索API超时: {str(e)}")
         except Exception as e:
             raise Exception(f"搜索过程中发生错误: {str(e)}")
     
