@@ -17,12 +17,19 @@ import requests
 import asyncio
 import json
 from typing import Dict, List, Any, Optional
-from pocketflow import Node
-from utils.call_llm import call_llm_async
+from pocketflow import AsyncNode
+from utils.openai_client import OpenAIClient
 from utils.config_manager import get_vector_service_config
+from agent.streaming import (
+    emit_processing_status,
+    emit_error
+)
+
+# 导入多语言提示词系统
+from agent.prompts import get_prompt, PromptTypes
 
 
-class NodeToolRecommend(Node):
+class NodeToolRecommend(AsyncNode):
     """工具推荐节点"""
     
     def __init__(self, max_retries: int = 3, wait: float = 2.0):
@@ -37,11 +44,15 @@ class NodeToolRecommend(Node):
 
         # 从配置文件加载向量服务配置
         vector_config = get_vector_service_config()
-        self.vector_service_url = vector_config.get("base_url", "http://nodeport.sensedeal.vip:32421")
+        self.vector_service_url = vector_config.get("base_url")
         self.timeout = vector_config.get("timeout", 30)
 
-        # 从配置文件读取索引相关参数
-        self.index_name = vector_config.get("tools_index_name", "tools_index")
+        # 检查向量服务URL是否配置
+        if not self.vector_service_url:
+            raise ValueError("向量服务URL未配置，请设置VECTOR_SERVICE_BASE_URL环境变量")
+
+        # 从配置文件读取索引相关参数（保留你同事的改进）
+        self.index_name = vector_config.get("tools_index_name", "tools_index")  # 使用工具索引名，与创建节点保持一致
         self.vector_field = vector_config.get("vector_field", "combined_text")
 
         # 推荐配置
@@ -49,6 +60,9 @@ class NodeToolRecommend(Node):
         self.min_score_threshold = 0.1  # 最小相似度阈值
         self.use_llm_filter = True  # 是否使用大模型筛选
         self.llm_candidate_count = 10  # 传给大模型的候选工具数量
+
+        # 初始化OpenAI客户端
+        self.openai_client = OpenAIClient()
 
         # 检查向量服务可用性
         try:
@@ -58,7 +72,7 @@ class NodeToolRecommend(Node):
             self.vector_service_available = False
             print("⚠️ 向量服务不可用")
 
-    def prep(self, shared) -> Dict[str, Any]:
+    async def prep_async(self, shared) -> Dict[str, Any]:
         """
         准备阶段：从共享变量获取查询参数
 
@@ -76,6 +90,7 @@ class NodeToolRecommend(Node):
             tool_types = shared.get("tool_types", [])  # 可选的工具类型过滤
             min_score = shared.get("min_score", self.min_score_threshold)
             use_llm_filter = shared.get("use_llm_filter", self.use_llm_filter)  # 是否使用大模型筛选
+            language = shared.get("language")  # 获取语言设置
 
             # 如果没有提供查询，尝试从其他字段提取
             if not query:
@@ -100,7 +115,9 @@ class NodeToolRecommend(Node):
                 "index_name": index_name,
                 "tool_types": tool_types,
                 "min_score": min_score,
-                "use_llm_filter": use_llm_filter
+                "use_llm_filter": use_llm_filter,
+                "language": language,  # 添加语言设置
+                "streaming_session": shared.get("streaming_session")
             }
 
         except Exception as e:
@@ -111,7 +128,7 @@ class NodeToolRecommend(Node):
                 "index_name": self.index_name
             }
 
-    def exec(self, prep_res: Dict[str, Any]) -> Dict[str, Any]:
+    async def exec_async(self, prep_res: Dict[str, Any]) -> Dict[str, Any]:
         """
         执行阶段：调用向量服务进行工具检索
 
@@ -130,6 +147,7 @@ class NodeToolRecommend(Node):
         tool_types = prep_res["tool_types"]
         min_score = prep_res["min_score"]
         use_llm_filter = prep_res["use_llm_filter"]
+        language = prep_res["language"]
 
         if not query:
             raise ValueError("Empty query for tool recommendation")
@@ -142,7 +160,9 @@ class NodeToolRecommend(Node):
 
             # 调用向量服务进行检索（获取更多候选）
             search_top_k = max(top_k, self.llm_candidate_count) if use_llm_filter else top_k
-            search_results = self._search_tools(query, index_name, search_top_k)
+            # 从 prep_res 中获取 streaming_session 用于事件发送
+            shared_for_events = {"streaming_session": prep_res.get("streaming_session")}
+            search_results = await self._search_tools(query, index_name, search_top_k, shared_for_events)
 
             # 过滤和处理结果
             filtered_results = self._filter_results(
@@ -157,11 +177,11 @@ class NodeToolRecommend(Node):
             # 使用大模型筛选（如果启用）
             if use_llm_filter and len(processed_results) > 1:
                 try:
-                    llm_selected_results = self._llm_filter_tools_sync(query, processed_results, top_k)
+                    llm_selected_results = await self._llm_filter_tools(query, processed_results, top_k, language, shared_for_events)
                     processed_results = llm_selected_results
-                    print(f"✅ 大模型筛选完成，返回 {len(processed_results)} 个工具")
+                    await emit_processing_status(shared_for_events, f"✅ 大模型筛选完成，返回 {len(processed_results)} 个工具")
                 except Exception as e:
-                    print(f"⚠️ 大模型筛选失败，使用原始排序: {str(e)}")
+                    await emit_error(shared_for_events, f"⚠️ 大模型筛选失败，使用原始排序: {str(e)}")
                     processed_results = processed_results[:top_k]
             else:
                 processed_results = processed_results[:top_k]
@@ -185,7 +205,7 @@ class NodeToolRecommend(Node):
         except Exception as e:
             raise RuntimeError(f"Tool recommendation execution failed: {str(e)}")
 
-    def post(self, shared, prep_res: Dict[str, Any], exec_res: Dict[str, Any]) -> str:
+    async def post_async(self, shared, prep_res: Dict[str, Any], exec_res: Dict[str, Any]) -> str:
         """
         后处理阶段：将推荐结果存储到共享状态
 
@@ -198,6 +218,7 @@ class NodeToolRecommend(Node):
             下一步动作
         """
         try:
+
             if "error" in exec_res:
                 if hasattr(shared, 'record_error'):
                     shared.record_error(Exception(exec_res["error"]), "NodeToolRecommend.exec")
@@ -298,12 +319,11 @@ class NodeToolRecommend(Node):
             if hasattr(shared, 'user_intent') and hasattr(shared.user_intent, 'original_query'):
                 query_candidates.append(shared.user_intent.original_query)
 
-            if hasattr(shared, 'structured_requirements'):
-                if hasattr(shared.structured_requirements, 'project_overview'):
-                    if hasattr(shared.structured_requirements.project_overview, 'title'):
-                        query_candidates.append(shared.structured_requirements.project_overview.title)
-                    if hasattr(shared.structured_requirements.project_overview, 'description'):
-                        query_candidates.append(shared.structured_requirements.project_overview.description)
+            # 支持新的字段名
+            if hasattr(shared, 'user_requirements') and shared.user_requirements:
+                query_candidates.append(shared.user_requirements)
+            if hasattr(shared, 'short_planning') and shared.short_planning:
+                query_candidates.append(shared.short_planning)
 
         # 返回第一个非空的查询
         for candidate in query_candidates:
@@ -324,7 +344,7 @@ class NodeToolRecommend(Node):
 
         return processed
 
-    def _search_tools(self, query: str, index_name: str, top_k: int) -> Dict[str, Any]:
+    async def _search_tools(self, query: str, index_name: str, top_k: int, shared: Dict[str, Any]) -> Dict[str, Any]:
         """调用向量服务进行工具检索"""
         try:
             # 构建搜索请求
@@ -345,11 +365,11 @@ class NodeToolRecommend(Node):
 
             if response.status_code == 200:
                 result = response.json()
-                print(f"✅ 检索到 {result.get('total', 0)} 个相关工具")
+                await emit_processing_status(shared, f"✅ 检索到 {result.get('total', 0)} 个相关工具")
                 return result
             else:
                 error_msg = f"向量服务返回错误: {response.status_code}, {response.text}"
-                print(f"❌ {error_msg}")
+                await emit_error(shared, f"❌ {error_msg}")
                 raise RuntimeError(error_msg)
 
         except requests.exceptions.RequestException as e:
@@ -415,38 +435,45 @@ class NodeToolRecommend(Node):
 
         return processed
 
-    def _llm_filter_tools_sync(self, query: str, tools: List[Dict[str, Any]], top_k: int) -> List[Dict[str, Any]]:
-        """使用大模型筛选工具（同步版本）"""
-        try:
-            # 使用asyncio.run来运行异步函数
-            return asyncio.run(self._llm_filter_tools(query, tools, top_k))
-        except Exception as e:
-            print(f"❌ 大模型筛选失败: {str(e)}")
-            return tools[:top_k]
 
-    async def _llm_filter_tools(self, query: str, tools: List[Dict[str, Any]], top_k: int) -> List[Dict[str, Any]]:
+
+    async def _llm_filter_tools(self, query: str, tools: List[Dict[str, Any]], top_k: int, language: str, shared: Dict[str, Any]) -> List[Dict[str, Any]]:
         """使用大模型筛选最合适的工具"""
         if not tools:
             return []
 
         # 构建提示词
-        prompt = self._build_filter_prompt(query, tools, top_k)
+        prompt = self._build_filter_prompt(query, tools, top_k, language)
 
         try:
             # 调用大模型
-            response = await call_llm_async(prompt, is_json=True)
+            messages = [{"role": "user", "content": prompt}]
+            response = await self.openai_client.chat_completion(
+                messages=messages,
+                temperature=0.3,
+                max_tokens=2000
+            )
+
+            # 解析JSON响应
+            response_content = response.choices[0].message.content
+            try:
+                response_json = json.loads(response_content)
+            except json.JSONDecodeError:
+                await emit_error(shared, f"❌ 大模型返回的不是有效JSON: {response_content}")
+                return []  # JSON解析失败时返回空列表
 
             # 解析大模型响应
-            selected_tools = self._parse_llm_filter_response(response, tools)
+            selected_tools = await self._parse_llm_filter_response(response_json, tools, shared)
 
             return selected_tools
 
         except Exception as e:
-            print(f"❌ 大模型调用失败: {str(e)}")
-            return tools[:top_k]
+            await emit_error(shared, f"❌ 大模型调用失败: {str(e)}")
+            return []  # 大模型调用失败时返回空列表
 
-    def _build_filter_prompt(self, query: str, tools: List[Dict[str, Any]], top_k: int) -> str:
-        """构建大模型筛选的提示词"""
+    def _build_filter_prompt(self, query: str, tools: List[Dict[str, Any]], top_k: int, language: str) -> str:
+        """构建大模型筛选的提示词，使用多语言模板系统"""
+        # 构建工具信息列表
         tools_info = []
         for i, tool in enumerate(tools):
             tool_info = {
@@ -458,63 +485,34 @@ class NodeToolRecommend(Node):
             }
             tools_info.append(tool_info)
 
-        prompt = f"""你是一个专业的工具推荐专家。用户提出了一个查询，我已经通过向量检索找到了一些候选工具。请你根据用户查询的意图，从这些候选工具中**筛选出**最合适的前{top_k}个工具。
-
-**重要说明：你的任务是筛选决策，不是排序。只返回你认为真正适合用户需求的工具，如果候选工具都不合适，可以返回空列表。**
-
-用户查询: {query}
-
-候选工具列表:
-{json.dumps(tools_info, ensure_ascii=False, indent=2)}
-
-请仔细分析用户查询的意图，考虑以下因素：
-1. 工具功能与查询需求的**直接匹配度**
-2. 工具类型是否**真正适合**解决用户问题
-3. 工具的实用性和可操作性
-4. 工具描述中是否包含用户需要的**核心功能**
-
-筛选标准：
-- 只选择与用户查询**高度相关**的工具
-- 优先选择功能**直接匹配**的工具
-- 如果某个工具与查询需求不匹配，**不要选择它**
-- 最多返回{top_k}个工具，但如果合适的工具少于{top_k}个，只返回合适的
-
-请返回JSON格式的结果：
-
-{{
-    "selected_tools": [
-        {{
-            "index": 工具在原列表中的索引,
-            "reason": "选择这个工具的具体理由，说明它如何满足用户需求"
-        }}
-    ],
-    "analysis": "整体分析说明，解释筛选逻辑"
-}}
-
-注意：
-- 只返回真正合适的工具，不要为了凑数而选择不相关的工具
-- 索引必须是有效的（0到{len(tools)-1}）
-- 按相关性从高到低排序
-- 如果没有合适的工具，selected_tools可以为空数组"""
+        # 使用新的多语言模板系统获取提示词
+        prompt = get_prompt(
+            PromptTypes.Agent.TOOL_RECOMMENDATION,
+            language=language,
+            query=query,
+            tools_info=json.dumps(tools_info, ensure_ascii=False, indent=2),
+            top_k=top_k,
+            tools_count=len(tools)-1
+        )
 
         return prompt
 
-    def _parse_llm_filter_response(self, response: Dict[str, Any], original_tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    async def _parse_llm_filter_response(self, response: Dict[str, Any], original_tools: List[Dict[str, Any]], shared: Dict[str, Any]) -> List[Dict[str, Any]]:
         """解析大模型筛选响应"""
         try:
             if "selected_tools" not in response:
-                print("⚠️ 大模型响应格式错误：缺少selected_tools字段")
-                return original_tools[:3]  # 返回前3个作为默认
+                await emit_error(shared, "⚠️ 大模型响应格式错误：缺少selected_tools字段")
+                return []  # 格式错误时也返回空列表，避免推荐不相关工具
 
             selected_tools = response["selected_tools"]
             if not isinstance(selected_tools, list):
-                print("⚠️ 大模型响应格式错误：selected_tools不是列表")
-                return original_tools[:3]
+                await emit_error(shared, "⚠️ 大模型响应格式错误：selected_tools不是列表")
+                return []  # 格式错误时也返回空列表，避免推荐不相关工具
 
-            # 如果大模型没有选择任何工具，返回空列表或前几个
+            # 如果大模型没有选择任何工具，尊重LLM的判断，返回空列表
             if not selected_tools:
-                print("⚠️ 大模型没有选择任何工具")
-                return original_tools[:1]  # 至少返回最相关的一个
+                await emit_processing_status(shared, "✅ 大模型分析后认为没有合适的工具")
+                return []  # 返回空列表，尊重LLM的专业判断
 
             filtered_tools = []
             used_indices = set()
@@ -537,18 +535,17 @@ class NodeToolRecommend(Node):
                 filtered_tools.append(tool)
 
             # 注意：这里不补充未选中的工具，只返回大模型筛选出的工具
-            print(f"✅ 大模型筛选解析成功，筛选出 {len(filtered_tools)} 个工具")
+            await emit_processing_status(shared, f"✅ 大模型筛选解析成功，筛选出 {len(filtered_tools)} 个工具")
             if "analysis" in response:
-                print(f"📝 大模型分析: {response['analysis']}")
+                await emit_processing_status(shared, f"📝 大模型分析: {response['analysis']}")
 
             return filtered_tools
 
         except Exception as e:
-            print(f"❌ 解析大模型响应失败: {str(e)}")
-            return original_tools[:3]  # 返回前3个作为默认
+            await emit_error(shared, f"❌ 解析大模型响应失败: {str(e)}")
+            return []  # 解析失败时返回空列表，避免推荐不相关工具
         
 if __name__ == '__main__':
-    from utils.config_manager import get_all_config
     from node_tool_index import NodeToolIndex
     init_node = NodeToolIndex()
     recommend_node = NodeToolRecommend()
@@ -558,7 +555,7 @@ if __name__ == '__main__':
     }
     prep_init_result = init_node.prep(shared_with_init)
     exec_init_result = init_node.exec(prep_init_result)
-    print(exec_init_result)
+    # print(exec_init_result)  # 注释掉测试代码中的 print
     time.sleep(1) #现在需要休眠1秒，等待索引刷新。之后会修复这个问题
     shared_with_llm = {
         "query": "我想解析视频字幕",
@@ -568,6 +565,6 @@ if __name__ == '__main__':
     }
     prep_result = recommend_node.prep(shared=shared_with_llm)
     exec_result = recommend_node.exec(prep_result)
-    print("---------")
-    print(exec_result)
+    # print("---------")  # 注释掉测试代码中的 print
+    # print(exec_result)   # 注释掉测试代码中的 print
 

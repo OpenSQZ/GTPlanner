@@ -251,6 +251,22 @@ class MultilingualConfig:
 
         return {k: v for k, v in config.items() if v is not None}
 
+    def is_deep_design_docs_enabled(self) -> bool:
+        """Check if deep design docs feature is enabled.
+
+        Returns:
+            True if deep design docs is enabled, False otherwise
+        """
+        # Try dynaconf settings first
+        if self._settings:
+            try:
+                return self._settings.get("deep_design_docs.enable_deep_design_docs", True)
+            except Exception as e:
+                logger.warning(f"Error reading deep_design_docs setting: {e}")
+
+        # Try environment variable
+        env_deep_design = os.getenv("GTPLANNER_ENABLE_DEEP_DESIGN_DOCS", "true").lower()
+        return env_deep_design in ("true", "1", "yes", "on")
     def get_all_config(self) -> Dict[str, Any]:
         """Get all configuration as a dictionary.
 
@@ -265,7 +281,8 @@ class MultilingualConfig:
             "all_available_languages": get_supported_languages(),
             "jina_api_key": self.get_jina_api_key(),
             "llm_config": self.get_llm_config(),
-            "vector_service_config": self.get_vector_service_config()
+            "vector_service_config": self.get_vector_service_config(),
+            "deep_design_docs_enabled": self.is_deep_design_docs_enabled()
         }
     
     def validate_config(self) -> List[str]:
@@ -381,3 +398,12 @@ def get_all_config() -> Dict[str, Any]:
         Dictionary containing all configuration values
     """
     return multilingual_config.get_all_config()
+
+
+def is_deep_design_docs_enabled() -> bool:
+    """Convenience function to check if deep design docs feature is enabled.
+
+    Returns:
+        True if deep design docs is enabled
+    """
+    return multilingual_config.is_deep_design_docs_enabled()
