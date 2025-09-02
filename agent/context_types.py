@@ -64,10 +64,16 @@ class Message:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Message':
         """从字典创建Message实例"""
+        # 如果没有提供timestamp，则自动生成
+        timestamp = data.get("timestamp")
+        if not timestamp:
+            from datetime import datetime
+            timestamp = datetime.now().isoformat()
+            
         return cls(
             role=MessageRole(data["role"]),
             content=data["content"],
-            timestamp=data["timestamp"],
+            timestamp=timestamp,
             metadata=data.get("metadata"),
             tool_calls=data.get("tool_calls"),
             tool_call_id=data.get("tool_call_id")
