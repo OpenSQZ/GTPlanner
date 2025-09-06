@@ -339,6 +339,9 @@
                     <button class="btn btn-secondary" onclick="clearOutput()">
                         清空输出
                     </button>
+                    <button class="btn btn-secondary" id="exportBtn" onclick="exportDesignDoc()" disabled>
+                        导出设计文档
+                    </button>
                 </div>
             </div>
 
@@ -364,6 +367,7 @@
         let eventCount = 0;
         let connectionStartTime = null;
         let currentReader = null;
+        let latestDesignDoc = null; // 缓存最新设计文档 { filename, content }
 
         function updateStatus(connected, text) {
             const statusDot = document.getElementById('statusDot');
@@ -427,6 +431,27 @@
             document.getElementById('output').innerHTML = '';
             eventCount = 0;
             document.getElementById('eventCount').textContent = eventCount;
+            latestDesignDoc = null;
+            const exportBtn = document.getElementById('exportBtn');
+            if (exportBtn) exportBtn.disabled = true;
+        }
+
+        function exportDesignDoc() {
+            if (!latestDesignDoc || !latestDesignDoc.content) {
+                addEvent('暂无可导出的设计文档，请先完成设计生成。', 'error', 'EXPORT_ERROR');
+                return;
+            }
+            const filename = latestDesignDoc.filename || 'design_document.md';
+            const blob = new Blob([latestDesignDoc.content], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            addEvent(`已开始下载：${filename}`, 'success', 'DOWNLOAD');
         }
 
         async function sendRequest() {
@@ -460,10 +485,16 @@
             try {
                 // 准备请求数据
                 const requestData = {
-                    user_input: userInput,
-                    include_metadata: includeMetadata,
-                    buffer_events: bufferEvents,
-                    heartbeat_interval: 30
+                    "session_id": "session_123",
+                    "dialogue_history": [
+                        {
+                            "role": "user",
+                            "content": userInput
+                        }
+                    ],
+                    "include_metadata": includeMetadata,
+                    "buffer_events": bufferEvents,
+                    "heartbeat_interval": 30
                 };
 
                 addEvent(`准备发送请求: ${JSON.stringify(requestData, null, 2)}`, 'info', 'PREPARING');
@@ -527,6 +558,13 @@
                         }
 
                         addEvent(JSON.stringify(data, null, 2), displayType, eventType.toUpperCase());
+
+                        if (eventType === 'design_document_generated') {
+                            // data: { filename, content }
+                            latestDesignDoc = { filename: data.filename, content: data.content };
+                            const exportBtn = document.getElementById('exportBtn');
+                            if (exportBtn) exportBtn.disabled = false;
+                        }
                     } catch (e) {
                         const errorMsg = e && e.message ? e.message : 'unknown error';
                         addEvent(`${eventType}: ${eventData} (解析错误: ${errorMsg})`, 'info', eventType.toUpperCase());
