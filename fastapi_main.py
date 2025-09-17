@@ -18,6 +18,9 @@ from agent.api.agent_api import SSEGTPlanner
 # 导入索引管理器
 from agent.utils.startup_init import initialize_application
 
+# 导入文档嵌入API路由
+from document_embedding.api_endpoints import router as document_embedding_router
+
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -66,6 +69,9 @@ app.add_middleware(
 
 # 挂载静态文件
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# 注册API路由
+app.include_router(document_embedding_router, prefix="/api")
 
 # 现有路由已移除，只保留 SSE Agent 路由
 

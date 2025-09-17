@@ -51,6 +51,10 @@ class NodeToolRecommend(AsyncNode):
         if not self.vector_service_url:
             raise ValueError("向量服务URL未配置，请设置VECTOR_SERVICE_BASE_URL环境变量")
 
+        # 获取向量服务客户端
+        from utils.vector_service_client import get_vector_service_client
+        self.vector_client = get_vector_service_client()
+
         # 从配置文件读取索引相关参数
         self.index_name = vector_config.get("tools_index_name", "tools_index")
         self.vector_field = vector_config.get("vector_field", "combined_text")
@@ -347,32 +351,23 @@ class NodeToolRecommend(AsyncNode):
     async def _search_tools(self, query: str, index_name: str, top_k: int, shared: Dict[str, Any]) -> Dict[str, Any]:
         """调用向量服务进行工具检索"""
         try:
-            # 构建搜索请求
-            search_request = {
-                "query": query,
-                "vector_field": self.vector_field,
-                "index": index_name,
-                "top_k": top_k
-            }
-
-            # 调用向量服务
-            response = requests.post(
-                f"{self.vector_service_url}/search",
-                json=search_request,
-                timeout=self.timeout,
-                headers={"Content-Type": "application/json"}
+            # 使用向量服务客户端进行搜索
+            result = await self.vector_client.search_documents(
+                query=query,
+                vector_field=self.vector_field,
+                index=index_name,
+                top_k=top_k
             )
 
-            if response.status_code == 200:
-                result = response.json()
+            if "error" not in result:
                 await emit_processing_status(shared, f"✅ 检索到 {result.get('total', 0)} 个相关工具")
                 return result
             else:
-                error_msg = f"向量服务返回错误: {response.status_code}, {response.text}"
-                await emit_error(shared, f"❌ {error_msg}")
+                error_msg = result.get("error", "未知搜索错误")
+                await emit_error(shared, f"❌ 向量服务搜索失败: {error_msg}")
                 raise RuntimeError(error_msg)
 
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             error_msg = f"调用向量服务失败: {str(e)}"
             print(f"❌ {error_msg}")
             raise RuntimeError(error_msg)

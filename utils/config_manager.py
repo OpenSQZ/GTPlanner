@@ -235,7 +235,7 @@ class MultilingualConfig:
                 config.update({
                     "base_url": self._settings.get("vector_service.base_url"),
                     "timeout": self._settings.get("vector_service.timeout", 30),
-                    "tools_index_name": self._settings.get("vector_service.tools_index_name", "tools_index"),
+                    "tools_index_name": self._settings.get("vector_service.tools_index_name", "document_gtplanner_tools"),
                     "vector_field": self._settings.get("vector_service.vector_field", "combined_text")
                 })
             except Exception as e:
@@ -244,12 +244,48 @@ class MultilingualConfig:
         # Environment variables have higher priority than settings.toml
         config.update({
             "base_url": os.getenv("VECTOR_SERVICE_BASE_URL") or os.getenv("GTPLANNER_VECTOR_SERVICE_BASE_URL") or config.get("base_url"),
-            "timeout": int(os.getenv("VECTOR_SERVICE_TIMEOUT") or config.get("timeout", 30)),
-            "tools_index_name": os.getenv("VECTOR_SERVICE_INDEX_NAME") or config.get("tools_index_name", "tools_index"),
+            "timeout": int(os.getenv("VECTOR_SERVICE_TIMEOUT") or str(config.get("timeout", 30))),
+            "tools_index_name": os.getenv("VECTOR_SERVICE_INDEX_NAME") or config.get("tools_index_name", "document_gtplanner_tools"),
             "vector_field": os.getenv("VECTOR_SERVICE_VECTOR_FIELD") or config.get("vector_field", "combined_text")
         })
 
         return {k: v for k, v in config.items() if v is not None}
+
+    def get_document_embedding_config(self) -> Dict[str, Any]:
+        """Get document embedding configuration.
+
+        Returns:
+            Dictionary containing document embedding configuration
+        """
+        config = {}
+
+        # Try dynaconf settings first
+        if self._settings:
+            try:
+                config.update({
+                    "model": self._settings.get("document_embedding.model", "text-embedding-3-small"),
+                    "chunk_size": self._settings.get("document_embedding.chunk_size", 1000),
+                    "min_chunk_size": self._settings.get("document_embedding.min_chunk_size", 100),
+                    "chunk_overlap": self._settings.get("document_embedding.chunk_overlap", 200),
+                    "batch_size": self._settings.get("document_embedding.batch_size", 100),
+                    "max_retries": self._settings.get("document_embedding.max_retries", 3),
+                    "retry_delay": self._settings.get("document_embedding.retry_delay", 1.0)
+                })
+            except Exception as e:
+                logger.warning(f"Error reading document embedding config from settings: {e}")
+
+        # Environment variables have higher priority than settings.toml
+        config.update({
+            "model": os.getenv("EMBEDDING_MODEL") or config.get("model", "text-embedding-3-small"),
+            "chunk_size": int(os.getenv("EMBEDDING_CHUNK_SIZE") or str(config.get("chunk_size", 1000))),
+            "min_chunk_size": int(os.getenv("EMBEDDING_MIN_CHUNK_SIZE") or str(config.get("min_chunk_size", 100))),
+            "chunk_overlap": int(os.getenv("EMBEDDING_CHUNK_OVERLAP") or str(config.get("chunk_overlap", 200))),
+            "batch_size": int(os.getenv("EMBEDDING_BATCH_SIZE") or str(config.get("batch_size", 100))),
+            "max_retries": int(os.getenv("EMBEDDING_MAX_RETRIES") or str(config.get("max_retries", 3))),
+            "retry_delay": float(os.getenv("EMBEDDING_RETRY_DELAY") or str(config.get("retry_delay", 1.0)))
+        })
+
+        return config
 
     def is_deep_design_docs_enabled(self) -> bool:
         """Check if deep design docs feature is enabled.
@@ -283,6 +319,7 @@ class MultilingualConfig:
             "jina_api_key": self.get_jina_api_key(),
             "llm_config": self.get_llm_config(),
             "vector_service_config": self.get_vector_service_config(),
+            "document_embedding_config": self.get_document_embedding_config(),
             "deep_design_docs_enabled": self.is_deep_design_docs_enabled()
         }
     
@@ -390,6 +427,15 @@ def get_vector_service_config() -> Dict[str, Any]:
         Dictionary containing vector service configuration
     """
     return multilingual_config.get_vector_service_config()
+
+
+def get_document_embedding_config() -> Dict[str, Any]:
+    """Convenience function to get document embedding configuration.
+
+    Returns:
+        Dictionary containing document embedding configuration
+    """
+    return multilingual_config.get_document_embedding_config()
 
 
 def get_all_config() -> Dict[str, Any]:

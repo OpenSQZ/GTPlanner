@@ -1,55 +1,79 @@
+# GTPlanner Configuration File
+#
+# 🌟 优先级说明：环境变量 > settings.toml > 默认值
+# 大部分配置都有合理的默认值，只需要设置必要的环境变量即可
+#
+# 必需的环境变量：
+# - LLM_BASE_URL: LLM服务地址
+# - LLM_API_KEY: LLM API密钥
+# - VECTOR_SERVICE_BASE_URL: 向量服务地址
+#
+# 可选的环境变量：
+# - LLM_MODEL: LLM模型名称 (默认: gpt-4)
+# - JINA_API_KEY: Jina搜索API密钥 (可选，用于网络搜索)
+# - VECTOR_SERVICE_INDEX_NAME: 工具索引名称 (默认: document_gtplanner_tools)
+# - GTPLANNER_DEBUG: 调试模式 (默认: false)
+# - GTPLANNER_LOG_LEVEL: 日志级别 (默认: INFO)
+
 [default]
-debug = true
+# 调试模式 - 可通过 GTPLANNER_DEBUG 环境变量覆盖
+debug = "@format {env[GTPLANNER_DEBUG]:false}"
 
 [default.logging]
-level = "INFO"
-file_enabled = true
-console_enabled = false  # 关闭控制台输出
-max_file_size = 10485760  # 10MB
-backup_count = 5
+# 日志配置 - 大部分有合理默认值
+level = "@format {env[GTPLANNER_LOG_LEVEL]:INFO}"
+file_enabled = "@format {env[GTPLANNER_LOG_FILE_ENABLED]:true}"
+console_enabled = "@format {env[GTPLANNER_LOG_CONSOLE_ENABLED]:true}"
+max_file_size = "@format {env[GTPLANNER_LOG_MAX_FILE_SIZE]:10485760}"  # 10MB
+backup_count = "@format {env[GTPLANNER_LOG_BACKUP_COUNT]:5}"
 
 [default.openai]
-debug_enabled = true
-log_requests = true
-log_responses = true
-log_level = "DEBUGE"
-log_to_file = true
-log_to_console = false  # 关闭控制台输出
+# OpenAI客户端调试配置 - 开发时有用，生产环境可关闭
+debug_enabled = "@format {env[OPENAI_DEBUG_ENABLED]:false}"
+log_requests = "@format {env[OPENAI_LOG_REQUESTS]:false}"
+log_responses = "@format {env[OPENAI_LOG_RESPONSES]:false}"
+log_level = "@format {env[OPENAI_LOG_LEVEL]:INFO}"
+log_to_file = "@format {env[OPENAI_LOG_TO_FILE]:true}"
+log_to_console = "@format {env[OPENAI_LOG_TO_CONSOLE]:false}"
 
 [default.llm]
-base_url = "@format {env[LLM_BASE_URL]}"
-api_key = "@format {env[LLM_API_KEY]}"
-model = "@format {env[LLM_MODEL]}"
+# LLM配置 - 必需的环境变量
+base_url = "@format {env[LLM_BASE_URL]}"  # 必需
+api_key = "@format {env[LLM_API_KEY]}"    # 必需
+model = "@format {env[LLM_MODEL]:gpt-4}" # 默认模型
 
 [default.jina]
-api_key = "@format {env[JINA_API_KEY]}"
-search_base_url = "https://s.jina.ai/"
-web_base_url = "https://r.jina.ai/"
+# Jina搜索服务配置 - API密钥可选
+api_key = "@format {env[JINA_API_KEY]}"  # 可选，不设置则禁用搜索功能
+search_base_url = "@format {env[JINA_SEARCH_BASE_URL]:https://s.jina.ai/}"
+web_base_url = "@format {env[JINA_WEB_BASE_URL]:https://r.jina.ai/}"
 
 [default.multilingual]
-# Default language for the system (en, zh, es, fr, ja)
-default_language = "en"
-# Enable automatic language detection from user input
-auto_detect = true
-# Fallback to default language when requested language is not supported
-fallback_enabled = true
-# Supported languages (can be customized to enable/disable specific languages)
+# 多语言配置 - 都有合理默认值
+default_language = "@format {env[GTPLANNER_DEFAULT_LANGUAGE]:en}"
+auto_detect = "@format {env[GTPLANNER_AUTO_DETECT]:true}"
+fallback_enabled = "@format {env[GTPLANNER_FALLBACK_ENABLED]:true}"
+# 支持的语言列表 - 可通过环境变量自定义
 supported_languages = ["en", "zh", "es", "fr", "ja"]
 
 [default.vector_service]
-# Vector service configuration for tool recommendation
-# These values will be overridden by environment variables if set
-base_url = "http://localhost:8080"  # Default fallback, override with VECTOR_SERVICE_BASE_URL
-timeout = 30  # Override with VECTOR_SERVICE_TIMEOUT
-# Index name for tools - override with VECTOR_SERVICE_INDEX_NAME
-# Note: Index name must start with 'document_' prefix as required by vector service
-tools_index_name = "document_gtplanner_tools"
-# Vector field name for document embedding - override with VECTOR_SERVICE_VECTOR_FIELD
-vector_field = "combined_text"
+# 向量服务配置 - base_url必需，其他有默认值
+base_url = "@format {env[VECTOR_SERVICE_BASE_URL]}"  # 必需
+timeout = "@format {env[VECTOR_SERVICE_TIMEOUT]:30}"
+tools_index_name = "@format {env[VECTOR_SERVICE_INDEX_NAME]:document_gtplanner_tools}"
+vector_field = "@format {env[VECTOR_SERVICE_VECTOR_FIELD]:combined_text}"
+
+[default.document_embedding]
+# 文档嵌入配置 - 新增配置项，都有默认值
+model = "@format {env[EMBEDDING_MODEL]:text-embedding-3-small}"
+chunk_size = "@format {env[EMBEDDING_CHUNK_SIZE]:1000}"
+min_chunk_size = "@format {env[EMBEDDING_MIN_CHUNK_SIZE]:100}"
+chunk_overlap = "@format {env[EMBEDDING_CHUNK_OVERLAP]:200}"
+batch_size = "@format {env[EMBEDDING_BATCH_SIZE]:100}"
+max_retries = "@format {env[EMBEDDING_MAX_RETRIES]:3}"
+retry_delay = "@format {env[EMBEDDING_RETRY_DELAY]:1.0}"
 
 [default.deep_design_docs]
-# Deep design documents configuration
-# Enable deep design docs feature (uses architecture module's progressive design logic)
-# When false, falls back to planning.py logic for compatibility
-enable_deep_design_docs = false
+# 深度设计文档功能 - 实验性功能，默认关闭
+enable_deep_design_docs = "@format {env[GTPLANNER_ENABLE_DEEP_DESIGN_DOCS]:false}"
 

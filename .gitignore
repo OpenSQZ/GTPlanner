@@ -108,3 +108,7 @@ cookbook/
 .specstory
 memory-bank
 gtplanner_conversations.db
+pocketflow.py
+openapi.josn
+test_workspace/
+canvas.md

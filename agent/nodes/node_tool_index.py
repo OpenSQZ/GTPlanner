@@ -49,6 +49,10 @@ class NodeToolIndex(AsyncNode):
         if not self.vector_service_url:
             raise ValueError("向量服务URL未配置，请设置VECTOR_SERVICE_BASE_URL环境变量")
 
+        # 获取向量服务客户端
+        from utils.vector_service_client import get_vector_service_client
+        self.vector_client = get_vector_service_client()
+
         # 从配置文件读取索引相关参数（保留你同事的改进）
         self.index_name = vector_config.get("tools_index_name", "tools_index")
         self.vector_field = vector_config.get("vector_field", "combined_text")
@@ -407,62 +411,56 @@ class NodeToolIndex(AsyncNode):
     async def _index_documents(self, documents: List[Dict[str, Any]], index_name: str, shared: Dict[str, Any]) -> Dict[str, Any]:
         """调用向量服务进行文档索引"""
         try:
-            # 先尝试使用指定的索引名
-            request_data = {
-                "documents": documents,
-                "vector_field": self.vector_field,
-                "index": index_name
-            }
-
             await emit_processing_status(shared, f"📝 尝试使用索引 {index_name} 进行索引...")
 
-            response = requests.post(
-                f"{self.vector_service_url}/documents",
-                json=request_data,
-                timeout=self.timeout,
-                headers={"Content-Type": "application/json"}
+            # 使用向量服务客户端
+            result = await self.vector_client.create_documents(
+                documents=documents,
+                vector_field=self.vector_field,
+                index=index_name
             )
 
-            if response.status_code == 200:
-                result = response.json()
-                await emit_processing_status(shared, f"✅ 成功索引 {result.get('count', 0)} 个工具到索引 {index_name}")
-                result["index"] = index_name
-                return result
-            elif response.status_code == 404 and "不存在" in response.text:
-                # 索引不存在，让服务自动创建一个新索引
-                await emit_processing_status(shared, f"📝 索引 {index_name} 不存在，让服务自动创建新索引...")
-
-                # 不指定索引名，让服务自动创建
-                auto_request_data = {
-                    "documents": documents,
-                    "vector_field": self.vector_field
-                    # 不指定 index
+            if result.get("success"):
+                count = result.get("count", 0)
+                actual_index = result.get("index", index_name)
+                await emit_processing_status(shared, f"✅ 成功索引 {count} 个工具到索引 {actual_index}")
+                return {
+                    "count": count,
+                    "index": actual_index,
+                    "success": True
                 }
+            else:
+                error_msg = result.get("error", "未知错误")
+                # 如果索引不存在，尝试让服务自动创建
+                if "不存在" in error_msg or "not found" in error_msg.lower():
+                    await emit_processing_status(shared, f"📝 索引 {index_name} 不存在，让服务自动创建新索引...")
 
-                response = requests.post(
-                    f"{self.vector_service_url}/documents",
-                    json=auto_request_data,
-                    timeout=self.timeout,
-                    headers={"Content-Type": "application/json"}
-                )
+                    # 不指定索引名，让服务自动创建
+                    auto_result = await self.vector_client.create_documents(
+                        documents=documents,
+                        vector_field=self.vector_field
+                        # 不指定 index
+                    )
 
-                if response.status_code == 200:
-                    result = response.json()
-                    actual_index_name = result.get("index")
-                    await emit_processing_status(shared, f"✅ 成功创建新索引 {actual_index_name}，索引了 {result.get('count', 0)} 个工具")
-
-                    # 返回实际创建的索引名，这将成为新的固定索引名
-                    return result
+                    if auto_result.get("success"):
+                        count = auto_result.get("count", 0)
+                        actual_index_name = auto_result.get("index")
+                        await emit_processing_status(shared, f"✅ 成功创建新索引 {actual_index_name}，索引了 {count} 个工具")
+                        return {
+                            "count": count,
+                            "index": actual_index_name,
+                            "success": True
+                        }
+                    else:
+                        auto_error = auto_result.get("error", "未知错误")
+                        error_msg = f"自动创建索引失败: {auto_error}"
+                        await emit_error(shared, f"❌ {error_msg}")
+                        raise RuntimeError(error_msg)
                 else:
-                    error_msg = f"自动创建索引失败: {response.status_code}, {response.text}"
                     await emit_error(shared, f"❌ {error_msg}")
                     raise RuntimeError(error_msg)
-            else:
-                error_msg = f"向量服务返回错误: {response.status_code}, {response.text}"
-                await emit_error(shared, f"❌ {error_msg}")
-                raise RuntimeError(error_msg)
 
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             error_msg = f"调用向量服务失败: {str(e)}"
             await emit_error(shared, f"❌ {error_msg}")
             raise RuntimeError(error_msg)
