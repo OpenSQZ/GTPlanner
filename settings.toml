@@ -12,7 +12,7 @@ backup_count = 5
 debug_enabled = true
 log_requests = true
 log_responses = true
-log_level = "DEBUGE"
+log_level = "DEBUG"
 log_to_file = true
 log_to_console = false  # 关闭控制台输出
 
@@ -20,11 +20,18 @@ log_to_console = false  # 关闭控制台输出
 base_url = "@format {env[LLM_BASE_URL]}"
 api_key = "@format {env[LLM_API_KEY]}"
 model = "@format {env[LLM_MODEL]}"
+max_tokens = 4000
+temperature = 0.7
+timeout = 30
+retry_attempts = 3
+retry_delay = 1.0
 
 [default.jina]
 api_key = "@format {env[JINA_API_KEY]}"
 search_base_url = "https://s.jina.ai/"
 web_base_url = "https://r.jina.ai/"
+timeout = 30
+retry_attempts = 3
 
 [default.multilingual]
 # Default language for the system (en, zh, es, fr, ja)
@@ -52,4 +59,44 @@ vector_field = "combined_text"
 # Enable deep design docs feature (uses architecture module's progressive design logic)
 # When false, falls back to planning.py logic for compatibility
 enable_deep_design_docs = false
+
+[default.performance]
+# Performance optimization settings
+enable_caching = true
+cache_ttl = 3600  # 1 hour
+max_cache_size = 2000
+max_cache_memory_mb = 200
+enable_monitoring = true
+monitoring_interval = 5.0
+enable_compression = true
+compression_threshold_messages = 50
+compression_threshold_tokens = 8000
+
+[default.database]
+# Database optimization settings
+connection_pool_size = 10
+connection_timeout = 30
+query_timeout = 30
+enable_wal_mode = true
+enable_foreign_keys = true
+vacuum_interval_hours = 24
+
+[default.error_handling]
+# Error handling and retry settings
+enable_retry = true
+max_retry_attempts = 3
+retry_base_delay = 1.0
+retry_max_delay = 60.0
+enable_exponential_backoff = true
+enable_jitter = true
+log_all_errors = true
+error_history_size = 1000
+
+[default.security]
+# Security settings
+enable_input_validation = true
+max_input_length = 10000
+enable_rate_limiting = true
+rate_limit_requests_per_minute = 60
+enable_api_key_validation = true
 
