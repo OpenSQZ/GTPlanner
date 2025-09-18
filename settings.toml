@@ -53,3 +53,166 @@ vector_field = "combined_text"
 # When false, falls back to planning.py logic for compatibility
 enable_deep_design_docs = false
 
+# ============================================================================
+# 请求验证系统配置
+# GTPlanner Request Validation System Configuration
+# ============================================================================
+
+[default.validation]
+# 请求验证全局配置
+enabled = true
+mode = "strict"  # strict, lenient, fail_fast, continue
+max_request_size = 1048576  # 1MB
+max_message_length = 10000
+enable_rate_limiting = true
+requests_per_minute = 60
+enable_caching = true
+cache_ttl = 300  # 5分钟
+enable_metrics = true
+enable_streaming_validation = false
+enable_parallel_validation = true
+
+# 排除和包含路径配置
+excluded_paths = ["/health", "/metrics", "/static"]
+included_paths = ["/api"]
+
+# 验证器优先级配置
+[default.validation.priorities]
+security = "critical"
+format = "high"
+content = "medium"
+rate_limit = "high"
+size = "high"
+language = "low"
+session = "medium"
+
+# API端点验证链配置
+[default.validation.endpoints]
+# 主要API端点
+"/api/chat/agent" = ["security", "rate_limit", "size", "format", "content", "language", "session"]
+"/health" = ["size"]
+"/api/status" = ["security", "size"]
+"/api/mcp/*" = ["security", "rate_limit", "format", "content"]
+
+# 验证器具体配置
+[[default.validation.validators]]
+name = "security"
+type = "security"
+enabled = true
+priority = "critical"
+[default.validation.validators.config]
+enable_xss_protection = true
+enable_sql_injection_detection = true
+enable_csrf_protection = true
+enable_sensitive_data_detection = false
+allowed_origins = ["*"]
+max_header_size = 8192
+
+[[default.validation.validators]]
+name = "rate_limit"
+type = "rate_limit"
+enabled = true
+priority = "high"
+[default.validation.validators.config]
+requests_per_minute = 60
+requests_per_hour = 1000
+enable_ip_based_limiting = true
+enable_user_based_limiting = true
+burst_size = 10
+
+[[default.validation.validators]]
+name = "size"
+type = "size"
+enabled = true
+priority = "high"
+[default.validation.validators.config]
+max_request_size = 1048576
+max_content_length = 1048576
+max_json_depth = 10
+max_array_length = 1000
+
+[[default.validation.validators]]
+name = "format"
+type = "format"
+enabled = true
+priority = "high"
+[default.validation.validators.config]
+require_json_content_type = true
+validate_json_syntax = true
+validate_required_fields = true
+strict_field_types = true
+
+[[default.validation.validators]]
+name = "content"
+type = "content"
+enabled = true
+priority = "medium"
+[default.validation.validators.config]
+max_message_length = 10000
+enable_profanity_filter = false
+enable_spam_detection = true
+max_dialogue_history_length = 50
+
+[[default.validation.validators]]
+name = "language"
+type = "language"
+enabled = true
+priority = "low"
+[default.validation.validators.config]
+supported_languages = ["en", "zh", "es", "fr", "ja"]
+auto_detect_language = true
+fallback_to_default = true
+validate_language_consistency = false
+
+[[default.validation.validators]]
+name = "session"
+type = "session"
+enabled = true
+priority = "medium"
+[default.validation.validators.config]
+validate_session_id_format = true
+check_session_expiry = false
+require_valid_session = false
+max_session_inactivity = 3600  # 1小时
+
+# 缓存配置
+[default.validation.cache]
+enabled = true
+backend = "memory"  # memory, redis
+default_ttl = 300
+max_size = 1000
+cleanup_interval = 60
+
+# 指标和监控配置
+[default.validation.metrics]
+enabled = true
+include_timing = true
+include_success_rate = true
+include_error_details = true
+export_interval = 60
+
+# 日志配置
+[default.validation.logging]
+enabled = true
+level = "INFO"
+include_request_details = true
+include_validation_path = true
+include_performance_metrics = true
+log_successful_validations = false
+log_failed_validations = true
+
+# 错误处理配置
+[default.validation.error_handling]
+include_suggestions = true
+include_error_codes = true
+include_field_details = true
+mask_sensitive_data = true
+max_error_message_length = 500
+
+# 流式验证配置
+[default.validation.streaming]
+enabled = false
+validate_chunks = true
+buffer_size = 1024
+timeout = 30
+
