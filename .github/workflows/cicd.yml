@@ -296,14 +296,9 @@ jobs:
         echo "Branch: ${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
         echo "Commit: ${GITHUB_SHA::7}"
 
-        # 使用您提供的测试环境K8s部署脚本
-        curl -X PATCH \
-          -H "content-type: application/strategic-merge-patch+json" \
-          -H "Authorization:Bearer $K8S_TEST_TOKEN" \
-          -d "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"gt-planner-backend-test\",\"image\":\"$IMAGE_TAG\"}]}}}}" \
-          "http://kuboard.sensedeal.wiki/k8s-api/apis/apps/v1/namespaces/agent-build/deployments/gt-planner-backend-test"
-
-        echo "Test deployment updated successfully"
+        # 使用专用的部署脚本进行安全的部署验证
+        chmod +x scripts/deploy-to-test-k8s.sh
+        scripts/deploy-to-test-k8s.sh "$IMAGE_TAG" "$K8S_TEST_TOKEN"
 
     - name: Verify test deployment
       env:
