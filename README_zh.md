@@ -93,7 +93,7 @@ GTPlanner 生成的计划可以直接在您最喜欢的 AI 编程工具中使用
 
 #### 环境准备
 
-* **Python ≥ 3.11**（推荐 3.11+）
+* **Python ≥ 3.10**（推荐 3.11+）
 * 包管理器用 **uv**（推荐）或 **pip**
 * 准备一个兼容 OpenAI 的 LLM API Key（如 `OpenAI` / `Anthropic` / `Azure OpenAI` / 自建兼容端点）
 
@@ -351,7 +351,7 @@ JINA_API_KEY="your-jina-key"  # 用于网络搜索功能
 
 ## 📋 环境要求 (后端和CLI)
 
-- **Python**: 3.11 或更高版本
+- **Python**: 3.10 或更高版本
 - **包管理器**: [uv](https://github.com/astral-sh/uv) (推荐) 或 pip
 - **LLM API 访问**: 任何兼容 OpenAI 的 API 端点 (例如 OpenAI, Anthropic, 或本地模型)
 
@@ -609,19 +609,18 @@ GTPlanner/
 
 ### 核心依赖
 - **Python** >= 3.11 - 运行环境
-- **openai** >= 1.0.0 (已安装: 1.79.0) - LLM API通信
+- **openai** >= 1.0.0 - LLM API通信
 - **pocketflow** == 0.0.3 - 异步工作流引擎
-- **pocketflow-agui** == 0.1.0 - 异步GUI组件
 - **pocketflow-tracing** >= 0.1.4 - 执行追踪系统
 - **dynaconf** >= 3.1.12 - 配置管理
-- **aiohttp** >= 3.12.14 (已安装: 3.12.15) - 异步HTTP客户端
+- **aiohttp** >= 3.8.0 - 异步HTTP客户端
 - **json-repair** >= 0.45.0 - JSON响应修复
 - **python-dotenv** >= 1.0.0 - 环境变量加载
 
 ### API依赖
 - **fastapi** == 0.115.9 - REST API框架
 - **uvicorn** == 0.23.1 - ASGI服务器
-- **pydantic** >= 2.5.0 (已安装: 2.11.4) - 数据验证
+- **pydantic** >= 2.5.0 - 数据验证
 
 ### CLI依赖
 - **rich** >= 13.0.0 - 终端美化和交互
@@ -630,9 +629,8 @@ GTPlanner/
 - **fastmcp** - 模型上下文协议（MCP）实现
 
 ### 开发依赖
-- **pytest** >= 8.4.1 (已安装: 8.4.1) - 测试框架
+- **pytest** >= 8.4.1 - 测试框架
 - **pytest-asyncio** >= 1.1.0 - 异步测试支持
-- **pytest-cov** >= 7.0.0 - 测试覆盖率报告
 
 ---
 

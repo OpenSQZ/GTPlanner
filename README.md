@@ -623,11 +623,10 @@ GTPlanner/
 ### Development Dependencies
 - **pytest** >= 8.4.1 (installed: 8.4.1) - Testing framework
 - **pytest-asyncio** >= 1.1.0 - Asynchronous testing support
-- **pytest-cov** >= 7.0.0 - Test coverage reporting
-
-### Development Dependencies
-- **pytest** >= 8.4.1 - Testing framework
-- **pytest-asyncio** >= 1.1.0 - Asynchronous test support
+- **pytest-cov** >= 7.0.0 (installed: 7.0.0) - Test coverage reporting
+- **coverage** >= 7.10.6 (installed: 7.10.6) - Code coverage analysis
+- **psutil** >= 7.1.0 (installed: 7.1.0) - System and process utilities
+- **trio** >= 0.31.0 (installed: 0.31.0) - Alternative async library for testing
 
 ---
 
