@@ -73,11 +73,12 @@ class JinaSearchClient:
             # 使用异步HTTP客户端
             timeout = aiohttp.ClientTimeout(total=self.timeout)
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(
+                response = await session.get(
                     self.base_url,
                     params=params,
                     headers=self.headers
-                ) as response:
+                )
+                async with response:
                     response.raise_for_status()
                     result = await response.json()
                     return result
@@ -153,11 +154,12 @@ class JinaSearchClient:
 
             timeout = aiohttp.ClientTimeout(total=self.timeout)
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(
+                response = await session.get(
                     self.base_url,
                     params=params,
                     headers=headers
-                ) as response:
+                )
+                async with response:
                     response.raise_for_status()
                     result = await response.json()
 

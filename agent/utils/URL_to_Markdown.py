@@ -59,11 +59,12 @@ class JinaWebClient:
             # 使用异步HTTP客户端发送请求
             timeout = aiohttp.ClientTimeout(total=self.timeout)
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(
+                response = await session.get(
                     api_url,
                     headers=self.headers,
                     params=kwargs
-                ) as response:
+                )
+                async with response:
                     response.raise_for_status()
                     return await response.json()
 
@@ -74,13 +75,13 @@ class JinaWebClient:
         except Exception as e:
             raise Exception(f"URL转换过程中发生错误: {str(e)}")
     
-    def get_content(
+    async def get_content(
         self,
         url: str,
         **kwargs
     ) -> str:
         """
-        获取URL的Markdown内容
+        获取URL的Markdown内容 - 异步版本
         
         Args:
             url: 要获取内容的URL
@@ -89,7 +90,7 @@ class JinaWebClient:
         Returns:
             Markdown格式的内容字符串
         """
-        result = self.url_to_markdown(url, **kwargs)
+        result = await self.url_to_markdown(url, **kwargs)
         
         if result.get("code") != 200:
             raise Exception(f"获取内容失败: {result.get('status', 'Unknown error')}")
@@ -147,13 +148,13 @@ class JinaWebClient:
             "tokens": usage.get("tokens", 0) or meta_usage.get("tokens", 0)
         }
     
-    def batch_convert(
+    async def batch_convert(
         self,
         urls: list,
         **kwargs
     ) -> Dict[str, Dict[str, str]]:
         """
-        批量转换多个URL
+        批量转换多个URL - 异步版本
         
         Args:
             urls: URL列表
@@ -166,7 +167,7 @@ class JinaWebClient:
         
         for url in urls:
             try:
-                results[url] = self.get_page_info(url, **kwargs)
+                results[url] = await self.get_page_info(url, **kwargs)
             except Exception as e:
                 results[url] = {
                     "title": "",
