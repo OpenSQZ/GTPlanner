@@ -471,8 +471,11 @@ class OpenAIClient:
         # 获取日志器（会自动初始化日志系统）
         self.logger = get_openai_logger()
 
-        # 创建异步客户端
+        # 创建异步客户端（使用改进的超时配置）
         client_kwargs = self.config.to_openai_client_kwargs()
+        # 调整超时时间为更合理的值
+        if client_kwargs.get("timeout", 120) > 120:
+            client_kwargs["timeout"] = 120  # 最大2分钟超时
         self.async_client = AsyncOpenAI(**client_kwargs)
 
         # 创建重试管理器

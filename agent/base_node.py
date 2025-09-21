@@ -120,16 +120,28 @@ class BaseAgentNode(AsyncNode, ABC):
             return result
             
         except Exception as e:
-            # 统一错误处理
-            error_message = f"{self.name}节点执行失败: {str(e)}"
-            
-            return {
-                "error": error_message,
-                "error_type": type(e).__name__,
+            # 使用自定义异常处理
+            from utils.custom_exceptions import map_standard_exception, ProcessingError
+
+            # 映射为自定义异常
+            if not isinstance(e, ProcessingError):
+                custom_exc = map_standard_exception(e)
+                if hasattr(custom_exc, 'details'):
+                    custom_exc.details.update({
+                        "node_name": self.name,
+                        "failed_stage": "execution"
+                    })
+            else:
+                custom_exc = e
+
+            error_dict = custom_exc.to_dict()
+            error_dict.update({
                 "node_name": self.name,
                 "failed_stage": "execution",
                 "timestamp": time.time()
-            }
+            })
+
+            return error_dict
     
     async def post_async(
         self,
