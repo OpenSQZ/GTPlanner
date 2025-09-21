@@ -13,6 +13,7 @@ from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 
 from utils.logger_config import get_openai_logger
+from utils.unified_config import get_config_manager
 
 try:
     from dynaconf import Dynaconf
@@ -261,21 +262,23 @@ class SimpleOpenAIConfig:
         function_calling_enabled: bool = True,
         tool_choice: str = "auto",
     ):
-        # 尝试从 settings.toml 加载配置
-        settings = self._load_settings()
+        # 使用统一配置管理器加载配置
+        config_manager = get_config_manager()
+        openai_config = config_manager.get_openai_config()
 
-        self.api_key = api_key or self._get_setting(settings, "llm.api_key") or os.getenv("OPENAI_API_KEY")
-        self.base_url = base_url or self._get_setting(settings, "llm.base_url") or os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
-        self.model = self._get_setting(settings, "llm.model") or os.getenv("OPENAI_MODEL", model)
-        self.temperature = self._get_setting(settings, "llm.temperature", temperature)
-        self.max_tokens = self._get_setting(settings, "llm.max_tokens", max_tokens)
-        self.timeout = self._get_setting(settings, "llm.timeout", timeout)
-        self.max_retries = self._get_setting(settings, "llm.max_retries", max_retries)
-        self.retry_delay = self._get_setting(settings, "llm.retry_delay", retry_delay)
-        self.log_requests = self._get_setting(settings, "llm.log_requests", log_requests)
-        self.log_responses = self._get_setting(settings, "llm.log_responses", log_responses)
-        self.function_calling_enabled = self._get_setting(settings, "llm.function_calling_enabled", function_calling_enabled)
-        self.tool_choice = self._get_setting(settings, "llm.tool_choice", tool_choice)
+        # 设置配置值，优先使用传入的参数，然后是统一配置，最后是默认值
+        self.api_key = api_key or openai_config.get("api_key") or os.getenv("OPENAI_API_KEY")
+        self.base_url = base_url or openai_config.get("base_url") or os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        self.model = model or openai_config.get("model", "gpt-4")
+        self.temperature = temperature if temperature is not None else openai_config.get("temperature", 0.0)
+        self.max_tokens = max_tokens or openai_config.get("max_tokens")
+        self.timeout = timeout if timeout is not None else openai_config.get("timeout", 120.0)
+        self.max_retries = max_retries if max_retries is not None else openai_config.get("max_retries", 3)
+        self.retry_delay = retry_delay if retry_delay is not None else openai_config.get("retry_delay", 2.0)
+        self.log_requests = log_requests if log_requests is not None else openai_config.get("log_requests", True)
+        self.log_responses = log_responses if log_responses is not None else openai_config.get("log_responses", True)
+        self.function_calling_enabled = function_calling_enabled if function_calling_enabled is not None else openai_config.get("function_calling_enabled", True)
+        self.tool_choice = tool_choice or openai_config.get("tool_choice", "auto")
 
         if not self.api_key:
             raise ValueError("OpenAI API key is required. Set OPENAI_API_KEY environment variable or configure llm.api_key in settings.toml.")

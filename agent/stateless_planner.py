@@ -13,7 +13,7 @@
 """
 
 import asyncio
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from .context_types import AgentContext, AgentResult
 from .pocketflow_factory import PocketFlowSharedFactory
@@ -142,7 +142,7 @@ class StatelessGTPlanner:
 
     # 流式回调方法（静态方法，保持无状态特性）
     @staticmethod
-    async def _on_llm_start(session: StreamingSession, **kwargs) -> None:
+    async def _on_llm_start(session: StreamingSession, **kwargs: Any) -> None:
         """LLM开始响应回调"""
         await session.emit_event(
             StreamEventBuilder.assistant_message_start(session.session_id)
@@ -153,7 +153,7 @@ class StatelessGTPlanner:
         session: StreamingSession,
         chunk_content: str,
         chunk_index: int = 0,
-        **kwargs
+        **kwargs: Any
     ) -> None:
         """LLM响应片段回调"""
         chunk = AssistantMessageChunk(
@@ -170,9 +170,9 @@ class StatelessGTPlanner:
     async def _on_llm_end(
         session: StreamingSession,
         complete_message: str,
-        message_metadata: Optional[dict] = None,
+        message_metadata: Optional[Dict[str, Any]] = None,
         tool_calls: Optional[list] = None,
-        **kwargs
+        **kwargs: Any
     ) -> None:
         """LLM响应结束回调"""
         # 如果有 tool_calls，将其添加到 message_metadata 中
@@ -194,9 +194,9 @@ class StatelessGTPlanner:
     async def _on_tool_start(
         session: StreamingSession,
         tool_name: str,
-        arguments: dict,
+        arguments: Dict[str, Any],
         call_id: Optional[str] = None,
-        **kwargs
+        **kwargs: Any
     ) -> None:
         """工具调用开始回调（事件由ToolExecutor发送，此处仅作为占位符）"""
         # 注意：实际的tool_call_start事件由ToolExecutor发送，避免重复

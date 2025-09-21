@@ -3,6 +3,7 @@ import json
 import logging
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.responses import StreamingResponse
@@ -22,16 +23,11 @@ from agent.utils.startup_init import initialize_application
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title="GTPlanner API",
-    description="智能规划助手 API，支持流式响应和实时工具调用",
-    version="1.0.0"
-)
 
-# 应用启动事件 - 预加载工具索引
-@app.on_event("startup")
-async def startup_event():
-    """应用启动时预加载工具索引"""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期管理"""
+    # 启动时执行
     logger.info("🚀 GTPlanner API 启动中...")
 
     try:
@@ -54,6 +50,19 @@ async def startup_event():
     except Exception as e:
         logger.error(f"❌ 启动时初始化失败: {str(e)}")
         # 不阻止应用启动，但记录错误
+
+    yield
+
+    # 关闭时执行
+    logger.info("🛑 GTPlanner API 关闭中...")
+
+
+app = FastAPI(
+    title="GTPlanner API",
+    description="智能规划助手 API，支持流式响应和实时工具调用",
+    version="1.0.0",
+    lifespan=lifespan
+)
 
 # CORS 配置
 app.add_middleware(

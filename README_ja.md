@@ -89,7 +89,7 @@ GTPlannerが生成した計画は、お気に入りのAIプログラミングツ
 
 #### 環境準備
 
-* **Python ≥ 3.10**（3.11+ 推奨）
+* **Python ≥ 3.11**（3.11+ 推奨）
 * パッケージマネージャー：**uv**（推奨）または **pip**
 * OpenAI 互換の LLM API Key を準備（例：`OpenAI` / `Anthropic` / `Azure OpenAI` / セルフホストエンドポイント）
 
@@ -350,7 +350,7 @@ JINA_API_KEY="your-jina-key"  # ウェブ検索機能用
 
 ## 📋 環境要件 (バックエンドとCLI)
 
-- **Python**: 3.10 以降
+- **Python**: 3.11 以降
 - **パッケージマネージャー**: [uv](https://github.com/astral-sh/uv) (推奨) または pip
 - **LLM APIアクセス**: OpenAI互換のAPIエンドポイント (例: OpenAI, Anthropic, またはローカルモデル)
 
@@ -606,18 +606,19 @@ GTPlanner/
 
 ### コア依存関係
 - **Python** >= 3.11 - 実行環境
-- **openai** >= 1.0.0 - LLM API通信
+- **openai** >= 1.0.0 (インストール済み: 1.79.0) - LLM API通信
 - **pocketflow** == 0.0.3 - 非同期ワークフローエンジン
+- **pocketflow-agui** == 0.1.0 - 非同期GUIコンポーネント
 - **pocketflow-tracing** >= 0.1.4 - 実行追跡システム
 - **dynaconf** >= 3.1.12 - 設定管理
-- **aiohttp** >= 3.8.0 - 非同期HTTPクライアント
+- **aiohttp** >= 3.12.14 (インストール済み: 3.12.15) - 非同期HTTPクライアント
 - **json-repair** >= 0.45.0 - JSON応答修復
 - **python-dotenv** >= 1.0.0 - 環境変数読み込み
 
 ### API依存関係
 - **fastapi** == 0.115.9 - REST APIフレームワーク
 - **uvicorn** == 0.23.1 - ASGIサーバー
-- **pydantic** >= 2.5.0 - データ検証
+- **pydantic** >= 2.5.0 (インストール済み: 2.11.4) - データ検証
 
 ### CLI依存関係
 - **rich** >= 13.0.0 - ターミナルの美化と対話
@@ -626,8 +627,9 @@ GTPlanner/
 - **fastmcp** - Model Context Protocol (MCP) 実装
 
 ### 開発依存関係
-- **pytest** >= 8.4.1 - テストフレームワーク
+- **pytest** >= 8.4.1 (インストール済み: 8.4.1) - テストフレームワーク
 - **pytest-asyncio** >= 1.1.0 - 非同期テストサポート
+- **pytest-cov** >= 7.0.0 - テストカバレッジレポート
 
 ---
 

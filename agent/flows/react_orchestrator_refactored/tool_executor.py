@@ -69,13 +69,51 @@ class ToolExecutor:
             )
             tasks.append(task)
 
-        # 等待所有工具执行完成
+        # 等待所有工具执行完成，使用更好的错误处理
         if tasks:
-            tool_results = await asyncio.gather(*tasks, return_exceptions=True)
-            return self._process_tool_results(tool_results, shared)
+            try:
+                # 使用 gather 并行执行，但捕获异常
+                tool_results = await asyncio.gather(*tasks, return_exceptions=True)
+                return self._process_tool_results(tool_results, shared)
+            except Exception as e:
+                # 记录并行执行的整体错误
+                self._record_error(shared, "ToolExecutor.parallel_execution",
+                                 f"并行工具执行失败: {str(e)}", "parallel_execution")
+                return []
 
         return []
-    
+
+    def _process_tool_results(self, tool_results: List[Any], shared: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        处理工具执行结果，包括异常处理
+
+        Args:
+            tool_results: 工具执行结果列表（可能包含异常）
+            shared: 共享状态字典
+
+        Returns:
+            处理后的工具结果列表
+        """
+        processed_results = []
+
+        for i, result in enumerate(tool_results):
+            if isinstance(result, Exception):
+                # 处理执行过程中的异常
+                error_result = {
+                    "success": False,
+                    "error": str(result),
+                    "error_type": type(result).__name__,
+                    "tool_index": i
+                }
+                self._record_error(shared, "ToolExecutor.result_processing",
+                                 f"工具执行异常: {str(result)}", f"tool_{i}")
+                processed_results.append(error_result)
+            else:
+                # 正常结果
+                processed_results.append(result)
+
+        return processed_results
+
     async def _execute_single_tool(
         self,
         call_id: str,

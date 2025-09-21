@@ -14,6 +14,7 @@ from agent.streaming import (
     emit_processing_status,
     emit_error
 )
+from utils.unified_config import get_config_manager
 
 
 class ConcurrentResearchNode(AsyncNode):
@@ -28,6 +29,15 @@ class ConcurrentResearchNode(AsyncNode):
         self.name = "concurrent_research"
         self._subflows_and_data = []
         self._execution_results = []
+
+        # 获取性能配置
+        config_manager = get_config_manager()
+        perf_config = config_manager.get_performance_config()
+
+        # 并发控制配置
+        self.max_concurrent = perf_config.get("max_concurrent_requests", 5)
+        self.request_timeout = perf_config.get("request_timeout", 120.0)
+        self.semaphore = asyncio.Semaphore(self.max_concurrent)
 
     async def prep_async(self, shared: Dict[str, Any]) -> Dict[str, Any]:
         """准备并发研究参数"""
@@ -90,11 +100,26 @@ class ConcurrentResearchNode(AsyncNode):
 
         start_time = asyncio.get_event_loop().time()
         
-        # 🔧 关键：在单个节点内部并发执行所有子流程
-        results = await asyncio.gather(*[
-            subflow.run_async(data)
-            for subflow, data in subflows_and_data
-        ], return_exceptions=True)
+        # 🔧 关键：在单个节点内部并发执行所有子流程，带超时和并发控制
+        async def run_with_semaphore(subflow, data):
+            async with self.semaphore:
+                return await asyncio.wait_for(
+                    subflow.run_async(data),
+                    timeout=self.request_timeout
+                )
+
+        try:
+            results = await asyncio.gather(*[
+                run_with_semaphore(subflow, data)
+                for subflow, data in subflows_and_data
+            ], return_exceptions=True)
+        except asyncio.TimeoutError:
+            # 处理整体超时
+            await emit_error_from_prep(
+                prep_res,
+                f"⏰ 并发研究超时 ({self.request_timeout}秒)"
+            )
+            results = [asyncio.TimeoutError("Research timeout") for _ in subflows_and_data]
         
         execution_time = asyncio.get_event_loop().time() - start_time
         
