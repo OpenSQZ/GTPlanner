@@ -260,6 +260,8 @@ class SimpleOpenAIConfig:
         log_responses: bool = True,
         function_calling_enabled: bool = True,
         tool_choice: str = "auto",
+        # 新增：细粒度重试配置
+        retry_config: Optional[Dict[str, Any]] = None,
     ):
         # 尝试从 settings.toml 加载配置
         settings = self._load_settings()
@@ -276,6 +278,9 @@ class SimpleOpenAIConfig:
         self.log_responses = self._get_setting(settings, "llm.log_responses", log_responses)
         self.function_calling_enabled = self._get_setting(settings, "llm.function_calling_enabled", function_calling_enabled)
         self.tool_choice = self._get_setting(settings, "llm.tool_choice", tool_choice)
+        
+        # 新增：细粒度重试配置
+        self.retry_config = retry_config or self._get_setting(settings, "llm.retry_config", self._get_default_retry_config())
 
         if not self.api_key:
             raise ValueError("OpenAI API key is required. Set OPENAI_API_KEY environment variable or configure llm.api_key in settings.toml.")
@@ -326,33 +331,107 @@ class SimpleOpenAIConfig:
 
         return kwargs
 
+    def _get_default_retry_config(self) -> Dict[str, Any]:
+        """获取默认的重试配置"""
+        return {
+            # 不同错误类型的最大重试次数
+            "max_retries_by_error_type": {
+                "rate_limit": 5,      # 速率限制错误：最多重试5次
+                "timeout": 3,         # 超时错误：最多重试3次  
+                "network": 3,         # 网络错误：最多重试3次
+                "server_error": 2,     # 服务器错误：最多重试2次
+                "default": 3          # 默认重试次数
+            },
+            # 不同错误类型的初始延迟（秒）
+            "base_delay_by_error_type": {
+                "rate_limit": 5.0,    # 速率限制错误：初始延迟5秒
+                "timeout": 2.0,       # 超时错误：初始延迟2秒
+                "network": 1.0,       # 网络错误：初始延迟1秒
+                "server_error": 3.0,  # 服务器错误：初始延迟3秒
+                "default": 2.0        # 默认初始延迟
+            },
+            # 最大延迟时间（秒）
+            "max_delay": 60.0,
+            # 是否启用jitter（随机抖动）
+            "enable_jitter": True,
+            # jitter范围（0.0-1.0，表示±百分比）
+            "jitter_range": 0.25,
+            # 可重试的错误类型模式
+            "retryable_error_patterns": {
+                "rate_limit": ["rate_limit", "429", "quota", "limit"],
+                "timeout": ["timeout", "timed out", "time out"],
+                "network": ["connection", "network", "dns", "ssl", "socket"],
+                "server_error": ["server_error", "500", "502", "503", "504", "internal"]
+            }
+        }
+
 
 class OpenAIClientError(Exception):
     """OpenAI客户端错误基类"""
-    pass
+    
+    def __init__(self, message: str, original_error: Optional[Exception] = None, 
+                 error_type: str = "unknown", request_info: Optional[Dict[str, Any]] = None):
+        super().__init__(message)
+        self.original_error = original_error
+        self.error_type = error_type
+        self.request_info = request_info or {}
+        self.timestamp = time.time()
+        
+    def to_dict(self) -> Dict[str, Any]:
+        """转换为字典格式，便于序列化和日志记录"""
+        return {
+            "message": str(self),
+            "error_type": self.error_type,
+            "original_error": str(self.original_error) if self.original_error else None,
+            "request_info": self.request_info,
+            "timestamp": self.timestamp
+        }
 
 
 class OpenAIRateLimitError(OpenAIClientError):
     """API速率限制错误"""
-    pass
+    
+    def __init__(self, message: str, original_error: Optional[Exception] = None, 
+                 request_info: Optional[Dict[str, Any]] = None, 
+                 retry_after: Optional[float] = None):
+        super().__init__(message, original_error, "rate_limit", request_info)
+        self.retry_after = retry_after
+        
+    def to_dict(self) -> Dict[str, Any]:
+        result = super().to_dict()
+        result["retry_after"] = self.retry_after
+        return result
 
 
 class OpenAITimeoutError(OpenAIClientError):
     """API超时错误"""
-    pass
+    
+    def __init__(self, message: str, original_error: Optional[Exception] = None, 
+                 request_info: Optional[Dict[str, Any]] = None):
+        super().__init__(message, original_error, "timeout", request_info)
 
 
 class OpenAIRetryableError(OpenAIClientError):
     """可重试的API错误"""
-    pass
+    
+    def __init__(self, message: str, original_error: Optional[Exception] = None, 
+                 request_info: Optional[Dict[str, Any]] = None, 
+                 error_type: str = "retryable"):
+        super().__init__(message, original_error, error_type, request_info)
 
 
 class RetryManager:
     """重试管理器"""
 
-    def __init__(self, max_retries: int = 3, base_delay: float = 1.0):
+    def __init__(self, max_retries: int = 3, base_delay: float = 1.0, 
+                 retry_config: Optional[Dict[str, Any]] = None, client: Optional[Any] = None):
         self.max_retries = max_retries
         self.base_delay = base_delay
+        self.retry_config = retry_config or {}
+        self.client = client  # OpenAIClient实例引用
+        
+        # 合并默认配置
+        self._merge_default_config()
 
     async def execute_with_retry(
         self,
@@ -387,19 +466,63 @@ class RetryManager:
                 if not self._should_retry(e, attempt):
                     break
 
-                # 计算延迟时间
-                delay = self._calculate_delay(attempt)
+                # 分类错误类型
+                error_type = self._classify_error_type(e)
+                
+                # 计算延迟时间（基于错误类型）
+                delay = self._calculate_delay(attempt, error_type)
 
                 # 使用日志记录重试信息
                 from utils.logger_config import get_logger
                 logger = get_logger("retry_manager")
-                logger.warning(f"⚠️ API调用失败 (尝试 {attempt + 1}/{self.max_retries + 1}): {e}")
-                logger.info(f"🔄 等待 {delay:.1f}秒后重试...")
+                logger.warning(f"⚠️ API调用失败 (尝试 {attempt + 1}/{self._get_max_retries_for_error_type(error_type)}): {e}")
+                logger.info(f"🔄 错误类型: {error_type}, 等待 {delay:.1f}秒后重试...")
+
+                # 更新重试统计（如果可用）
+                self._update_retry_stats(error_type, False)
 
                 await asyncio.sleep(delay)
 
         # 所有重试都失败了
         raise last_error
+
+    def _merge_default_config(self) -> None:
+        """合并默认配置"""
+        default_config = {
+            "max_retries_by_error_type": {
+                "rate_limit": 5,
+                "timeout": 3,
+                "network": 3,
+                "server_error": 2,
+                "default": 3
+            },
+            "base_delay_by_error_type": {
+                "rate_limit": 5.0,
+                "timeout": 2.0,
+                "network": 1.0,
+                "server_error": 3.0,
+                "default": 2.0
+            },
+            "max_delay": 60.0,
+            "enable_jitter": True,
+            "jitter_range": 0.25,
+            "retryable_error_patterns": {
+                "rate_limit": ["rate_limit", "429", "quota", "limit"],
+                "timeout": ["timeout", "timed out", "time out"],
+                "network": ["connection", "network", "dns", "ssl", "socket"],
+                "server_error": ["server_error", "500", "502", "503", "504", "internal"]
+            }
+        }
+        
+        # 深度合并配置
+        for key, default_value in default_config.items():
+            if key not in self.retry_config:
+                self.retry_config[key] = default_value
+            elif isinstance(default_value, dict) and isinstance(self.retry_config[key], dict):
+                # 字典类型的深度合并
+                for sub_key, sub_default in default_value.items():
+                    if sub_key not in self.retry_config[key]:
+                        self.retry_config[key][sub_key] = sub_default
 
     def _should_retry(self, error: Exception, attempt: int) -> bool:
         """
@@ -412,46 +535,123 @@ class RetryManager:
         Returns:
             是否应该重试
         """
-        if attempt >= self.max_retries:
+        # 获取错误类型
+        error_type = self._classify_error_type(error)
+        
+        # 根据错误类型获取最大重试次数
+        max_retries_for_error = self._get_max_retries_for_error_type(error_type)
+        
+        if attempt >= max_retries_for_error:
             return False
 
+        # 检查错误是否可重试
+        return self._is_retryable_error_type(error_type)
+
+    def _classify_error_type(self, error: Exception) -> str:
+        """
+        分类错误类型
+
+        Args:
+            error: 错误对象
+
+        Returns:
+            错误类型字符串
+        """
         error_str = str(error).lower()
+        
+        # 检查配置中的错误类型模式
+        patterns = self.retry_config.get("retryable_error_patterns", {})
+        
+        for error_type, pattern_list in patterns.items():
+            for pattern in pattern_list:
+                if pattern.lower() in error_str:
+                    return error_type
+        
+        # 默认错误类型
+        return "default"
 
-        # 可重试的错误类型
-        retryable_errors = [
-            "rate_limit",
-            "timeout",
-            "connection",
-            "network",
-            "server_error",
-            "503",
-            "502",
-            "500",
-            "429"
-        ]
+    def _get_max_retries_for_error_type(self, error_type: str) -> int:
+        """
+        根据错误类型获取最大重试次数
 
-        return any(err in error_str for err in retryable_errors)
+        Args:
+            error_type: 错误类型
 
-    def _calculate_delay(self, attempt: int) -> float:
+        Returns:
+            最大重试次数
+        """
+        max_retries_config = self.retry_config.get("max_retries_by_error_type", {})
+        return max_retries_config.get(error_type, max_retries_config.get("default", self.max_retries))
+
+    def _is_retryable_error_type(self, error_type: str) -> bool:
+        """
+        检查错误类型是否可重试
+
+        Args:
+            error_type: 错误类型
+
+        Returns:
+            是否可重试
+        """
+        # 所有在配置中的错误类型都是可重试的
+        max_retries_config = self.retry_config.get("max_retries_by_error_type", {})
+        return error_type in max_retries_config and max_retries_config[error_type] > 0
+
+    def _calculate_delay(self, attempt: int, error_type: str = "default") -> float:
         """
         计算重试延迟时间（指数退避 + 随机抖动）
 
         Args:
             attempt: 当前尝试次数
+            error_type: 错误类型
 
         Returns:
             延迟时间（秒）
         """
         import random
 
+        # 根据错误类型获取基础延迟
+        base_delay_config = self.retry_config.get("base_delay_by_error_type", {})
+        base_delay = base_delay_config.get(error_type, base_delay_config.get("default", self.base_delay))
+
         # 指数退避
-        delay = self.base_delay * (2 ** attempt)
+        delay = base_delay * (2 ** attempt)
 
-        # 添加随机抖动（±25%）
-        jitter = delay * 0.25 * (random.random() * 2 - 1)
+        # 应用最大延迟限制
+        max_delay = self.retry_config.get("max_delay", 60.0)
+        delay = min(delay, max_delay)
 
-        return max(0.1, delay + jitter)
+        # 添加随机抖动（如果启用）
+        if self.retry_config.get("enable_jitter", True):
+            jitter_range = self.retry_config.get("jitter_range", 0.25)
+            jitter = delay * jitter_range * (random.random() * 2 - 1)
+            delay += jitter
 
+        return max(0.1, delay)
+
+    def _update_retry_stats(self, error_type: str, success: bool) -> None:
+        """
+        更新重试统计信息
+
+        Args:
+            error_type: 错误类型
+            success: 重试是否成功
+        """
+        if self.client and hasattr(self.client, 'stats'):
+            retry_stats = self.client.stats.get("retry_stats", {})
+            
+            # 更新总重试次数
+            retry_stats["total_retries"] = retry_stats.get("total_retries", 0) + 1
+            
+            # 更新成功/失败重试次数
+            if success:
+                retry_stats["successful_retries"] = retry_stats.get("successful_retries", 0) + 1
+            else:
+                retry_stats["failed_retries"] = retry_stats.get("failed_retries", 0) + 1
+            
+            # 更新按错误类型的重试次数
+            retries_by_type = retry_stats.get("retries_by_error_type", {})
+            retries_by_type[error_type] = retries_by_type.get(error_type, 0) + 1
 
 class OpenAIClient:
     """OpenAI SDK封装客户端"""
@@ -475,7 +675,9 @@ class OpenAIClient:
         # 创建重试管理器
         self.retry_manager = RetryManager(
             max_retries=self.config.max_retries,
-            base_delay=self.config.retry_delay
+            base_delay=self.config.retry_delay,
+            retry_config=self.config.retry_config,
+            client=self  # 传递自身引用用于统计
         )
 
         # 性能统计
@@ -484,7 +686,40 @@ class OpenAIClient:
             "successful_requests": 0,
             "failed_requests": 0,
             "total_tokens": 0,
-            "total_time": 0.0
+            "total_time": 0.0,
+            # 新增：详细的错误统计
+            "error_stats": {
+                "rate_limit": 0,
+                "timeout": 0,
+                "network": 0,
+                "server_error": 0,
+                "bad_request": 0,
+                "authentication": 0,
+                "permission": 0,
+                "not_found": 0,
+                "unknown": 0
+            },
+            # 新增：延迟统计
+            "latency_stats": {
+                "min": float('inf'),
+                "max": 0.0,
+                "avg": 0.0,
+                "total_count": 0,
+                "sum": 0.0
+            },
+            # 新增：重试统计
+            "retry_stats": {
+                "total_retries": 0,
+                "successful_retries": 0,
+                "failed_retries": 0,
+                "retries_by_error_type": {
+                    "rate_limit": 0,
+                    "timeout": 0,
+                    "network": 0,
+                    "server_error": 0,
+                    "default": 0
+                }
+            }
         }
 
 
@@ -561,15 +796,36 @@ class OpenAIClient:
 
         return params
 
-    def _update_success_stats(self, response: Any) -> None:
+    def _update_success_stats(self, response: Any, latency: Optional[float] = None) -> None:
         """更新成功统计信息"""
         self.stats["successful_requests"] += 1
         if hasattr(response, 'usage') and response.usage:
             self.stats["total_tokens"] += response.usage.total_tokens
+        
+        # 更新延迟统计
+        if latency is not None:
+            self._update_latency_stats(latency)
 
-    def _update_failure_stats(self) -> None:
+    def _update_latency_stats(self, latency: float) -> None:
+        """更新延迟统计信息"""
+        stats = self.stats["latency_stats"]
+        stats["min"] = min(stats["min"], latency)
+        stats["max"] = max(stats["max"], latency)
+        stats["total_count"] += 1
+        stats["sum"] += latency
+        stats["avg"] = stats["sum"] / stats["total_count"]
+
+    def _update_failure_stats(self, error: Optional[OpenAIClientError] = None) -> None:
         """更新失败统计信息"""
         self.stats["failed_requests"] += 1
+        
+        # 记录详细的错误类型统计
+        if error and hasattr(error, 'error_type'):
+            error_type = error.error_type
+            if error_type in self.stats["error_stats"]:
+                self.stats["error_stats"][error_type] += 1
+            else:
+                self.stats["error_stats"]["unknown"] += 1
 
 
 
@@ -613,8 +869,9 @@ class OpenAIClient:
 
             response = await self.retry_manager.execute_with_retry(_api_call)
 
-            # 更新统计信息
-            self._update_success_stats(response)
+            # 更新统计信息（包含延迟信息）
+            request_latency = time.time() - start_time
+            self._update_success_stats(response, request_latency)
 
             # 记录响应日志
             self._log_response("chat_completion", response)
@@ -752,10 +1009,14 @@ class OpenAIClient:
                     )
                     yield final_chunk
 
-            # 更新统计信息
+            # 更新统计信息（包含延迟信息）
             self.stats["successful_requests"] += 1
             if total_tokens > 0:
                 self.stats["total_tokens"] += total_tokens
+            
+            # 更新延迟统计（流式请求的延迟计算）
+            request_latency = time.time() - start_time
+            self._update_latency_stats(request_latency)
 
             # 记录响应日志（流式响应）
             self._log_stream_response("chat_completion_stream", chunk_count, full_content)
@@ -771,64 +1032,244 @@ class OpenAIClient:
 
 
     
-    def _handle_error(self, error: Exception) -> OpenAIClientError:
+    def _handle_error(self, error: Exception, request_params: Optional[Dict[str, Any]] = None) -> OpenAIClientError:
         """
-        处理和转换错误
+        处理和转换错误，提供详细的诊断信息
 
         Args:
             error: 原始错误
+            request_params: 请求参数（用于诊断）
 
         Returns:
-            转换后的错误
+            转换后的错误，包含详细的诊断信息
         """
         import openai
 
+        # 准备请求信息（去除敏感信息）
+        safe_request_info = self._prepare_safe_request_info(request_params)
+        
         # OpenAI SDK特定错误
         if isinstance(error, openai.RateLimitError):
-            return OpenAIRateLimitError(f"API rate limit exceeded: {error}")
+            retry_after = getattr(error, 'retry_after', None)
+            return OpenAIRateLimitError(
+                f"API rate limit exceeded: {error}",
+                original_error=error,
+                request_info=safe_request_info,
+                retry_after=retry_after
+            )
 
         if isinstance(error, openai.APITimeoutError):
-            return OpenAITimeoutError(f"API request timeout: {error}")
+            return OpenAITimeoutError(
+                f"API request timeout: {error}",
+                original_error=error,
+                request_info=safe_request_info
+            )
 
         if isinstance(error, openai.APIConnectionError):
-            return OpenAIRetryableError(f"API connection error: {error}")
+            return OpenAIRetryableError(
+                f"API connection error: {error}",
+                original_error=error,
+                request_info=safe_request_info,
+                error_type="network"
+            )
 
         if isinstance(error, openai.InternalServerError):
-            return OpenAIRetryableError(f"Internal server error: {error}")
+            return OpenAIRetryableError(
+                f"Internal server error: {error}",
+                original_error=error,
+                request_info=safe_request_info,
+                error_type="server_error"
+            )
 
         if isinstance(error, openai.BadRequestError):
-            return OpenAIClientError(f"Bad request: {error}")
+            return OpenAIClientError(
+                f"Bad request: {error}",
+                original_error=error,
+                request_info=safe_request_info,
+                error_type="bad_request"
+            )
 
         if isinstance(error, openai.AuthenticationError):
-            return OpenAIClientError(f"Authentication failed: {error}")
+            return OpenAIClientError(
+                f"Authentication failed: {error}",
+                original_error=error,
+                request_info=safe_request_info,
+                error_type="authentication"
+            )
 
         if isinstance(error, openai.PermissionDeniedError):
-            return OpenAIClientError(f"Permission denied: {error}")
+            return OpenAIClientError(
+                f"Permission denied: {error}",
+                original_error=error,
+                request_info=safe_request_info,
+                error_type="permission"
+            )
 
         if isinstance(error, openai.NotFoundError):
-            return OpenAIClientError(f"Resource not found: {error}")
+            return OpenAIClientError(
+                f"Resource not found: {error}",
+                original_error=error,
+                request_info=safe_request_info,
+                error_type="not_found"
+            )
 
         # 通用错误处理
         error_message = str(error)
 
         # 速率限制错误（字符串匹配）
         if "rate_limit" in error_message.lower() or "429" in error_message:
-            return OpenAIRateLimitError(f"API rate limit exceeded: {error_message}")
+            return OpenAIRateLimitError(
+                f"API rate limit exceeded: {error_message}",
+                original_error=error,
+                request_info=safe_request_info
+            )
 
         # 超时错误（字符串匹配）
         if "timeout" in error_message.lower() or "timed out" in error_message.lower():
-            return OpenAITimeoutError(f"API request timeout: {error_message}")
+            return OpenAITimeoutError(
+                f"API request timeout: {error_message}",
+                original_error=error,
+                request_info=safe_request_info
+            )
 
         # 网络错误（字符串匹配）
-        if any(keyword in error_message.lower() for keyword in ["connection", "network", "dns"]):
-            return OpenAIRetryableError(f"Network error: {error_message}")
+        if any(keyword in error_message.lower() for keyword in ["connection", "network", "dns", "ssl", "socket"]):
+            return OpenAIRetryableError(
+                f"Network error: {error_message}",
+                original_error=error,
+                request_info=safe_request_info,
+                error_type="network"
+            )
 
         # 服务器错误（字符串匹配）
         if any(code in error_message for code in ["500", "502", "503", "504"]):
-            return OpenAIRetryableError(f"Server error: {error_message}")
+            return OpenAIRetryableError(
+                f"Server error: {error_message}",
+                original_error=error,
+                request_info=safe_request_info,
+                error_type="server_error"
+            )
 
         # 其他错误
-        return OpenAIClientError(f"OpenAI API error: {error_message}")
+        return OpenAIClientError(
+            f"OpenAI API error: {error_message}",
+            original_error=error,
+            request_info=safe_request_info,
+            error_type="unknown"
+        )
+
+    def _get_user_friendly_error_message(self, error: OpenAIClientError) -> str:
+        """
+        生成用户友好的错误消息
+
+        Args:
+            error: OpenAIClientError实例
+
+        Returns:
+            用户友好的错误消息
+        """
+        error_type = getattr(error, 'error_type', 'unknown')
+        
+        friendly_messages = {
+            "rate_limit": "⚠️ API访问频率受限，请稍后再试。如果您频繁遇到此问题，可以考虑升级API套餐或联系支持。",
+            "timeout": "⏱️ 请求超时，可能是网络连接较慢或服务器响应延迟。请检查网络连接后重试。",
+            "network": "🌐 网络连接问题，请检查您的网络连接是否正常，然后重试。",
+            "server_error": "🔧 服务器暂时不可用，可能是OpenAI服务维护中。请稍后重试。",
+            "bad_request": "❌ 请求格式错误，请检查输入参数是否正确。",
+            "authentication": "🔑 API密钥验证失败，请检查您的API密钥是否正确配置。",
+            "permission": "🚫 权限不足，请检查您的API密钥是否有访问该资源的权限。",
+            "not_found": "🔍 请求的资源不存在，请检查API端点是否正确。",
+            "default": "❌ 发生未知错误，请稍后重试。如果问题持续，请联系技术支持。"
+        }
+        
+        # 获取具体的错误消息
+        base_message = friendly_messages.get(error_type, friendly_messages["default"])
+        
+        # 添加重试建议（如果是可重试错误）
+        if error_type in ["rate_limit", "timeout", "network", "server_error"]:
+            if hasattr(error, 'retry_after') and error.retry_after:
+                base_message += f" 建议等待 {error.retry_after:.0f} 秒后重试。"
+            else:
+                base_message += " 系统将自动重试，请稍等片刻。"
+        
+        return base_message
+
+    def _create_fallback_response(self, error: Exception) -> Dict[str, Any]:
+        """
+        创建优雅降级的响应
+
+        Args:
+            error: 发生的错误
+
+        Returns:
+            降级响应字典
+        """
+        error_type = "unknown"
+        if isinstance(error, OpenAIClientError):
+            error_type = getattr(error, 'error_type', 'unknown')
+        
+        # 根据错误类型提供不同的降级响应
+        fallback_responses = {
+            "rate_limit": {
+                "error": "rate_limit_exceeded",
+                "message": "API访问频率受限，请稍后再试",
+                "suggestion": "等待一段时间后重试或升级API套餐",
+                "retryable": True
+            },
+            "timeout": {
+                "error": "request_timeout", 
+                "message": "请求超时，请检查网络连接",
+                "suggestion": "检查网络稳定性后重试",
+                "retryable": True
+            },
+            "network": {
+                "error": "network_error",
+                "message": "网络连接问题",
+                "suggestion": "检查网络连接后重试",
+                "retryable": True
+            },
+            "default": {
+                "error": "service_unavailable",
+                "message": "服务暂时不可用",
+                "suggestion": "请稍后重试或联系技术支持",
+                "retryable": False
+            }
+        }
+        
+        return fallback_responses.get(error_type, fallback_responses["default"])
+
+    def _prepare_safe_request_info(self, request_params: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        准备安全的请求信息（去除敏感数据）
+
+        Args:
+            request_params: 原始请求参数
+
+        Returns:
+            安全的请求信息字典
+        """
+        if not request_params:
+            return {}
+        
+        # 复制参数并移除敏感信息
+        safe_params = request_params.copy()
+        
+        # 移除敏感字段
+        sensitive_fields = ["api_key", "password", "token", "secret", "key"]
+        for field in sensitive_fields:
+            if field in safe_params:
+                safe_params[field] = "[REDACTED]"
+        
+        # 处理消息中的敏感内容
+        if "messages" in safe_params and isinstance(safe_params["messages"], list):
+            for message in safe_params["messages"]:
+                if isinstance(message, dict) and "content" in message:
+                    # 简略显示消息内容
+                    content = message["content"]
+                    if isinstance(content, str) and len(content) > 100:
+                        message["content"] = content[:100] + "..."
+        
+        return safe_params
     
     def _log_request(self, method: str, params: Dict[str, Any]) -> None:
         """记录请求日志"""
@@ -860,8 +1301,55 @@ class OpenAIClient:
             "successful_requests": 0,
             "failed_requests": 0,
             "total_tokens": 0,
-            "total_time": 0.0
+            "total_time": 0.0,
+            "error_stats": {
+                "rate_limit": 0,
+                "timeout": 0,
+                "network": 0,
+                "server_error": 0,
+                "bad_request": 0,
+                "authentication": 0,
+                "permission": 0,
+                "not_found": 0,
+                "unknown": 0
+            },
+            "latency_stats": {
+                "min": float('inf'),
+                "max": 0.0,
+                "avg": 0.0,
+                "total_count": 0,
+                "sum": 0.0
+            },
+            "retry_stats": {
+                "total_retries": 0,
+                "successful_retries": 0,
+                "failed_retries": 0,
+                "retries_by_error_type": {
+                    "rate_limit": 0,
+                    "timeout": 0,
+                    "network": 0,
+                    "server_error": 0,
+                    "default": 0
+                }
+            }
         }
+
+    def get_user_friendly_error(self, error: Exception) -> str:
+        """
+        获取用户友好的错误消息（公共方法）
+
+        Args:
+            error: 异常对象
+
+        Returns:
+            用户友好的错误消息
+        """
+        if isinstance(error, OpenAIClientError):
+            return self._get_user_friendly_error_message(error)
+        else:
+            # 处理非OpenAIClientError异常
+            handled_error = self._handle_error(error)
+            return self._get_user_friendly_error_message(handled_error)
 
 
 # 全局客户端实例

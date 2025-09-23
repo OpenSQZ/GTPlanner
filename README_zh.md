@@ -48,6 +48,7 @@ GTPlanner 是一款专为 "vibe coding" 设计的先进 AI 工具，旨在将高
 - **⚡ 无状态架构**：支持高并发和水平扩展的无状态设计，适合生产环境部署
 - **🛠️ Function Calling**：集成OpenAI Function Calling，支持智能工具调用和任务执行
 - **🌐 多接口支持**：提供CLI、FastAPI REST API、MCP服务等多种集成方式
+- **🔧 智能错误处理**：增强的错误处理机制，支持配置化重试策略、详细的错误分类和用户友好的错误消息
 
 该项目包含两个核心部分：
 - **💻 GTPlanner-frontend (Web UI)**：提供功能丰富、交互友好的在线规划体验。（推荐）[🚀 立刻体验 Live Demo!](https://the-agent-builder.com/)
@@ -190,6 +191,53 @@ bash configure_langfuse.sh
 如果暂时不需要追踪功能，可以忽略 Langfuse 配置。系统会自动跳过 tracing。
 
 > 可在 `settings.toml` 中进一步配置其他参数。默认语言为英文，支持中文、日文、西班牙文、法文。
+
+##### 错误处理配置（可选）
+
+GTPlanner 提供了增强的错误处理机制，支持在 `settings.toml` 中配置：
+
+```toml
+[llm]
+# 基础重试配置
+max_retries = 3
+retry_delay = 2.0
+
+# 细粒度重试策略（可选）
+[llm.retry_config]
+# 不同错误类型的最大重试次数
+max_retries_by_error_type = {
+    "rate_limit" = 5,      # 速率限制错误：最多重试5次
+    "timeout" = 3,         # 超时错误：最多重试3次  
+    "network" = 3,         # 网络错误：最多重试3次
+    "server_error" = 2,     # 服务器错误：最多重试2次
+    "default" = 3          # 默认重试次数
+}
+
+# 不同错误类型的初始延迟（秒）
+base_delay_by_error_type = {
+    "rate_limit" = 5.0,    # 速率限制错误：初始延迟5秒
+    "timeout" = 2.0,       # 超时错误：初始延迟2秒
+    "network" = 1.0,       # 网络错误：初始延迟1秒
+    "server_error" = 3.0,  # 服务器错误：初始延迟3秒
+    "default" = 2.0        # 默认初始延迟
+}
+
+# 最大延迟时间（秒）
+max_delay = 60.0
+
+# 是否启用随机抖动
+enable_jitter = true
+
+# 抖动范围（0.0-1.0，表示±百分比）
+jitter_range = 0.25
+```
+
+错误处理特性包括：
+- 🔄 **智能重试机制**：基于错误类型的指数退避重试
+- 📊 **详细错误分类**：自动识别速率限制、超时、网络错误等
+- 💬 **用户友好错误消息**：提供清晰的中文错误提示和解决方案
+- 📈 **性能监控**：详细的API调用统计和错误统计
+- 🔒 **安全信息处理**：自动隐藏敏感信息在错误日志中
 
 
 ### 3) 方式 A：CLI 一键生成你的第一份 PRD（推荐）
