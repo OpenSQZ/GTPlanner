@@ -552,6 +552,37 @@ flowchart TD
 
 ---
 
+## 📑 工具参数模型与校验（新增）
+
+为提升健壮性与开发体验，GTPlanner 为 Function Calling 工具引入了严格的参数模型与统一校验：
+
+- 位置：`agent/function_calling/arg_models.py`
+- 模型（类名统一以 C 开头）：
+  - `CShortPlanningArgs`
+  - `CToolRecommendArgs`
+  - `CResearchArgs`
+  - `CDesignArgs`
+- 行为：
+  - 严格校验（必填、类型、枚举、最小长度）
+  - 自动规范化（如 `top_k` 自动夹取 1–20、默认值补齐）
+  - 统一入口：`validate_tool_arguments()` 现在返回 `{ valid, errors, normalized }`
+  - `ToolExecutor` 在执行前优先使用 `normalized` 参数
+- 向后兼容：尚未提供模型的工具将原样透传，不影响现有逻辑
+
+示例（归一化与校验）：
+
+```python
+from agent.function_calling.agent_tools import validate_tool_arguments
+
+res = validate_tool_arguments("tool_recommend", {"query": "RAG 技术栈", "top_k": 100})
+# res == {"valid": True, "errors": [], "normalized": {"query": "RAG 技术栈", "top_k": 20, "use_llm_filter": True}}
+
+res2 = validate_tool_arguments("design", {"design_mode": "fast"})
+# res2.valid == False  # 合法取值: "quick" | "deep"
+```
+
+---
+
 ## 📦 项目结构
 
 ```

@@ -62,6 +62,9 @@ class ToolExecutor:
                 self._record_error(shared, "ToolExecutor.validation",
                                  f"参数验证失败: {validation['errors']}", tool_name)
                 continue
+            # 使用规范化参数（若提供）
+            if "normalized" in validation and isinstance(validation["normalized"], dict):
+                arguments = validation["normalized"]
 
             # 创建异步任务
             task = self._execute_single_tool(

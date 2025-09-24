@@ -543,6 +543,37 @@ flowchart TD
 
 ---
 
+## 📑 Tool Argument Models & Validation (New)
+
+To improve robustness and developer experience, GTPlanner introduces strict argument models for Function Calling tools.
+
+- Location: `agent/function_calling/arg_models.py`
+- Models (prefixed with C):
+  - `CShortPlanningArgs`
+  - `CToolRecommendArgs`
+  - `CResearchArgs`
+  - `CDesignArgs`
+- Behavior:
+  - Strong validation (required fields, types, enums, min lengths)
+  - Automatic normalization (e.g., clamp `top_k` to 1–20, fill defaults)
+  - Unified entrypoint: `validate_tool_arguments()` now returns `{ valid, errors, normalized }`
+  - `ToolExecutor` uses `normalized` arguments if present
+- Backward-compatible: tools without models are passed through unchanged
+
+Example (normalization and validation):
+
+```python
+from agent.function_calling.agent_tools import validate_tool_arguments
+
+res = validate_tool_arguments("tool_recommend", {"query": "RAG stack", "top_k": 100})
+# res == {"valid": True, "errors": [], "normalized": {"query": "RAG stack", "top_k": 20, "use_llm_filter": True}}
+
+res2 = validate_tool_arguments("design", {"design_mode": "fast"})
+# res2.valid == False  # allowed values: "quick" | "deep"
+```
+
+---
+
 ## 📦 Project Structure
 
 ```

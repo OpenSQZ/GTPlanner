@@ -6,12 +6,13 @@ Agent Function Calling工具包装器
 """
 
 
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Type
 
 # 导入现有的子Agent流程
 from agent.subflows.short_planning.flows.short_planning_flow import ShortPlanningFlow
 from agent.subflows.deep_design_docs.flows.deep_design_docs_flow import ArchitectureFlow
 from agent.subflows.research.flows.research_flow import ResearchFlow
+from .arg_models import TOOL_ARG_MODELS
 
 
 def get_agent_function_definitions() -> List[Dict[str, Any]]:
@@ -526,29 +527,27 @@ def get_tool_by_name(tool_name: str) -> Optional[Dict[str, Any]]:
 
 
 def validate_tool_arguments(tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    验证工具参数
-    
-    Args:
-        tool_name: 工具名称
-        arguments: 参数字典
-        
+    """使用 Pydantic 模型进行严格校验并返回规范化参数。
+
     Returns:
-        验证结果 {"valid": bool, "errors": List[str]}
+        {"valid": bool, "errors": List[str], "normalized": Optional[Dict[str, Any]]}
     """
     tool_def = get_tool_by_name(tool_name)
     if not tool_def:
         return {"valid": False, "errors": [f"Unknown tool: {tool_name}"]}
-    
-    errors = []
-    required_params = tool_def["function"]["parameters"].get("required", [])
-    
-    # 检查必需参数
-    for param in required_params:
-        if param not in arguments:
-            errors.append(f"Missing required parameter: {param}")
-    
-    return {"valid": len(errors) == 0, "errors": errors}
+
+    model: Optional[Type] = TOOL_ARG_MODELS.get(tool_name)
+    if not model:
+        # 没有模型时退回原样通过
+        return {"valid": True, "errors": [], "normalized": arguments}
+
+    try:
+        instance = model.model_validate(arguments)
+        # Pydantic v2: model_dump() 获取规范化字典
+        normalized = instance.model_dump(exclude_none=True)
+        return {"valid": True, "errors": [], "normalized": normalized}
+    except Exception as e:
+        return {"valid": False, "errors": [str(e)]}
 
 
 # 便捷函数
