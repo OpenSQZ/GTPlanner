@@ -5,15 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GTPlanner SSE 测试页面</title>
     <style>
+        :root {
+            /* Light theme colors */
+            --bg-gradient-1: #667eea;
+            --bg-gradient-2: #764ba2;
+            --container-bg: #ffffff;
+            --header-gradient-1: #4facfe;
+            --header-gradient-2: #00f2fe;
+            --input-section-bg: #f8f9fa;
+            --output-section-bg: #ffffff;
+            --border-color: #e9ecef;
+            --text-primary: #495057;
+            --text-secondary: #6c757d;
+            --text-light: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #e9ecef;
+            --input-focus: #4facfe;
+            --event-bg: #ffffff;
+            --event-border: #007bff;
+            --config-section-bg: #ffffff;
+            --output-bg: #f8f9fa;
+            --status-bar-bg: #f8f9fa;
+            --theme-toggle-bg: rgba(255, 255, 255, 0.2);
+            --theme-toggle-color: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            /* Dark theme colors */
+            --bg-gradient-1: #2c3e50;
+            --bg-gradient-2: #34495e;
+            --container-bg: #2c3e50;
+            --header-gradient-1: #4facfe;
+            --header-gradient-2: #00f2fe;
+            --input-section-bg: #34495e;
+            --output-section-bg: #2c3e50;
+            --border-color: #4a5568;
+            --text-primary: #e2e8f0;
+            --text-secondary: #a0aec0;
+            --text-light: #ffffff;
+            --input-bg: #4a5568;
+            --input-border: #4a5568;
+            --input-focus: #4facfe;
+            --event-bg: #374151;
+            --event-border: #007bff;
+            --config-section-bg: #374151;
+            --output-bg: #374151;
+            --status-bar-bg: #34495e;
+            --theme-toggle-bg: rgba(0, 0, 0, 0.3);
+            --theme-toggle-color: #e2e8f0;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -21,17 +72,18 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
+            background: var(--container-bg);
             border-radius: 15px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--header-gradient-1) 0%, var(--header-gradient-2) 100%);
+            color: var(--text-light);
             padding: 30px;
             text-align: center;
+            position: relative;
         }
 
         .header h1 {
@@ -45,6 +97,32 @@
             opacity: 0.9;
         }
 
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--theme-toggle-bg);
+            border: none;
+            color: var(--theme-toggle-color);
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--theme-toggle-bg);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
         .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -54,13 +132,13 @@
 
         .input-section {
             padding: 30px;
-            background: #f8f9fa;
-            border-right: 1px solid #e9ecef;
+            background: var(--input-section-bg);
+            border-right: 1px solid var(--border-color);
         }
 
         .output-section {
             padding: 30px;
-            background: white;
+            background: var(--output-section-bg);
         }
 
         .form-group {
@@ -71,35 +149,37 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #495057;
+            color: var(--text-primary);
         }
 
         .form-group input[type="text"] {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--input-border);
             border-radius: 8px;
             font-size: 16px;
-            transition: border-color 0.3s ease;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .form-group input[type="text"]:focus {
             outline: none;
-            border-color: #4facfe;
+            border-color: var(--input-focus);
             box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
         }
 
         .config-section {
-            background: white;
+            background: var(--config-section-bg);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
-            border: 1px solid #e9ecef;
+            border: 1px solid var(--border-color);
         }
 
         .config-section h3 {
             margin-bottom: 15px;
-            color: #495057;
+            color: var(--text-primary);
             font-size: 1.1em;
         }
 
@@ -125,6 +205,7 @@
             margin: 0;
             font-weight: normal;
             cursor: pointer;
+            color: var(--text-primary);
         }
 
         .button-group {
@@ -173,21 +254,26 @@
         .output {
             height: 500px;
             overflow-y: auto;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             padding: 15px;
-            background: #f8f9fa;
+            background: var(--output-bg);
             font-family: 'Courier New', monospace;
             font-size: 14px;
             line-height: 1.5;
+        }
+
+        .output h3 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
         }
 
         .event {
             margin-bottom: 15px;
             padding: 12px;
             border-radius: 6px;
-            border-left: 4px solid #007bff;
-            background: white;
+            border-left: 4px solid var(--event-border);
+            background: var(--event-bg);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
@@ -207,19 +293,19 @@
         }
 
         .event-time {
-            color: #6c757d;
+            color: var(--text-secondary);
             font-size: 11px;
         }
 
         .event-content {
-            color: #495057;
+            color: var(--text-primary);
             white-space: pre-wrap;
             word-wrap: break-word;
         }
 
         .event.error {
             border-left-color: #dc3545;
-            background: #fff5f5;
+            background: var(--event-bg);
         }
 
         .event.error .event-type {
@@ -228,7 +314,7 @@
 
         .event.success {
             border-left-color: #28a745;
-            background: #f8fff9;
+            background: var(--event-bg);
         }
 
         .event.success .event-type {
@@ -237,7 +323,7 @@
 
         .event.tool {
             border-left-color: #ffc107;
-            background: #fffdf5;
+            background: var(--event-bg);
         }
 
         .event.tool .event-type {
@@ -246,13 +332,13 @@
 
         .status-bar {
             padding: 15px 30px;
-            background: #f8f9fa;
-            border-top: 1px solid #e9ecef;
+            background: var(--status-bar-bg);
+            border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 14px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .status-indicator {
@@ -284,7 +370,20 @@
             
             .input-section {
                 border-right: none;
-                border-bottom: 1px solid #e9ecef;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .theme-toggle {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+                margin-right: 60px;
             }
         }
 
@@ -302,11 +401,19 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Theme transition for smooth changes */
+        .theme-transition * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <button class="theme-toggle" id="themeToggle" title="切换主题">
+                <span id="themeIcon">🌙</span>
+            </button>
             <h1>🚀 GTPlanner SSE 测试</h1>
             <p>实时流式响应测试页面 - 体验智能规划助手的强大功能</p>
         </div>
@@ -364,6 +471,55 @@
         let eventCount = 0;
         let connectionStartTime = null;
         let currentReader = null;
+
+        // Theme management
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        // Initialize theme
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('gtplanner-theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            let theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            setTheme(theme);
+        }
+
+        function setTheme(theme) {
+            // Add transition class for smooth theme change
+            body.classList.add('theme-transition');
+            
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+                themeToggle.title = '切换到浅色模式';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                themeIcon.textContent = '🌙';
+                themeToggle.title = '切换到暗黑模式';
+            }
+            
+            localStorage.setItem('gtplanner-theme', theme);
+            
+            // Remove transition class after animation
+            setTimeout(() => {
+                body.classList.remove('theme-transition');
+            }, 300);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        }
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('gtplanner-theme')) {
+                setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
 
         function updateStatus(connected, text) {
             const statusDot = document.getElementById('statusDot');
@@ -598,6 +754,12 @@
 
         // 监听完成事件来重新启用按钮
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize theme
+            initializeTheme();
+            
+            // Theme toggle event listener
+            themeToggle.addEventListener('click', toggleTheme);
+            
             // 回车发送
             document.getElementById('userInput').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' && !document.getElementById('sendBtn').disabled) {
