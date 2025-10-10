@@ -6,8 +6,10 @@ functionality, integrating with dynaconf settings.
 """
 
 import os
-from typing import List, Optional, Dict, Any
+import re
+from typing import List, Optional, Dict, Any, Tuple
 import logging
+from urllib.parse import urlparse
 
 try:
     from dynaconf import Dynaconf
@@ -310,7 +312,184 @@ class MultilingualConfig:
         if Dynaconf and not os.path.exists(self.settings_file):
             warnings.append(f"Settings file '{self.settings_file}' not found")
         
+        # Validate LLM configuration
+        llm_config_warnings = self._validate_llm_config()
+        warnings.extend(llm_config_warnings)
+        
+        # Validate API keys
+        api_key_warnings = self._validate_api_keys()
+        warnings.extend(api_key_warnings)
+        
+        # Validate vector service configuration
+        vector_warnings = self._validate_vector_service_config()
+        warnings.extend(vector_warnings)
+        
         return warnings
+    
+    def _validate_llm_config(self) -> List[str]:
+        """Validate LLM configuration.
+        
+        Returns:
+            List of validation warnings for LLM config
+        """
+        warnings = []
+        llm_config = self.get_llm_config()
+        
+        # Check API key
+        api_key = llm_config.get("api_key")
+        if not api_key:
+            warnings.append("LLM API key is not configured")
+        elif not self._is_valid_api_key(api_key):
+            warnings.append("LLM API key format appears invalid")
+        
+        # Check base URL
+        base_url = llm_config.get("base_url")
+        if not base_url:
+            warnings.append("LLM base URL is not configured")
+        elif not self._is_valid_url(base_url):
+            warnings.append(f"LLM base URL '{base_url}' appears invalid")
+        
+        # Check model
+        if not llm_config.get("model"):
+            warnings.append("LLM model is not configured")
+        
+        return warnings
+    
+    def _validate_api_keys(self) -> List[str]:
+        """Validate API keys.
+        
+        Returns:
+            List of validation warnings for API keys
+        """
+        warnings = []
+        
+        # Check Jina API key if research tool is needed
+        jina_key = self.get_jina_api_key()
+        if jina_key:
+            if jina_key.startswith("@format") or not jina_key.strip():
+                warnings.append("Jina API key is set to a placeholder value")
+        
+        return warnings
+    
+    def _validate_vector_service_config(self) -> List[str]:
+        """Validate vector service configuration.
+        
+        Returns:
+            List of validation warnings for vector service
+        """
+        warnings = []
+        vector_config = self.get_vector_service_config()
+        
+        if vector_config.get("base_url"):
+            base_url = vector_config["base_url"]
+            if not self._is_valid_url(base_url):
+                warnings.append(f"Vector service base URL '{base_url}' appears invalid")
+        
+        return warnings
+    
+    @staticmethod
+    def _is_valid_api_key(api_key: str) -> bool:
+        """Check if an API key has a valid format.
+        
+        Args:
+            api_key: The API key to validate
+            
+        Returns:
+            True if the API key format is valid
+        """
+        if not api_key or not api_key.strip():
+            return False
+        
+        # Check for common placeholder patterns
+        if api_key.startswith(("your-", "@format", "sk-xxx", "<", "[")):
+            return False
+        
+        # API keys should be reasonably long
+        if len(api_key) < 20:
+            return False
+        
+        return True
+    
+    @staticmethod
+    def _is_valid_url(url: str) -> bool:
+        """Check if a URL is valid.
+        
+        Args:
+            url: The URL to validate
+            
+        Returns:
+            True if the URL is valid
+        """
+        if not url or not url.strip():
+            return False
+        
+        try:
+            result = urlparse(url)
+            return all([result.scheme, result.netloc])
+        except Exception:
+            return False
+    
+    def get_health_status(self) -> Dict[str, Any]:
+        """Get comprehensive health status of the configuration.
+        
+        Returns:
+            Dictionary with health status information
+        """
+        status = {
+            "healthy": True,
+            "warnings": [],
+            "errors": [],
+            "components": {}
+        }
+        
+        # Check multilingual configuration
+        status["components"]["multilingual"] = {
+            "status": "ok",
+            "default_language": self.get_default_language(),
+            "auto_detect": self.is_auto_detect_enabled(),
+            "supported_languages": self.get_supported_languages_config()
+        }
+        
+        # Check LLM configuration
+        llm_config = self.get_llm_config()
+        llm_status = "ok" if all([llm_config.get("api_key"), llm_config.get("base_url"), llm_config.get("model")]) else "warning"
+        status["components"]["llm"] = {
+            "status": llm_status,
+            "configured": bool(llm_config),
+            "has_api_key": bool(llm_config.get("api_key")),
+            "has_base_url": bool(llm_config.get("base_url")),
+            "has_model": bool(llm_config.get("model"))
+        }
+        
+        if llm_status == "warning":
+            status["warnings"].append("LLM configuration is incomplete")
+        
+        # Check Jina API key
+        jina_key = self.get_jina_api_key()
+        jina_status = "ok" if jina_key and not jina_key.startswith("@format") else "info"
+        status["components"]["jina"] = {
+            "status": jina_status,
+            "configured": bool(jina_key)
+        }
+        
+        if jina_status == "info" and not jina_key:
+            status["warnings"].append("Jina API key not configured (research tool will be unavailable)")
+        
+        # Check vector service
+        vector_config = self.get_vector_service_config()
+        vector_status = "ok" if vector_config.get("base_url") else "info"
+        status["components"]["vector_service"] = {
+            "status": vector_status,
+            "configured": bool(vector_config.get("base_url"))
+        }
+        
+        # Run validation
+        validation_warnings = self.validate_config()
+        if validation_warnings:
+            status["warnings"].extend(validation_warnings)
+            status["healthy"] = False
+        
+        return status
 
 
 # Global configuration manager instance
