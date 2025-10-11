@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>医疗智能体</title>
+    <meta name="description" content="基于AI技术的医疗智能助手，提供智能问诊、报告解读、健康科普等服务">
+    <meta name="keywords" content="医疗AI,智能问诊,健康咨询,报告解读,皮肤病咨询,药物咨询">
+    <link rel="icon" href="/favicon.ico">
+    <script>
+        var coverSupport = 'CSS' in window && typeof CSS.supports === 'function' && (CSS.supports('top: env(a)') || CSS.supports('top: constant(a)'))
+        document.write('<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0' + (coverSupport ? ',viewport-fit=cover' : '') + '" />')
+    </script>
+</head>
+<body>
+    <div id="app">
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">医疗智能体加载中...</div>
+        </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+    <style>
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f8f9fa;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1658FF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        .loading-text {
+            color: #666;
+            font-size: 16px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,54 @@
+/* 医疗智能体主题 - 使用CSS变量避免SCSS冲突 */
+
+:root {
+  /* 医疗应用主题色彩 */
+  --medical-primary: #1658FF;
+  --medical-secondary: #6c757d;
+  --medical-success: #28a745;
+  --medical-danger: #dc3545;
+  --medical-warning: #ffc107;
+  --medical-info: #17a2b8;
+  
+  /* 医疗应用间距 */
+  --medical-spacing-xs: 10rpx;
+  --medical-spacing-sm: 20rpx;
+  --medical-spacing-md: 30rpx;
+  --medical-spacing-lg: 40rpx;
+  --medical-spacing-xl: 50rpx;
+  
+  /* 医疗应用卡片样式 */
+  --medical-card-radius: 12rpx;
+  --medical-card-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+  
+  /* 医疗应用按钮样式 */
+  --medical-btn-radius: 50rpx;
+  --medical-btn-height: 88rpx;
+}
+
+/* 医疗应用通用样式类 */
+.medical-primary {
+  color: var(--medical-primary);
+}
+
+.medical-primary-bg {
+  background-color: var(--medical-primary);
+}
+
+.medical-card {
+  border-radius: var(--medical-card-radius);
+  box-shadow: var(--medical-card-shadow);
+}
+
+.medical-btn {
+  border-radius: var(--medical-btn-radius);
+  height: var(--medical-btn-height);
+}
+
+/* 医疗应用渐变背景 */
+.medical-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.medical-light-gradient {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}

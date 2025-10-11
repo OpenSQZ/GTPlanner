@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能问诊测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .chat-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .title {
+            text-align: center;
+            color: #1658FF;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            padding: 12px 20px;
+            background-color: #1658FF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0d47e6;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .messages {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            text-align: right;
+        }
+        .ai-message {
+            background-color: #f5f5f5;
+        }
+        .debug-info {
+            background-color: #fff3e0;
+            border: 1px solid #ffcc02;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .debug-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #f57c00;
+        }
+        .debug-content {
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .quick-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .quick-btn {
+            padding: 8px 15px;
+            background-color: #e8f4fd;
+            color: #1658FF;
+            border: 1px solid #1658FF;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .quick-btn:hover {
+            background-color: #1658FF;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1 class="title">🏥 智能问诊测试</h1>
+        
+        <!-- 快捷输入按钮 -->
+        <div class="quick-buttons">
+            <button class="quick-btn" onclick="setInput('我头痛发烧，应该看什么科？')">头痛发烧</button>
+            <button class="quick-btn" onclick="setInput('我最近失眠严重，可能是什么原因？')">失眠问题</button>
+            <button class="quick-btn" onclick="setInput('胸闷气短，需要做什么检查？')">胸闷气短</button>
+            <button class="quick-btn" onclick="setInput('帮我整理病历信息')">病历整理</button>
+        </div>
+        
+        <!-- 输入区域 -->
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="请描述您的症状或健康问题..." />
+            <button id="sendBtn" onclick="sendMessage()">发送</button>
+        </div>
+        
+        <!-- 消息显示区域 -->
+        <div class="messages" id="messages"></div>
+        
+        <!-- 调试信息区域 -->
+        <div class="debug-info">
+            <div class="debug-title">🔍 调试信息</div>
+            <div class="debug-content" id="debugInfo">准备发送请求...</div>
+        </div>
+    </div>
+
+    <script>
+        let debugLogs = [];
+
+        function addDebugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLogs.push(`[${timestamp}] ${message}`);
+            document.getElementById('debugInfo').textContent = debugLogs.slice(-20).join('\n');
+        }
+
+        function addMessage(content, isUser = false) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            messageDiv.textContent = content;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function setInput(text) {
+            document.getElementById('messageInput').value = text;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = input.value.trim();
+            
+            if (!message) {
+                addDebugLog('❌ 消息为空');
+                return;
+            }
+
+            addDebugLog(`📤 准备发送消息: ${message}`);
+            addMessage(message, true);
+            
+            input.value = '';
+            sendBtn.disabled = true;
+            sendBtn.textContent = '发送中...';
+            
+            try {
+                addDebugLog('🔧 开始发送请求...');
+                
+                // 测试多种API路径
+                const apiPaths = [
+                    '/api/medical-chat',          // 通过代理
+                    'http://localhost:8000/api/medical-chat'  // 直接访问
+                ];
+                
+                let success = false;
+                
+                for (const apiPath of apiPaths) {
+                    try {
+                        addDebugLog(`🔧 尝试API路径: ${apiPath}`);
+                        
+                        const response = await fetch(apiPath, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ message })
+                        });
+                        
+                        addDebugLog(`📨 收到响应: ${response.status} ${response.statusText}`);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        
+                        const data = await response.json();
+                        addDebugLog(`✅ 解析响应成功: ${JSON.stringify(data).substring(0, 100)}...`);
+                        
+                        if (data.success) {
+                            const responseContent = getResponseContent(data.data.response);
+                            addMessage(responseContent);
+                            addDebugLog(`✅ 显示AI回复完成`);
+                        } else {
+                            addMessage(`错误: ${data.message}`);
+                            addDebugLog(`❌ API返回错误: ${data.message}`);
+                        }
+                        
+                        success = true;
+                        break;
+                        
+                    } catch (error) {
+                        addDebugLog(`❌ API路径 ${apiPath} 失败: ${error.message}`);
+                        continue;
+                    }
+                }
+                
+                if (!success) {
+                    addMessage('网络连接失败，请检查后端服务是否启动');
+                    addDebugLog('❌ 所有API路径都失败了');
+                }
+                
+            } catch (error) {
+                addDebugLog(`❌ 发送失败: ${error.message}`);
+                addMessage(`发送失败: ${error.message}`);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '发送';
+            }
+        }
+
+        function getResponseContent(agentResponse) {
+            if (typeof agentResponse === 'string') {
+                return agentResponse;
+            }
+            
+            // 根据不同的智能体类型处理响应
+            if (agentResponse.reply) {
+                return agentResponse.reply;
+            } else if (agentResponse.triage_result) {
+                return agentResponse.triage_result;
+            } else if (agentResponse.diagnosis_result) {
+                return agentResponse.diagnosis_result;
+            } else if (agentResponse.case_result) {
+                return agentResponse.case_result;
+            }
+            
+            return JSON.stringify(agentResponse, null, 2);
+        }
+
+        // 监听回车键发送
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 页面加载完成后的初始化
+        window.onload = function() {
+            addDebugLog('🚀 页面加载完成，准备测试');
+            addMessage('您好！我是您的医疗AI助手，请描述您的症状或健康问题。');
+        };
+    </script>
+</body>
+</html>

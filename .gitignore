@@ -1,110 +1,90 @@
-# Dependencies
-node_modules/
-vendor/
-.pnp/
-.pnp.js
 
-# Build outputs
-dist/
-build/
-out/
-*.pyc
-__pycache__/
-*.egg-info/
-
-# Environment files
-.env
-.env.local
-.env.*.local
-.env.development
-.env.test
-.env.production
-.secrets.toml
-settings.local.toml
-
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# IDE - JetBrains
+# Standard Git Ignore Rules
+# Added by automated redirect script
+# IDE files
 .idea/
-*.iml
-*.iws
-*.ipr
-
-# IDE - Eclipse
-.project
-.classpath
-.settings/
-
-# Logs
+.vscode/
+*.code-workspace
+# Python compiled files
+__pycache__/
+*.py[cod]
+*.pyd
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Log files
 logs/
 *.log
+# Environment variables
+.env
+.env.local
+.secret
+# OS generated files
+.DS_Store
+Thumbs.db
+# Coverage files
+.coverage
+htmlcov/
+
+# Medical AI Agent Ignore Rules
+# Added by upload script
+*.swp
+*.swo
+*.pyo
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+medical_ai_agent/
+*.ipynb_checkpoints
+log/
+# Environment variables and secrets
+.env.production
+config.py
+secrets.json
+# API Keys and sensitive data
+*.key
+*.pem
+*.p12
+*.pfx
+desktop.ini
+*.tmp
+*.temp
+# Coverage and testing
+.pytest_cache/
+.tox/
+.mypy_cache/
+# Node.js (for frontend)
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# Operating System
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-
-# Testing
-coverage/
-.nyc_output/
-
-# Temporary files
-*.tmp
-*.temp
-.cache/
-
-# Compiled files
-*.com
-*.class
-*.dll
-*.exe
-*.o
-*.so
-
-# Package files
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
-
-# Database
+.npm
+.yarn
+# Frontend build files
+frontend/dist/
+frontend/build/
+frontend/.nuxt/
+frontend/.next/
+frontend/.cache/
+# Medical AI specific
+test_images/
+test_documents/
+uploads/
+temp/
+cache/
+*.dcm
+*.dicom
+# Database files
+*.db
 *.sqlite
 *.sqlite3
-*.db
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional REPL history
-.node_repl_history 
-
-
-input/*
-output/*
-doc.pdf
+# Backup files
 *.bak
-
-# Cookbook and examples (development only)
-cookbook/
-
-# GTPlanner session data
-.gtplanner_sessions/
-.specstory
-memory-bank
-gtplanner_conversations.db
+*.backup
+*.old

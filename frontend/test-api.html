@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医疗AI接口测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            color: #1658FF;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #1658FF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0d47e6;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            background-color: #fff5f5;
+            color: #e53e3e;
+            border: 1px solid #feb2b2;
+        }
+        .success {
+            background-color: #f0fff4;
+            color: #38a169;
+            border: 1px solid #9ae6b4;
+        }
+        .loading {
+            color: #1658FF;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏥 医疗AI接口测试</h1>
+    <p>这个页面用于测试前端到后端的API连接是否正常</p>
+
+    <!-- 健康检查 -->
+    <div class="test-section">
+        <div class="test-title">1. 健康检查</div>
+        <button onclick="testHealth()">测试后端连接</button>
+        <div id="health-result" class="result" style="display: none;"></div>
+    </div>
+
+    <!-- 医疗聊天 -->
+    <div class="test-section">
+        <div class="test-title">2. 医疗聊天测试</div>
+        <textarea id="chat-input" placeholder="输入您的健康问题..." rows="3">我头痛发烧，应该看什么科？</textarea>
+        <button onclick="testChat()">发送消息</button>
+        <div id="chat-result" class="result" style="display: none;"></div>
+    </div>
+
+    <!-- 健康科普 -->
+    <div class="test-section">
+        <div class="test-title">3. 健康科普测试</div>
+        <input type="text" id="health-input" placeholder="输入健康问题..." value="高血压的预防方法有哪些？">
+        <button onclick="testHealthEducation()">查询科普</button>
+        <div id="health-edu-result" class="result" style="display: none;"></div>
+    </div>
+
+    <!-- 药物咨询 -->
+    <div class="test-section">
+        <div class="test-title">4. 药物咨询测试</div>
+        <input type="text" id="medication-input" placeholder="输入药物问题..." value="阿莫西林胶囊的用法用量是什么？">
+        <button onclick="testMedication()">咨询药物</button>
+        <div id="medication-result" class="result" style="display: none;"></div>
+    </div>
+
+    <!-- 文件上传测试 -->
+    <div class="test-section">
+        <div class="test-title">5. 报告解读测试</div>
+        <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx">
+        <button onclick="testReportUpload()">上传并解读</button>
+        <div id="report-result" class="result" style="display: none;"></div>
+    </div>
+
+    <!-- 图片上传测试 -->
+    <div class="test-section">
+        <div class="test-title">6. 皮肤病咨询测试</div>
+        <input type="file" id="image-input" accept="image/*">
+        <textarea id="symptoms-input" placeholder="描述皮肤症状..." rows="2">皮肤发红，有点痒，出现了一个红色的圆形斑块</textarea>
+        <button onclick="testDermatology()">上传图片分析</button>
+        <div id="dermatology-result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api'; // 通过vite代理
+
+        function showResult(elementId, content, isError = false, isLoading = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${isError ? 'error' : isLoading ? 'loading' : 'success'}`;
+            element.textContent = content;
+        }
+
+        async function testHealth() {
+            showResult('health-result', '正在检查后端连接...', false, true);
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                showResult('health-result', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('health-result', `连接失败: ${error.message}`, true);
+            }
+        }
+
+        async function testChat() {
+            const input = document.getElementById('chat-input').value.trim();
+            if (!input) {
+                showResult('chat-result', '请输入消息内容', true);
+                return;
+            }
+
+            showResult('chat-result', '正在发送消息...', false, true);
+            try {
+                const response = await fetch(`${API_BASE}/medical-chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: input })
+                });
+                const data = await response.json();
+                showResult('chat-result', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('chat-result', `请求失败: ${error.message}`, true);
+            }
+        }
+
+        async function testHealthEducation() {
+            const input = document.getElementById('health-input').value.trim();
+            if (!input) {
+                showResult('health-edu-result', '请输入问题', true);
+                return;
+            }
+
+            showResult('health-edu-result', '正在查询健康科普...', false, true);
+            try {
+                const response = await fetch(`${API_BASE}/health-education`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: input })
+                });
+                const data = await response.json();
+                showResult('health-edu-result', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('health-edu-result', `请求失败: ${error.message}`, true);
+            }
+        }
+
+        async function testMedication() {
+            const input = document.getElementById('medication-input').value.trim();
+            if (!input) {
+                showResult('medication-result', '请输入药物问题', true);
+                return;
+            }
+
+            showResult('medication-result', '正在咨询药物...', false, true);
+            try {
+                const response = await fetch(`${API_BASE}/medication-consultation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: input })
+                });
+                const data = await response.json();
+                showResult('medication-result', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('medication-result', `请求失败: ${error.message}`, true);
+            }
+        }
+
+        async function testReportUpload() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+            if (!file) {
+                showResult('report-result', '请选择文件', true);
+                return;
+            }
+
+            showResult('report-result', '正在上传和解读报告...', false, true);
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch(`${API_BASE}/report-interpretation`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                showResult('report-result', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('report-result', `上传失败: ${error.message}`, true);
+            }
+        }
+
+        async function testDermatology() {
+            const fileInput = document.getElementById('image-input');
+            const file = fileInput.files[0];
+            const symptoms = document.getElementById('symptoms-input').value.trim();
+            
+            if (!file) {
+                showResult('dermatology-result', '请选择图片', true);
+                return;
+            }
+
+            showResult('dermatology-result', '正在上传和分析图片...', false, true);
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('symptoms', symptoms);
+
+                const response = await fetch(`${API_BASE}/dermatology-consultation`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                showResult('dermatology-result', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('dermatology-result', `上传失败: ${error.message}`, true);
+            }
+        }
+
+        // 页面加载完成后自动测试健康检查
+        window.onload = function() {
+            testHealth();
+        };
+    </script>
+</body>
+</html>

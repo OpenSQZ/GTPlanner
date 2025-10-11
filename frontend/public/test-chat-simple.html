@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能问诊测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .title {
+            text-align: center;
+            color: #1658FF;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .quick-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .quick-btn {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-btn:hover {
+            background: #e9ecef;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            padding: 12px 20px;
+            background: #1658FF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0d47e6;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .messages {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .user-message {
+            background: #e3f2fd;
+            text-align: right;
+        }
+        .ai-message {
+            background: #f5f5f5;
+        }
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🏥 智能问诊测试</h1>
+        
+        <div class="status" id="status">准备就绪</div>
+        
+        <!-- 快捷输入按钮 -->
+        <div class="quick-buttons" id="quickButtons">
+            <button class="quick-btn" onclick="setInput('我头痛发烧，应该看什么科？')">头痛发烧</button>
+            <button class="quick-btn" onclick="setInput('我最近失眠严重，可能是什么原因？')">失眠问题</button>
+            <button class="quick-btn" onclick="setInput('胸闷气短，需要做什么检查？')">胸闷气短</button>
+            <button class="quick-btn" onclick="setInput('帮我整理病历信息')">病历整理</button>
+        </div>
+        
+        <!-- 输入区域 -->
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="请描述您的症状或健康问题..." />
+            <button id="sendBtn" onclick="sendMessage()">发送</button>
+        </div>
+        
+        <!-- 消息显示区域 -->
+        <div class="messages" id="messages"></div>
+    </div>
+
+    <script>
+        let isLoading = false;
+
+        function setStatus(message, type = 'success') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        function addMessage(content, isUser = false) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            messageDiv.textContent = content;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function setInput(text) {
+            document.getElementById('messageInput').value = text;
+            updateSendButton();
+        }
+
+        function updateSendButton() {
+            const input = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const hasContent = input.value.trim().length > 0;
+            
+            sendBtn.disabled = !hasContent || isLoading;
+            sendBtn.style.opacity = (!hasContent || isLoading) ? '0.6' : '1';
+            
+            // 显示/隐藏快捷按钮
+            const quickButtons = document.getElementById('quickButtons');
+            quickButtons.style.display = hasContent ? 'none' : 'flex';
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = input.value.trim();
+            
+            if (!message || isLoading) {
+                return;
+            }
+
+            isLoading = true;
+            updateSendButton();
+            
+            addMessage(message, true);
+            setStatus('正在发送消息...', 'loading');
+            
+            input.value = '';
+            updateSendButton();
+            
+            try {
+                const response = await fetch('/api/medical-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    const aiResponse = getResponseContent(data.data.response);
+                    addMessage(aiResponse);
+                    setStatus('消息发送成功！', 'success');
+                } else {
+                    addMessage(`错误: ${data.message || '请求失败'}`);
+                    setStatus('发送失败', 'error');
+                }
+            } catch (error) {
+                addMessage(`网络错误: ${error.message}`);
+                setStatus('网络连接失败', 'error');
+            } finally {
+                isLoading = false;
+                updateSendButton();
+            }
+        }
+
+        function getResponseContent(agentResponse) {
+            if (typeof agentResponse === 'string') {
+                return agentResponse;
+            }
+            
+            if (agentResponse.reply) {
+                return agentResponse.reply;
+            } else if (agentResponse.triage_result) {
+                return agentResponse.triage_result;
+            } else if (agentResponse.diagnosis_result) {
+                return agentResponse.diagnosis_result;
+            } else if (agentResponse.case_result) {
+                return agentResponse.case_result;
+            }
+            
+            return JSON.stringify(agentResponse, null, 2);
+        }
+
+        // 监听输入框变化
+        document.getElementById('messageInput').addEventListener('input', updateSendButton);
+        
+        // 监听回车键
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 页面加载完成
+        window.onload = function() {
+            setStatus('智能问诊系统已就绪', 'success');
+            addMessage('您好！我是您的医疗AI助手，请描述您的症状或健康问题。');
+            updateSendButton();
+        };
+    </script>
+</body>
+</html>

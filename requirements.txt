@@ -1,0 +1,9 @@
+fastapi>=0.68.0
+uvicorn>=0.15.0
+pydantic>=1.8.0
+requests>=2.25.0
+python-multipart>=0.0.5
+python-docx>=0.8.11
+PyPDF2>=2.0.0
+Pillow>=8.0.0
+aiofiles>=0.7.0

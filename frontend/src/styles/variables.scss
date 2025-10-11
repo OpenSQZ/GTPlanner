@@ -1,0 +1,9 @@
+/* 医疗智能体自定义SCSS变量 - 最小化定义避免冲突 */
+
+/* 仅定义必要的变量，其他使用CSS变量 */
+
+// 如果需要在SCSS中使用，可以从CSS变量中获取
+$medical-primary-color: #1658FF;
+
+// 或者使用CSS变量函数
+// color: var(--medical-primary);
