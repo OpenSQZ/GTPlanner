@@ -12,7 +12,7 @@ backup_count = 5
 debug_enabled = true
 log_requests = true
 log_responses = true
-log_level = "DEBUGE"
+log_level = "DEBUG"  # 修复拼写错误
 log_to_file = true
 log_to_console = false  # 关闭控制台输出
 

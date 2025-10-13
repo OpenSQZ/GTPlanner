@@ -1,8 +1,9 @@
 import uvicorn
 import json
-import logging
+import os
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+import uuid
 
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.responses import StreamingResponse
@@ -10,7 +11,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-
+# 导入增强的日志和错误处理
+from utils.enhanced_logger import setup_global_logger, get_logger
+from utils.error_handlers import setup_error_handlers, error_tracker
+from utils.sentry_integration import init_sentry
 
 # 导入 SSE GTPlanner API
 from agent.api.agent_api import SSEGTPlanner
@@ -18,15 +22,47 @@ from agent.api.agent_api import SSEGTPlanner
 # 导入索引管理器
 from agent.utils.startup_init import initialize_application
 
-# 配置日志
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# 配置增强日志系统
+setup_global_logger(
+    app_name="gtplanner",
+    log_level=os.getenv("LOG_LEVEL", "INFO"),
+    enable_console=os.getenv("LOG_CONSOLE", "true").lower() == "true",
+    enable_file=os.getenv("LOG_FILE", "true").lower() == "true",
+    enable_json=os.getenv("LOG_JSON", "false").lower() == "true",
+)
+
+logger = get_logger(__name__)
 
 app = FastAPI(
     title="GTPlanner API",
     description="智能规划助手 API，支持流式响应和实时工具调用",
     version="1.0.0"
 )
+
+# 设置错误处理器
+setup_error_handlers(app)
+
+# 初始化Sentry（可选）
+sentry_initialized = init_sentry(
+    environment=os.getenv("ENV", "development"),
+    release=os.getenv("APP_VERSION", "1.0.0"),
+)
+if sentry_initialized:
+    logger.info("✅ Sentry error tracking enabled")
+
+
+# 请求ID中间件
+@app.middleware("http")
+async def add_request_id(request: Request, call_next):
+    """为每个请求添加唯一ID"""
+    request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
+    request.state.request_id = request_id
+    
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    
+    return response
+
 
 # 应用启动事件 - 预加载工具索引
 @app.on_event("startup")
@@ -52,16 +88,38 @@ async def startup_event():
                 logger.error(f"  - {error}")
 
     except Exception as e:
-        logger.error(f"❌ 启动时初始化失败: {str(e)}")
+        logger.error(f"❌ 启动时初始化失败: {str(e)}", exc_info=True)
         # 不阻止应用启动，但记录错误
 
-# CORS 配置
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """应用关闭时的清理工作"""
+    logger.info("🛑 GTPlanner API 正在关闭...")
+    
+    # 输出错误统计
+    error_stats = error_tracker.get_stats()
+    if error_stats:
+        logger.info("错误统计:", extra={"error_stats": error_stats})
+
+
+# CORS 配置（改进的安全配置）
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:8080"
+).split(",")
+
+# 开发环境允许所有来源
+if os.getenv("ENV", "development") == "development":
+    ALLOWED_ORIGINS = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 在生产环境中应该限制具体域名
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Request-ID"],
+    max_age=3600,  # 预检请求缓存时间
 )
 
 # 挂载静态文件
