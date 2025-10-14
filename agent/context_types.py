@@ -30,10 +30,6 @@ class MessageRole(Enum):
     SYSTEM = "system"
     TOOL = "tool"
 
-
-
-
-
 @dataclass
 class Message:
     """标准化的对话消息数据结构（完全符合OpenAI API标准格式）"""
@@ -74,7 +70,7 @@ class Message:
         )
 
 
-# ToolExecution类已删除 - 过度设计，工具执行信息现在通过OpenAI标准格式的tool消息保存
+# ToolExecution类已删除 - 工具执行信息通过OpenAI标准格式的tool消息保存
 
 
 @dataclass
@@ -122,7 +118,7 @@ class AgentContext:
         """获取工具执行结果值（只读操作）"""
         return self.tool_execution_results.get(key, default)
 
-    # get_recent_tool_executions方法已删除 - 过度设计，不再需要
+    # get_recent_tool_executions方法已删除 - 不再需要
 
 
 @dataclass
@@ -197,8 +193,6 @@ class AgentResult:
 
 
 # 工具函数：用于数据验证和转换
-
-
 
 def create_user_message(content: str) -> Message:
     """创建用户消息的便捷函数"""

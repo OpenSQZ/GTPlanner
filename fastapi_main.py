@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from fastapi import FastAPI, Query, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -66,6 +66,17 @@ app.add_middleware(
 
 # 挂载静态文件
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# 测试页面端点
+@app.get("/")
+async def test_page():
+    """测试页面 - 提供 SSE 聊天界面"""
+    return FileResponse("static/test_sse_chat.html")
+
+@app.get("/test")
+async def test_page_redirect():
+    """重定向到测试页面"""
+    return RedirectResponse(url="/")
 
 # 现有路由已移除，只保留 SSE Agent 路由
 

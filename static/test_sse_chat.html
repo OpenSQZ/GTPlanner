@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTPlanner SSE 聊天测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            height: calc(100vh - 200px);
+            min-height: 600px;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            border: 2px solid #e1e5e9;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .message.user {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.assistant {
+            background: white;
+            border: 1px solid #e1e5e9;
+            margin-right: auto;
+        }
+
+        .message.system {
+            background: #28a745;
+            color: white;
+            margin: 0 auto;
+            text-align: center;
+            max-width: 60%;
+        }
+
+        .message.error {
+            background: #dc3545;
+            color: white;
+            margin: 0 auto;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .tool-call {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .tool-call.running {
+            border-color: #ffc107;
+            background: #fff8e1;
+        }
+
+        .tool-call.completed {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .tool-call.failed {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 60px;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-panel {
+            width: 300px;
+            background: #f8f9fa;
+            border-left: 1px solid #e1e5e9;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .status-section {
+            margin-bottom: 25px;
+        }
+
+        .status-section h3 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            border-bottom: 2px solid #e1e5e9;
+            padding-bottom: 5px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .status-value {
+            font-weight: 500;
+        }
+
+        .connection-status {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .connection-status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .connection-status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .connection-status.connecting {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .config-section {
+            margin-bottom: 20px;
+        }
+
+        .config-item {
+            margin-bottom: 10px;
+        }
+
+        .config-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .config-item select,
+        .config-item input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .events-log {
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .event-item {
+            font-size: 0.8em;
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 15px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .typing-dots {
+            display: inline-block;
+            animation: typing 1.4s infinite;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0; }
+            30% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .status-panel {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid #e1e5e9;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 GTPlanner</h1>
+            <p>智能规划助手 - SSE 流式响应测试界面</p>
+        </div>
+
+        <div class="main-content">
+            <div class="chat-area">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message system">
+                        👋 欢迎使用 GTPlanner！请在下方的输入框中输入您的需求，我将为您提供智能规划服务。
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator">
+                    <span>GTPlanner 正在思考</span>
+                    <span class="typing-dots">...</span>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-group">
+                        <label for="messageInput">输入您的需求：</label>
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="例如：帮我设计一个在线购物系统的工作流程..."
+                            rows="3"
+                        ></textarea>
+                    </div>
+                    <button class="btn btn-primary" id="sendBtn" onclick="sendMessage()">
+                        发送
+                    </button>
+                    <button class="btn btn-secondary" id="clearBtn" onclick="clearChat()">
+                        清空
+                    </button>
+                </div>
+            </div>
+
+            <div class="status-panel">
+                <div class="connection-status disconnected" id="connectionStatus">
+                    未连接
+                </div>
+
+                <div class="config-section">
+                    <h3>⚙️ 配置</h3>
+                    <div class="config-item">
+                        <label for="languageSelect">语言：</label>
+                        <select id="languageSelect">
+                            <option value="zh">中文</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label for="includeMetadata">包含元数据：</label>
+                        <select id="includeMetadata">
+                            <option value="false">否</option>
+                            <option value="true">是</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="status-section">
+                    <h3>📊 状态信息</h3>
+                    <div class="status-item">
+                        <span>连接状态：</span>
+                        <span class="status-value" id="connectionStatusText">未连接</span>
+                    </div>
+                    <div class="status-item">
+                        <span>会话ID：</span>
+                        <span class="status-value" id="sessionId">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span>消息数量：</span>
+                        <span class="status-value" id="messageCount">0</span>
+                    </div>
+                    <div class="status-item">
+                        <span>事件数量：</span>
+                        <span class="status-value" id="eventCount">0</span>
+                    </div>
+                    <div class="status-item">
+                        <span>工具调用：</span>
+                        <span class="status-value" id="toolCalls">0</span>
+                    </div>
+                </div>
+
+                <div class="status-section">
+                    <h3>📝 事件日志</h3>
+                    <div class="events-log" id="eventsLog">
+                        <div class="event-item">等待连接...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class GTPlannerChat {
+            constructor() {
+                this.eventSource = null;
+                this.isConnected = false;
+                this.sessionId = this.generateSessionId();
+                this.messageCount = 0;
+                this.eventCount = 0;
+                this.toolCallCount = 0;
+                this.currentAssistantMessage = '';
+                this.isTyping = false;
+
+                this.initializeElements();
+                this.setupEventListeners();
+                this.updateStatus();
+            }
+
+            generateSessionId() {
+                return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            initializeElements() {
+                this.chatMessages = document.getElementById('chatMessages');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendBtn = document.getElementById('sendBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.connectionStatus = document.getElementById('connectionStatus');
+                this.connectionStatusText = document.getElementById('connectionStatusText');
+                this.sessionIdEl = document.getElementById('sessionId');
+                this.messageCountEl = document.getElementById('messageCount');
+                this.eventCountEl = document.getElementById('eventCount');
+                this.toolCallsEl = document.getElementById('toolCalls');
+                this.eventsLog = document.getElementById('eventsLog');
+                this.typingIndicator = document.getElementById('typingIndicator');
+                this.languageSelect = document.getElementById('languageSelect');
+                this.includeMetadata = document.getElementById('includeMetadata');
+            }
+
+            setupEventListeners() {
+                this.messageInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                this.clearBtn.addEventListener('click', () => {
+                    this.clearChat();
+                });
+            }
+
+            async sendMessage() {
+                const message = this.messageInput.value.trim();
+                if (!message) return;
+
+                // 添加用户消息到聊天界面
+                this.addMessage('user', message);
+                this.messageInput.value = '';
+                this.messageCount++;
+                this.updateStatus();
+
+                // 显示正在输入指示器
+                this.showTyping(true);
+
+                try {
+                    // 构建请求数据
+                    const requestData = {
+                        session_id: this.sessionId,
+                        dialogue_history: this.getDialogueHistory(),
+                        tool_execution_results: {},
+                        session_metadata: {
+                            language: this.languageSelect.value
+                        },
+                        include_metadata: this.includeMetadata.value === 'true',
+                        buffer_events: false,
+                        heartbeat_interval: 30.0
+                    };
+
+                    // 发送请求并建立 SSE 连接
+                    await this.connectSSE(requestData);
+
+                } catch (error) {
+                    console.error('发送消息失败:', error);
+                    this.addMessage('error', `发送失败: ${error.message}`);
+                    this.showTyping(false);
+                }
+            }
+
+            getDialogueHistory() {
+                const messages = [];
+                const messageElements = this.chatMessages.querySelectorAll('.message.user, .message.assistant');
+                
+                messageElements.forEach(el => {
+                    const role = el.classList.contains('user') ? 'user' : 'assistant';
+                    const content = el.textContent.trim();
+                    messages.push({
+                        role: role,
+                        content: content,
+                        timestamp: new Date().toISOString()
+                    });
+                });
+
+                return messages;
+            }
+
+            async connectSSE(requestData) {
+                // 关闭现有连接
+                if (this.eventSource) {
+                    this.eventSource.close();
+                }
+
+                // 建立新的 SSE 连接
+                this.setConnectionStatus('connecting', '连接中...');
+                
+                try {
+                    const response = await fetch('/api/chat/agent', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    // 创建 EventSource 来读取流式响应
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    this.setConnectionStatus('connected', '已连接');
+                    
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value);
+                        this.processSSEData(chunk);
+                    }
+
+                } catch (error) {
+                    console.error('SSE 连接错误:', error);
+                    this.setConnectionStatus('disconnected', '连接失败');
+                    this.addMessage('error', `连接失败: ${error.message}`);
+                    this.showTyping(false);
+                }
+            }
+
+            processSSEData(data) {
+                const lines = data.split('\n');
+                
+                for (const line of lines) {
+                    if (line.startsWith('event: ')) {
+                        this.currentEventType = line.substring(7);
+                    } else if (line.startsWith('data: ')) {
+                        try {
+                            const eventData = JSON.parse(line.substring(6));
+                            this.handleSSEEvent(this.currentEventType, eventData);
+                        } catch (error) {
+                            console.error('解析 SSE 数据失败:', error);
+                        }
+                    }
+                }
+            }
+
+            handleSSEEvent(eventType, data) {
+                this.eventCount++;
+                this.addEventLog(eventType, data);
+
+                switch (eventType) {
+                    case 'connection':
+                        this.setConnectionStatus('connected', '已连接');
+                        break;
+
+                    case 'conversation_start':
+                        this.showTyping(true);
+                        break;
+
+                    case 'assistant_message_start':
+                        this.currentAssistantMessage = '';
+                        break;
+
+                    case 'assistant_message_chunk':
+                        if (data.data && data.data.content) {
+                            this.currentAssistantMessage += data.data.content;
+                            this.updateAssistantMessage();
+                        }
+                        break;
+
+                    case 'assistant_message_end':
+                        this.showTyping(false);
+                        if (data.data && data.data.complete_message) {
+                            this.currentAssistantMessage = data.data.complete_message;
+                            this.updateAssistantMessage();
+                        }
+                        break;
+
+                    case 'tool_call_start':
+                        this.toolCallCount++;
+                        this.addToolCall(data.data, 'running');
+                        this.updateStatus();
+                        break;
+
+                    case 'tool_call_progress':
+                        this.updateToolCall(data.data, 'running');
+                        break;
+
+                    case 'tool_call_end':
+                        const status = data.data.status || 'completed';
+                        this.updateToolCall(data.data, status);
+                        break;
+
+                    case 'processing_status':
+                        if (data.data && data.data.status_message) {
+                            this.addMessage('system', data.data.status_message);
+                        }
+                        break;
+
+                    case 'conversation_end':
+                        this.showTyping(false);
+                        if (data.data) {
+                            this.addMessage('system', `✅ 处理完成 (耗时: ${data.data.execution_time?.toFixed(2)}s)`);
+                        }
+                        break;
+
+                    case 'error':
+                        this.showTyping(false);
+                        this.addMessage('error', `❌ 错误: ${data.error || data.error_message || '未知错误'}`);
+                        break;
+
+                    case 'complete':
+                        this.showTyping(false);
+                        break;
+
+                    case 'close':
+                        this.setConnectionStatus('disconnected', '连接已关闭');
+                        break;
+
+                    case 'heartbeat':
+                        // 心跳事件，不需要特殊处理
+                        break;
+                }
+
+                this.updateStatus();
+            }
+
+            addMessage(type, content) {
+                const messageEl = document.createElement('div');
+                messageEl.className = `message ${type}`;
+                messageEl.textContent = content;
+                
+                this.chatMessages.appendChild(messageEl);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            updateAssistantMessage() {
+                let messageEl = this.chatMessages.querySelector('.message.assistant:last-child');
+                
+                if (!messageEl) {
+                    messageEl = document.createElement('div');
+                    messageEl.className = 'message assistant';
+                    this.chatMessages.appendChild(messageEl);
+                }
+                
+                messageEl.textContent = this.currentAssistantMessage;
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            addToolCall(toolData, status) {
+                const toolEl = document.createElement('div');
+                toolEl.className = `tool-call ${status}`;
+                toolEl.id = `tool-${toolData.call_id || toolData.tool_name}`;
+                
+                const toolName = toolData.tool_name || '未知工具';
+                const progress = toolData.progress_message || '正在执行...';
+                
+                toolEl.innerHTML = `
+                    <strong>🔧 ${toolName}</strong><br>
+                    <small>${progress}</small>
+                `;
+                
+                // 插入到最后一条助手消息之后
+                const lastMessage = this.chatMessages.querySelector('.message.assistant:last-child');
+                if (lastMessage) {
+                    lastMessage.appendChild(toolEl);
+                } else {
+                    this.chatMessages.appendChild(toolEl);
+                }
+                
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            updateToolCall(toolData, status) {
+                const toolEl = document.getElementById(`tool-${toolData.call_id || toolData.tool_name}`);
+                if (toolEl) {
+                    toolEl.className = `tool-call ${status}`;
+                    
+                    const toolName = toolData.tool_name || '未知工具';
+                    let progress = toolData.progress_message || '正在执行...';
+                    
+                    if (status === 'completed') {
+                        progress = `✅ 执行完成 (耗时: ${toolData.execution_time?.toFixed(2)}s)`;
+                    } else if (status === 'failed') {
+                        progress = `❌ 执行失败: ${toolData.error_message || '未知错误'}`;
+                    }
+                    
+                    toolEl.innerHTML = `
+                        <strong>🔧 ${toolName}</strong><br>
+                        <small>${progress}</small>
+                    `;
+                }
+            }
+
+            addEventLog(eventType, data) {
+                const eventEl = document.createElement('div');
+                eventEl.className = 'event-item';
+                eventEl.textContent = `${new Date().toLocaleTimeString()} - ${eventType}`;
+                
+                this.eventsLog.appendChild(eventEl);
+                this.eventsLog.scrollTop = this.eventsLog.scrollHeight;
+                
+                // 限制日志条数
+                const events = this.eventsLog.querySelectorAll('.event-item');
+                if (events.length > 50) {
+                    events[0].remove();
+                }
+            }
+
+            showTyping(show) {
+                this.isTyping = show;
+                this.typingIndicator.classList.toggle('active', show);
+                this.sendBtn.disabled = show;
+            }
+
+            setConnectionStatus(status, text) {
+                this.isConnected = status === 'connected';
+                this.connectionStatus.className = `connection-status ${status}`;
+                this.connectionStatusText.textContent = text;
+            }
+
+            updateStatus() {
+                this.sessionIdEl.textContent = this.sessionId;
+                this.messageCountEl.textContent = this.messageCount;
+                this.eventCountEl.textContent = this.eventCount;
+                this.toolCallsEl.textContent = this.toolCallCount;
+            }
+
+            clearChat() {
+                this.chatMessages.innerHTML = `
+                    <div class="message system">
+                        👋 聊天已清空。请在下方的输入框中输入您的需求，我将为您提供智能规划服务。
+                    </div>
+                `;
+                this.messageCount = 0;
+                this.eventCount = 0;
+                this.toolCallCount = 0;
+                this.currentAssistantMessage = '';
+                this.updateStatus();
+                
+                if (this.eventSource) {
+                    this.eventSource.close();
+                    this.setConnectionStatus('disconnected', '未连接');
+                }
+            }
+        }
+
+        // 全局函数
+        function sendMessage() {
+            chat.sendMessage();
+        }
+
+        function clearChat() {
+            chat.clearChat();
+        }
+
+        // 初始化聊天应用
+        const chat = new GTPlannerChat();
+    </script>
+</body>
+</html>
