@@ -6,7 +6,7 @@
 """
 
 import importlib
-from typing import Dict, Optional, Any, Union
+from typing import Dict, Optional, Any, Union, List
 from functools import lru_cache
 
 from utils.language_detection import LanguageDetector, SupportedLanguage
@@ -41,8 +41,17 @@ class PromptManager:
         # 确定目标语言
         target_language = self._determine_language(language, user_input)
         
-        # 获取提示词模板
-        template = self._get_template(prompt_type, target_language)
+        # 获取提示词模板（多级回退：目标语言 -> zh -> en）
+        try:
+            template = self._get_template(prompt_type, target_language)
+        except ValueError:
+            if target_language != SupportedLanguage.CHINESE:
+                try:
+                    template = self._get_template(prompt_type, SupportedLanguage.CHINESE)
+                except ValueError:
+                    template = self._get_template(prompt_type, SupportedLanguage.ENGLISH)
+            else:
+                template = self._get_template(prompt_type, SupportedLanguage.ENGLISH)
         
         # 格式化模板
         if kwargs:
@@ -72,8 +81,7 @@ class PromptManager:
         # 2. 从用户输入自动检测（仅在没有明确指定语言时）
         if user_input:
             detected = self.language_detector.detect_language(user_input)
-            if detected != SupportedLanguage.ENGLISH:  # 如果检测到非英语
-                return detected
+            return detected
 
         # 3. 使用默认语言
         return self._default_language
@@ -117,12 +125,11 @@ class PromptManager:
             if hasattr(template_class, method_name):
                 return getattr(template_class, method_name)()
             else:
-                # 回退到中文模板
-                fallback_method = f"get_{prompt_type.value}_zh"
-                if hasattr(template_class, fallback_method):
-                    return getattr(template_class, fallback_method)()
-                else:
-                    raise AttributeError(f"No template method found for {prompt_type}")
+                # 回退顺序中文->英文
+                for fb in (f"get_{prompt_type.value}_zh", f"get_{prompt_type.value}_en"):
+                    if hasattr(template_class, fb):
+                        return getattr(template_class, fb)()
+                raise AttributeError(f"No template method found for {prompt_type}")
         
         except (ImportError, AttributeError) as e:
             raise ValueError(f"Failed to load template for {prompt_type}: {e}")
@@ -158,6 +165,28 @@ class PromptManager:
                     self._get_template(prompt_type, language)
                 except Exception as e:
                     print(f"Warning: Failed to preload {prompt_type} for {language}: {e}")
+
+    def available_languages(self, prompt_type: Any) -> List[str]:
+        """列出该提示词类型可用的语言代码"""
+        try:
+            template_path = PromptTypeRegistry.get_prompt_path(prompt_type)
+            module_path = f"agent.prompts.templates.{template_path}"
+            template_module = importlib.import_module(module_path)
+            class_name = self._get_template_class_name(template_path)
+            template_class = getattr(template_module, class_name)
+            prefix = f"get_{prompt_type.value}_"
+            langs: List[str] = []
+            for attr in dir(template_class):
+                if attr.startswith(prefix):
+                    langs.append(attr[len(prefix):])
+            return sorted(set(langs))
+        except Exception:
+            return []
+
+    def has_language(self, prompt_type: Any, language: Union[SupportedLanguage, str]) -> bool:
+        """判断某提示词类型是否提供指定语言实现"""
+        lang_code = language.value if isinstance(language, SupportedLanguage) else str(language).lower()
+        return lang_code in self.available_languages(prompt_type)
 
 
 # 全局单例实例
