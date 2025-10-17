@@ -732,3 +732,23 @@ supported_languages = ["en", "zh", "es", "fr", "ja"]
 ---
 
 **GTPlanner** - 用AI的力量将您的想法转换为结构化的技术文档。
+
+---
+
+### 🔒 安全与限流（进阶）
+
+本项目支持可选的 API Key 鉴权与进程内滑动窗口限流，默认关闭；开启后仅 `POST /api/chat/agent` 需要鉴权，`/health` 与 `/api/status` 保持公开以便监控。
+
+快速启用（Windows PowerShell）：
+
+```powershell
+$env:GTPLANNER_SECURITY_ENABLE_API_KEY_AUTH="true"
+$env:GTPLANNER_SECURITY_API_KEYS='["tenantA-xxxx","tenantB-yyyy"]'
+$env:GTPLANNER_RATE_LIMIT_ENABLED="true"
+$env:GTPLANNER_RATE_LIMIT_WINDOW_SECONDS="60"
+$env:GTPLANNER_RATE_LIMIT_MAX_REQUESTS="120"
+$env:GTPLANNER_RATE_LIMIT_PER_TENANT="true"
+$env:GTPLANNER_SSE_IDLE_TIMEOUT_SECONDS="120"
+```
+
+详见文档：`docs/security-and-rate-limit.md`。

@@ -283,7 +283,10 @@ class MultilingualConfig:
             "jina_api_key": self.get_jina_api_key(),
             "llm_config": self.get_llm_config(),
             "vector_service_config": self.get_vector_service_config(),
-            "deep_design_docs_enabled": self.is_deep_design_docs_enabled()
+            "deep_design_docs_enabled": self.is_deep_design_docs_enabled(),
+            "security": self.get_security_config(),
+            "rate_limit": self.get_rate_limit_config(),
+            "sse": self.get_sse_config()
         }
     
     def validate_config(self) -> List[str]:
@@ -311,6 +314,124 @@ class MultilingualConfig:
             warnings.append(f"Settings file '{self.settings_file}' not found")
         
         return warnings
+
+    # -------- 新增：安全与限流、SSE 配置读取 --------
+    def get_security_config(self) -> Dict[str, Any]:
+        """Get security config (API key auth).
+
+        Returns:
+            Dict with fields: enabled, api_keys (set), key_to_tenant (dict)
+        """
+        enabled = False
+        api_keys_raw: Any = []
+
+        # Dynaconf settings
+        if self._settings:
+            try:
+                enabled = bool(self._settings.get("security.enable_api_key_auth", False))
+                api_keys_raw = self._settings.get("security.api_keys", [])
+            except Exception as e:
+                logger.warning(f"Error reading security config: {e}")
+
+        # Environment overrides (GTPLANNER_ prefix)
+        enabled_env = os.getenv("GTPLANNER_SECURITY_ENABLE_API_KEY_AUTH")
+        if enabled_env is not None:
+            enabled = enabled_env.lower() in ("true", "1", "yes", "on")
+
+        api_keys_env = os.getenv("GTPLANNER_SECURITY_API_KEYS")
+        if api_keys_env:
+            try:
+                import json as _json
+                parsed = _json.loads(api_keys_env)
+                api_keys_raw = parsed
+            except Exception:
+                # Fallback to comma-separated list
+                api_keys_raw = [k.strip() for k in api_keys_env.split(",") if k.strip()]
+
+        key_to_tenant: Dict[str, str] = {}
+        key_set = set()
+        try:
+            if isinstance(api_keys_raw, dict):
+                for k, v in api_keys_raw.items():
+                    if k:
+                        key_set.add(k)
+                        key_to_tenant[k] = str(v) if v else "default"
+            elif isinstance(api_keys_raw, (list, tuple, set)):
+                for k in api_keys_raw:
+                    if k:
+                        key_set.add(str(k))
+                        key_to_tenant[str(k)] = "default"
+        except Exception as e:
+            logger.warning(f"Invalid api_keys format: {e}")
+
+        return {
+            "enabled": enabled,
+            "api_keys": key_set,
+            "key_to_tenant": key_to_tenant
+        }
+
+    def get_rate_limit_config(self) -> Dict[str, Any]:
+        """Get rate limit config.
+
+        Returns:
+            Dict with fields: enabled, window_seconds, max_requests, per_tenant
+        """
+        cfg = {
+            "enabled": False,
+            "window_seconds": 60,
+            "max_requests": 60,
+            "per_tenant": True,
+        }
+
+        if self._settings:
+            try:
+                cfg.update({
+                    "enabled": bool(self._settings.get("rate_limit.enabled", False)),
+                    "window_seconds": int(self._settings.get("rate_limit.window_seconds", 60)),
+                    "max_requests": int(self._settings.get("rate_limit.max_requests", 60)),
+                    "per_tenant": bool(self._settings.get("rate_limit.per_tenant", True)),
+                })
+            except Exception as e:
+                logger.warning(f"Error reading rate_limit config: {e}")
+
+        # Environment overrides
+        def _env_bool(name: str, default: bool) -> bool:
+            v = os.getenv(name)
+            return default if v is None else v.lower() in ("true", "1", "yes", "on")
+
+        def _env_int(name: str, default: int) -> int:
+            v = os.getenv(name)
+            try:
+                return default if v is None else int(v)
+            except Exception:
+                return default
+
+        cfg["enabled"] = _env_bool("GTPLANNER_RATE_LIMIT_ENABLED", cfg["enabled"])
+        cfg["window_seconds"] = _env_int("GTPLANNER_RATE_LIMIT_WINDOW_SECONDS", cfg["window_seconds"])
+        cfg["max_requests"] = _env_int("GTPLANNER_RATE_LIMIT_MAX_REQUESTS", cfg["max_requests"])
+        cfg["per_tenant"] = _env_bool("GTPLANNER_RATE_LIMIT_PER_TENANT", cfg["per_tenant"])
+
+        return cfg
+
+    def get_sse_config(self) -> Dict[str, Any]:
+        """Get SSE related config (idle timeout etc.)."""
+        cfg = {"idle_timeout_seconds": 120}
+
+        if self._settings:
+            try:
+                idle = self._settings.get("sse.idle_timeout_seconds", 120)
+                cfg["idle_timeout_seconds"] = int(idle)
+            except Exception as e:
+                logger.warning(f"Error reading sse config: {e}")
+
+        v = os.getenv("GTPLANNER_SSE_IDLE_TIMEOUT_SECONDS")
+        if v is not None:
+            try:
+                cfg["idle_timeout_seconds"] = int(v)
+            except Exception:
+                pass
+
+        return cfg
 
 
 # Global configuration manager instance

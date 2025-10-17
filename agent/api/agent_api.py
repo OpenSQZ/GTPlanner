@@ -43,6 +43,7 @@ from agent.streaming import StreamingSession, streaming_manager
 
 # 导入SSE处理器
 from agent.streaming.sse_handler import SSEStreamHandler
+from utils.config_manager import multilingual_config
 
 
 logger = logging.getLogger(__name__)
@@ -106,12 +107,18 @@ class SSEGTPlanner:
         streaming_session = streaming_manager.create_session(session_id)
         
         # 创建SSE处理器
+        sse_cfg = multilingual_config.get_sse_config()
         sse_handler = SSEStreamHandler(
             response_writer=response_writer,
             include_metadata=self.include_metadata,
             buffer_events=self.buffer_events,
             heartbeat_interval=self.heartbeat_interval
         )
+        # 将空闲超时配置写入 handler（通过属性传递，供上层管理超时策略时使用）
+        try:
+            setattr(sse_handler, "idle_timeout_seconds", int(sse_cfg.get("idle_timeout_seconds", 120)))
+        except Exception:
+            setattr(sse_handler, "idle_timeout_seconds", 120)
         
         # 添加处理器到会话
         streaming_session.add_handler(sse_handler)

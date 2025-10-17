@@ -53,3 +53,22 @@ vector_field = "combined_text"
 # When false, falls back to planning.py logic for compatibility
 enable_deep_design_docs = false
 
+[default.security]
+# Optional API Key authentication (disabled by default)
+enable_api_key_auth = false
+# Accepts either a list of keys or a mapping of key->tenant_id
+# Example: ["tenantA-xxxx", "tenantB-yyyy"] or {"tenantA-xxxx" = "tenantA", "tenantB-yyyy" = "tenantB"}
+api_keys = []
+
+[default.rate_limit]
+# In-process sliding window rate limit (disabled by default)
+enabled = false
+window_seconds = 60
+max_requests = 60
+# If true, rate limit is tracked per tenant (API key); otherwise global
+per_tenant = true
+
+[default.sse]
+# Idle timeout in seconds; when no events are sent for this duration, close connection
+idle_timeout_seconds = 120
+
