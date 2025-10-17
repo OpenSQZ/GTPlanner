@@ -15,6 +15,7 @@ except ImportError:
     Dynaconf = None
 
 from utils.language_detection import get_supported_languages, is_supported_language
+from utils.config_validator import ConfigValidator, validate_and_get_config
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ class MultilingualConfig:
         """
         self.settings_file = settings_file
         self._settings = None
+        self._validator = ConfigValidator(settings_file)
         self._load_settings()
     
     def _load_settings(self):
@@ -288,29 +290,143 @@ class MultilingualConfig:
     
     def validate_config(self) -> List[str]:
         """Validate the current configuration.
-        
+
         Returns:
             List of validation warnings/errors
         """
         warnings = []
-        
+
         # Check default language
         default_lang = self.get_default_language()
         if not is_supported_language(default_lang):
             warnings.append(f"Default language '{default_lang}' is not supported")
-        
+
         # Check supported languages list
         supported_langs = self.get_supported_languages_config()
         if not supported_langs:
             warnings.append("No supported languages configured")
         elif default_lang not in supported_langs:
             warnings.append(f"Default language '{default_lang}' is not in supported languages list")
-        
+
         # Check if dynaconf is available but settings file doesn't exist
         if Dynaconf and not os.path.exists(self.settings_file):
             warnings.append(f"Settings file '{self.settings_file}' not found")
-        
+
         return warnings
+
+    def validate_configuration(self) -> Dict[str, Any]:
+        """Enhanced configuration validation using the new validator.
+
+        Returns:
+            Dictionary containing validation results
+        """
+        # Get current configuration
+        current_config = self._get_current_config_dict()
+
+        # Validate using the enhanced validator
+        validation_result = self._validator.validate_configuration(current_config)
+
+        return {
+            "is_valid": validation_result.is_valid,
+            "errors": validation_result.errors,
+            "warnings": validation_result.warnings,
+            "validated_config": validation_result.validated_config
+        }
+
+    def get_config_validation_report(self) -> str:
+        """Get a formatted configuration validation report.
+
+        Returns:
+            Formatted validation report string
+        """
+        validation_result = self.validate_configuration()
+
+        report_lines = ["GTPlanner Configuration Validation Report", "=" * 50]
+
+        # Summary
+        status = "VALID" if validation_result["is_valid"] else "INVALID"
+        report_lines.append(f"Status: {status}")
+
+        # Errors
+        if validation_result["errors"]:
+            report_lines.append("\n❌ ERRORS:")
+            for error in validation_result["errors"]:
+                severity = error.get("severity", "error").upper()
+                report_lines.append(f"  [{severity}] {error['section']}.{error['field']}: {error['message']}")
+
+        # Warnings
+        if validation_result["warnings"]:
+            report_lines.append("\n⚠️ WARNINGS:")
+            for warning in validation_result["warnings"]:
+                report_lines.append(f"  {warning['section']}.{warning['field']}: {warning['message']}")
+
+        # Validated configuration summary
+        if validation_result["is_valid"]:
+            report_lines.append("\n✅ VALIDATED CONFIGURATION:")
+            for section, config in validation_result["validated_config"].items():
+                report_lines.append(f"  {section}:")
+                for key, value in config.items():
+                    if key in ["api_key", "secret"]:
+                        # Hide sensitive information
+                        masked_value = f"{'*' * 8}{value[-4:]}" if value else "(not set)"
+                        report_lines.append(f"    {key}: {masked_value}")
+                    else:
+                        report_lines.append(f"    {key}: {value}")
+
+        return "\n".join(report_lines)
+
+    def _get_current_config_dict(self) -> Dict[str, Any]:
+        """Get current configuration as a dictionary for validation.
+
+        Returns:
+            Dictionary representation of current configuration
+        """
+        config = {}
+
+        # LLM configuration
+        config["llm"] = self.get_llm_config()
+
+        # Multilingual configuration
+        config["multilingual"] = {
+            "default_language": self.get_default_language(),
+            "auto_detect": self.is_auto_detect_enabled(),
+            "fallback_enabled": self.is_fallback_enabled(),
+            "supported_languages": self.get_supported_languages_config()
+        }
+
+        # Jina configuration
+        jina_api_key = self.get_jina_api_key()
+        if jina_api_key:
+            config["jina"] = {
+                "api_key": jina_api_key,
+                "search_base_url": "https://s.jina.ai/",
+                "web_base_url": "https://r.jina.ai/"
+            }
+
+        # Vector service configuration
+        vector_config = self.get_vector_service_config()
+        if vector_config:
+            config["vector_service"] = vector_config
+
+        # Deep design docs
+        config["deep_design_docs"] = {
+            "enable_deep_design_docs": self.is_deep_design_docs_enabled()
+        }
+
+        # Logging configuration (from settings)
+        if self._settings:
+            try:
+                config["logging"] = {
+                    "level": self._settings.get("logging.level", "INFO"),
+                    "file_enabled": self._settings.get("logging.file_enabled", True),
+                    "console_enabled": self._settings.get("logging.console_enabled", False),
+                    "max_file_size": self._settings.get("logging.max_file_size", 10485760),
+                    "backup_count": self._settings.get("logging.backup_count", 5)
+                }
+            except Exception as e:
+                logger.warning(f"Failed to read logging configuration: {e}")
+
+        return config
 
 
 # Global configuration manager instance
@@ -408,3 +524,21 @@ def is_deep_design_docs_enabled() -> bool:
         True if deep design docs is enabled
     """
     return multilingual_config.is_deep_design_docs_enabled()
+
+
+def validate_configuration() -> Dict[str, Any]:
+    """Validate the current configuration and return validation results.
+
+    Returns:
+        Dictionary containing validation results
+    """
+    return multilingual_config.validate_configuration()
+
+
+def get_config_validation_report() -> str:
+    """Get a formatted configuration validation report.
+
+    Returns:
+        Formatted validation report string
+    """
+    return multilingual_config.get_config_validation_report()
