@@ -33,6 +33,11 @@ from rich.table import Table
 from rich.text import Text
 from rich.align import Align
 
+# prompt_toolkit for command history
+from prompt_toolkit import PromptSession
+from prompt_toolkit.history import FileHistory
+from prompt_toolkit.formatted_text import HTML
+
 # 导入新的流式响应架构
 from agent.stateless_planner import StatelessGTPlanner
 from agent.context_types import AgentContext, Message, MessageRole
@@ -99,7 +104,11 @@ class ModernGTPlannerCLI:
         # 流式响应组件
         self.current_streaming_session: Optional[StreamingSession] = None
         self.cli_handler: Optional[CLIStreamHandler] = None
-        
+
+        # 创建带历史记录的 prompt session
+        history_file = Path.home() / ".gtplanner_history"
+        self.prompt_session = PromptSession(history=FileHistory(str(history_file)))
+
         # 设置信号处理
         self._setup_signal_handlers()
     
@@ -707,9 +716,10 @@ I want to build an online education platform
             try:
                 # 显示提示符
                 current_session = self.session_manager.current_session_id or "无会话"
-                prompt_text = f"[bold blue]GTPlanner[/bold blue] ({current_session[:8]}) > "
 
-                user_input = Prompt.ask(prompt_text).strip()
+                # 使用 prompt_toolkit 的 prompt，支持历史记录和彩色提示符
+                prompt_text = HTML(f'<ansiblue><b>GTPlanner</b></ansiblue> ({current_session[:8]}) &gt; ')
+                user_input = (await self.prompt_session.prompt_async(prompt_text)).strip()
 
                 if not user_input:
                     continue
