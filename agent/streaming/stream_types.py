@@ -267,7 +267,7 @@ class StreamEventBuilder:
         final_result: Dict[str, Any],
         tool_execution_results_updates: Optional[Dict[str, Any]] = None
     ) -> StreamEvent:
-        """创建对话结束事件"""
+        """创建对话结束事件，支持工具执行结果更新"""
         data = final_result.copy()
         if tool_execution_results_updates:
             data["tool_execution_results_updates"] = tool_execution_results_updates

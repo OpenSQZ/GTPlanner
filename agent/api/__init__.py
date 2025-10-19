@@ -1,14 +1,9 @@
 """
 GTPlanner API 模块
 
-提供基于SSE的流式API接口，支持实时响应和工具调用状态传输。
+提供完整的 SSE 流式响应 API 功能，支持实时工具调用状态更新和前端集成。
 """
 
-from .agent_api import SSEGTPlanner, create_sse_response
+from .agent_api import SSEGTPlanner
 
-__all__ = [
-    "SSEGTPlanner",
-    "create_sse_response"
-]
-
-__version__ = "1.0.0"
+__all__ = ['SSEGTPlanner']
