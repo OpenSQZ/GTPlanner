@@ -96,13 +96,15 @@ jobs:
 
           for entry in changed_entries:
               # 构造请求负载
-              # author 和 repo_url 从 manifest 中提取，不需要在 webhook 中传递
+              # repo_url 必需：factory 用它构造 artifact 下载 URL
+              # author 等其他字段从 manifest 中提取
               payload = {
                   "event_source": "gtplanner-prefabs",
                   "event_type": "prefab_merged",
                   "prefab": {
                       "id": entry['id'],
-                      "version": entry['version']
+                      "version": entry['version'],
+                      "repo_url": entry['repo_url']
                   }
               }
 
