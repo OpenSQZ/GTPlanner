@@ -49,9 +49,10 @@ GTPlanner 是一款专为 "vibe coding" 设计的先进 AI 工具，旨在将高
 - **🛠️ Function Calling**：集成OpenAI Function Calling，支持智能工具调用和任务执行
 - **🌐 多接口支持**：提供CLI、FastAPI REST API、MCP服务等多种集成方式
 
-该项目包含两个核心部分：
+该项目包含三个核心部分：
 - **💻 GTPlanner-frontend (Web UI)**：提供功能丰富、交互友好的在线规划体验。（推荐）[🚀 立刻体验 Live Demo!](https://the-agent-builder.com/)
 - **⚙️ GTPlanner (Backend)**：基于Agent架构的强大后端引擎，提供 CLI、API 等多种集成方式。
+- **🧩 Prefab 生态系统**：标准化、可复用的 AI 组件系统，用于构建、发布和分享 AI 能力。[了解更多](prefabs/README.md)
 
 ## 💻 Web UI (推荐)
 
@@ -560,47 +561,59 @@ GTPlanner/
 ├── fastapi_main.py           # FastAPI后端服务
 ├── settings.toml             # 配置文件
 ├── pyproject.toml            # 项目元数据和依赖
-├── agent/                     # 核心Agent系统
-│   ├── __init__.py           # Agent模块入口
-│   ├── gtplanner.py          # 有状态GTPlanner主控制器
-│   ├── stateless_planner.py  # 无状态GTPlanner实现
-│   ├── context_types.py      # 无状态数据类型定义
-│   ├── pocketflow_factory.py # PocketFlow数据转换工厂
-│   ├── flows/                # 主控制流程
-│   │   └── react_orchestrator_refactored/ # 主控制器流程
-│   ├── subflows/             # 专业Agent子流程
-│   │   ├── short_planning/   # 短期规划子流程
-│   │   ├── research/         # 技术调研子流程
-│   │   └── architecture/     # 架构设计子流程
-│   ├── nodes/                # 原子能力节点
-│   │   ├── node_search.py    # 搜索引擎节点
-│   │   ├── node_url.py       # URL解析节点
-│   │   ├── node_compress.py  # 上下文压缩节点
-│   │   └── node_output.py    # 输出文档节点
-│   ├── function_calling/     # Function Calling工具
-│   │   └── agent_tools.py    # Agent工具定义
-│   ├── streaming/            # 流式响应系统
-│   │   ├── stream_types.py   # 流式事件类型定义
-│   │   ├── stream_interface.py # 流式会话接口
-│   │   └── sse_handler.py    # SSE处理器
-│   ├── api/                  # Agent API实现
-│   │   └── agent_api.py      # SSE GTPlanner API
-│   ├── cli/                  # 现代化CLI实现
-│   │   ├── gtplanner_cli.py  # 主CLI实现
-│   │   └── cli_text_manager.py # CLI多语言文本管理
-│   └── persistence/          # 数据持久化
-│       ├── sqlite_session_manager.py # SQLite会话管理
-│       └── smart_compressor.py # 智能压缩器
+│
+├── gtplanner/                # 核心应用代码
+│   ├── __init__.py           # 模块入口
+│   ├── agent/                # Agent系统
+│   │   ├── gtplanner.py      # 有状态GTPlanner控制器
+│   │   ├── stateless_planner.py  # 无状态实现
+│   │   ├── flows/            # 主控制流程
+│   │   ├── subflows/         # 专业Agent子流程
+│   │   │   ├── short_planning/   # 短期规划
+│   │   │   ├── research/         # 技术调研
+│   │   │   └── architecture/     # 架构设计
+│   │   ├── nodes/            # 原子能力节点
+│   │   ├── function_calling/ # Function Calling工具
+│   │   ├── streaming/        # 流式响应系统
+│   │   ├── api/              # Agent API实现
+│   │   ├── cli/              # CLI实现
+│   │   ├── persistence/      # 数据持久化
+│   │   └── utils/            # Agent工具函数
+│   ├── tools/                # 工具推荐系统
+│   │   ├── apis/             # API工具
+│   │   └── python_packages/  # Python包
+│   └── utils/                # 工具函数
+│
+├── prefabs/                  # 🧩 Prefab 生态系统
+│   ├── README.md             # 生态系统总览
+│   ├── releases/             # 发布管理
+│   │   ├── community-prefabs.json  # 中央索引
+│   │   ├── scripts/          # 验证脚本
+│   │   ├── CONTRIBUTING.md   # 贡献指南
+│   │   └── README.md         # 发布文档
+│   └── marketplace/          # (未来) 市场前端
+│
 ├── mcp/                      # MCP服务
-│   ├── mcp_service.py       # MCP服务器实现
-│   └── pyproject.toml       # MCP特定依赖
-├── tools/                    # 工具推荐系统
-│   ├── apis/                # API类型工具定义
-│   └── python_packages/     # Python包类型工具定义
-├── utils/                    # 工具函数
-│   └── config_manager.py    # 配置管理
-├── docs/                     # 设计文档
-└── assets/                   # 项目资源
+│   ├── mcp_service.py        # MCP服务器
+│   └── pyproject.toml        # MCP依赖
+│
+├── workspace/                # 运行时工作空间
+│   ├── logs/                 # 日志文件
+│   └── output/               # 输出文件
+│
+├── docs/                     # 文档
+│   ├── architecture/         # 架构文档
+│   ├── api/                  # API文档
+│   ├── guides/               # 用户指南
+│   └── examples/             # 示例代码
+│
+├── tests/                    # 测试
+│   ├── gtplanner/            # GTPlanner测试
+│   ├── prefabs/              # Prefab测试
+│   └── fixtures/             # 测试数据
+│
+├── scripts/                  # 辅助脚本
+└── assets/                   # 静态资源
 ```
 
 ---
@@ -695,6 +708,76 @@ supported_languages = ["en", "zh", "es", "fr", "ja"]
 ```
 
 详细的多语言功能说明和配置指南，请参阅 [多语言指南](docs/multilingual-guide.md)。
+
+---
+
+## 🧩 Prefab 生态系统
+
+GTPlanner 包含一个完整的 **Prefab（AI 组件）生态系统**，让开发者能够构建、发布和分享标准化、可复用的 AI 能力。
+
+### 什么是 Prefab？
+
+Prefab 是一个打包好的、即用型的 AI 功能组件，可以：
+- 🎯 **被发现** - 在市场中浏览
+- 🚀 **被部署** - 自动部署到平台
+- 🔌 **被集成** - 通过标准 API 调用
+- 🔄 **版本化管理** - 使用语义化版本管理
+
+### Prefab 快速开始
+
+**对于用户：**
+```bash
+# 浏览可用的 Prefab
+cat prefabs/releases/community-prefabs.json | jq '.'
+
+# 使用 Prefab（通过 API）
+curl -X POST "https://api.example.com/v1/prefabs/{prefab-id}/run" \
+  -H "Content-Type: application/json" \
+  -d '{"version": "1.0.0", "inputs": {...}}'
+```
+
+**对于开发者：**
+```bash
+# 使用模板创建新的 Prefab
+git clone https://github.com/The-Agent-Builder/Prefab-Template.git my-prefab
+cd my-prefab
+uv sync --dev
+
+# 开发你的功能
+# 编辑 src/main.py 和 prefab-manifest.json
+
+# 测试和构建
+uv run pytest tests/ -v
+uv run python scripts/validate_manifest.py
+
+# 发布到 GTPlanner 生态系统
+# 1. 在 GitHub 创建 Release 并上传 .whl 文件
+# 2. 向 prefabs/releases/community-prefabs.json 提交 PR
+```
+
+### 生态系统特性
+
+- **📋 中央索引**：`prefabs/releases/community-prefabs.json` - 所有已发布 Prefab 的权威注册表
+- **✅ 自动验证**：CI/CD 流水线验证 schema、URL 和 manifest 一致性
+- **🔐 安全审查**：代码质量和安全性的人工审核
+- **🚀 自动部署**：PR 合并后通过 Webhook 触发自动部署
+- **📚 丰富文档**：为贡献者和用户提供全面的指南
+
+### 文档资源
+
+- [Prefab 生态系统总览](prefabs/README.md)
+- [发布文档](prefabs/releases/README.md)
+- [贡献指南](prefabs/releases/CONTRIBUTING.md)
+- [Prefab 模板](https://github.com/The-Agent-Builder/Prefab-Template)
+
+### Prefab 示例
+
+- **媒体处理**：视频转音频转换器、图片背景去除
+- **数据处理**：PDF 文本提取、Excel 数据分析
+- **AI 集成**：文本生成、图像识别
+- **实用工具**：天气查询（如 [高德天气](../Amap-Weather/)）、地图服务
+
+更多详情，请访问 [Prefab 生态系统文档](prefabs/README.md)。
 
 ---
 
