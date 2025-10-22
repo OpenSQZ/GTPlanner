@@ -1,5 +1,6 @@
-name: Prefab Deploy Webhook
+name: Prefab Deploy on Merge
 
+# 当 PR 合并到 main 时触发部署
 on:
   push:
     branches:
@@ -9,78 +10,148 @@ on:
 
 jobs:
   trigger-deployment:
-    name: Trigger Prefab Deployment
+    name: Trigger Prefab Factory Deployment
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
-      
-      - name: Check if community-prefabs.json changed
-        id: check_changes
-        run: |
-          if git diff --name-only HEAD^ HEAD | grep -q "prefabs/releases/community-prefabs.json"; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "✅ community-prefabs.json has been updated"
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ community-prefabs.json was not changed"
-          fi
-      
-      - name: Extract changed prefab
-        if: steps.check_changes.outputs.changed == 'true'
-        id: extract_prefab
-        run: |
-          # 提取新增的 prefab 条目
-          git show HEAD:prefabs/releases/community-prefabs.json > current.json
-          git show HEAD^:prefabs/releases/community-prefabs.json > previous.json || echo "[]" > previous.json
-          
-          # 找出新增的条目（简化版，实际应该用 jq 做差集）
-          echo "📦 Prefab update detected"
-          cat current.json | jq '.' > /tmp/prefab_update.json
-      
-      - name: Send webhook to deployment service
-        if: steps.check_changes.outputs.changed == 'true'
-        env:
-          DEPLOY_WEBHOOK_URL: ${{ secrets.PREFAB_DEPLOY_WEBHOOK_URL }}
-          DEPLOY_WEBHOOK_SECRET: ${{ secrets.PREFAB_DEPLOY_WEBHOOK_SECRET }}
-        run: |
-          if [ -z "$DEPLOY_WEBHOOK_URL" ]; then
-            echo "⚠️ Warning: PREFAB_DEPLOY_WEBHOOK_URL not configured"
-            echo "Skipping webhook trigger. Configure this secret to enable automatic deployment."
-            exit 0
-          fi
-          
-          # 读取更新的 prefab 列表
-          PAYLOAD=$(cat /tmp/prefab_update.json)
-          
-          # 生成 HMAC 签名
-          SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$DEPLOY_WEBHOOK_SECRET" | sed 's/^.* //')
-          
-          # 发送 webhook
-          HTTP_CODE=$(curl -s -o /tmp/webhook_response.txt -w "%{http_code}" \
-            -X POST "$DEPLOY_WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -H "X-Hub-Signature-256: sha256=$SIGNATURE" \
-            -H "X-GitHub-Event: push" \
-            -d "$PAYLOAD")
-          
-          echo "HTTP Status Code: $HTTP_CODE"
-          echo "Response:"
-          cat /tmp/webhook_response.txt
-          
-          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
-            echo "✅ Webhook sent successfully"
-          else
-            echo "❌ Webhook failed with status code: $HTTP_CODE"
-            exit 1
-          fi
-      
-      - name: Deployment notification
-        if: steps.check_changes.outputs.changed == 'true'
-        run: |
-          echo "🚀 Prefab deployment triggered"
-          echo "The deployment service will process the update shortly."
+          fetch-depth: 2  # 获取最近两次提交以便对比
 
+      - name: Extract changed entry
+        id: extract
+        run: |
+          # 获取上一次提交的文件
+          git show HEAD~1:prefabs/releases/community-prefabs.json > old.json 2>/dev/null || echo '[]' > old.json
+          git show HEAD:prefabs/releases/community-prefabs.json > new.json
+
+          # 使用 Python 找出新增或修改的条目
+          python3 << 'PYTHON_SCRIPT'
+          import json
+          import sys
+
+          with open('old.json') as f:
+              old_data = json.load(f)
+          with open('new.json') as f:
+              new_data = json.load(f)
+
+          old_dict = {(item['id'], item['version']): item for item in old_data}
+          new_dict = {(item['id'], item['version']): item for item in new_data}
+
+          # 找出新增或修改的条目
+          changed = []
+          for key, item in new_dict.items():
+              if key not in old_dict or item != old_dict[key]:
+                  changed.append(item)
+
+          if not changed:
+              print("No changes detected")
+              sys.exit(0)
+
+          if len(changed) > 1:
+              print(f"Warning: Multiple changes detected ({len(changed)}), deploying all:")
+              for item in changed:
+                  print(f"  - {item['id']}@{item['version']}")
+
+          # 输出到 GitHub Actions
+          import os
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"changed_entries={json.dumps(changed)}\n")
+              f.write(f"has_changes={'true' if changed else 'false'}\n")
+          PYTHON_SCRIPT
+
+      - name: Trigger deployment
+        if: steps.extract.outputs.has_changes == 'true'
+        env:
+          FACTORY_URL: ${{ secrets.PREFAB_FACTORY_DEPLOY_URL }}
+          WEBHOOK_SECRET: ${{ secrets.PREFAB_FACTORY_WEBHOOK_SECRET }}
+        run: |
+          # 读取变更的条目
+          CHANGED_ENTRIES='${{ steps.extract.outputs.changed_entries }}'
+
+          # 遍历每个变更的条目并触发部署
+          echo "$CHANGED_ENTRIES" | python3 << 'PYTHON_SCRIPT'
+          import json
+          import hmac
+          import hashlib
+          import os
+          import sys
+          import http.client
+          from urllib.parse import urlparse
+
+          changed_entries = json.loads(sys.stdin.read())
+          factory_url = os.environ.get('FACTORY_URL')
+          webhook_secret = os.environ.get('WEBHOOK_SECRET', '')
+
+          if not factory_url:
+              print("::warning::PREFAB_FACTORY_DEPLOY_URL secret is not set")
+              print("ℹ️  Skipping deployment trigger. Configure this secret to enable automatic deployment.")
+              sys.exit(0)
+
+          # 解析 URL
+          parsed = urlparse(factory_url)
+          host = parsed.netloc
+          path = parsed.path or '/v1/deploy'
+
+          for entry in changed_entries:
+              # 构造请求负载
+              payload = {
+                  "event_source": "gtplanner-prefabs",
+                  "event_type": "prefab_merged",
+                  "prefab": {
+                      "id": entry['id'],
+                      "version": entry['version'],
+                      "author": entry['author'],
+                      "repo_url": entry['repo_url']
+                  }
+              }
+
+              payload_bytes = json.dumps(payload).encode('utf-8')
+
+              # 计算签名
+              headers = {
+                  'Content-Type': 'application/json',
+              }
+
+              if webhook_secret:
+                  mac = hmac.new(
+                      webhook_secret.encode(),
+                      msg=payload_bytes,
+                      digestmod=hashlib.sha256
+                  )
+                  headers['X-Hub-Signature-256'] = f"sha256={mac.hexdigest()}"
+
+              # 发送请求
+              try:
+                  if parsed.scheme == 'https':
+                      conn = http.client.HTTPSConnection(host, timeout=30)
+                  else:
+                      conn = http.client.HTTPConnection(host, timeout=30)
+
+                  conn.request('POST', path, body=payload_bytes, headers=headers)
+                  response = conn.getresponse()
+                  response_data = response.read().decode('utf-8')
+
+                  if response.status in (200, 202):
+                      print(f"✅ Deployment triggered for {entry['id']}@{entry['version']}")
+                      print(f"Response: {response_data}")
+                  else:
+                      print(f"::error::Failed to deploy {entry['id']}@{entry['version']}")
+                      print(f"Status: {response.status}")
+                      print(f"Response: {response_data}")
+                      sys.exit(1)
+
+              except Exception as e:
+                  print(f"::error::Exception deploying {entry['id']}@{entry['version']}: {e}")
+                  sys.exit(1)
+              finally:
+                  conn.close()
+
+          print(f"✅ All {len(changed_entries)} deployment(s) triggered successfully")
+          PYTHON_SCRIPT
+
+      - name: No changes detected
+        if: steps.extract.outputs.has_changes != 'true'
+        run: |
+          echo "ℹ️  No new or modified prefab entries detected in this push"

@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
       
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       
@@ -32,16 +32,20 @@ jobs:
         run: |
           uv sync
       
-      - name: Check file changes
+      - name: Check only community-prefabs.json is modified
         run: |
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
           echo "Changed files: $CHANGED_FILES"
           
-          # 只允许修改 community-prefabs.json
-          if echo "$CHANGED_FILES" | grep -v "^prefabs/releases/community-prefabs.json$" | grep -q "."; then
-            echo "❌ Error: Only prefabs/releases/community-prefabs.json should be modified"
-            echo "Changed files:"
-            echo "$CHANGED_FILES"
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "::error::No files changed in this PR"
+            exit 1
+          fi
+          
+          # Only allow prefabs/releases/community-prefabs.json to be modified
+          if [ "$CHANGED_FILES" != "prefabs/releases/community-prefabs.json" ]; then
+            echo "::error::Only prefabs/releases/community-prefabs.json should be modified"
+            echo "Found changes in: $CHANGED_FILES"
             exit 1
           fi
           
@@ -50,30 +54,30 @@ jobs:
       - name: Extract PR changes
         working-directory: prefabs/releases
         run: |
-          uv run python scripts/extract_pr_changes.py
+          uv run python3 scripts/extract_pr_changes.py
       
       - name: Validate JSON Schema
         working-directory: prefabs/releases
         run: |
-          uv run python scripts/validate_schema.py
+          uv run python3 scripts/validate_schema.py
       
-      - name: Check artifact URL
+      - name: Check artifact URL accessibility
         working-directory: prefabs/releases
         run: |
-          uv run python scripts/check_artifact_url.py
+          uv run python3 scripts/check_artifact_url.py
       
-      - name: Verify artifact content
+      - name: Download and verify artifact
         working-directory: prefabs/releases
         run: |
-          uv run python scripts/verify_artifact.py
+          uv run python3 scripts/verify_artifact.py
       
-      - name: Check duplicates
+      - name: Check for duplicate entries
         working-directory: prefabs/releases
         run: |
-          uv run python scripts/check_duplicates.py
+          uv run python3 scripts/check_duplicates.py
       
-      - name: Validation Success
+      - name: All checks passed
         run: |
           echo "✅ All validation checks passed!"
-          echo "Your prefab submission is ready for manual review."
+          echo "::notice::PR is ready for human review"
 
