@@ -1,0 +1,137 @@
+name: 🧩 Prefab Submission
+description: Submit a new Prefab to the GTPlanner ecosystem
+title: "[Prefab]: "
+labels: ["prefab", "submission", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📦 Submit Your Prefab
+
+        Thanks for contributing to the GTPlanner Prefab ecosystem! 
+        
+        Please note: This issue is for tracking purposes. The actual submission should be done via Pull Request to `prefabs/releases/community-prefabs.json`.
+        
+        [📚 Read the Contribution Guide](https://github.com/OpenSQZ/GTPlanner/blob/main/prefabs/releases/CONTRIBUTING.md)
+
+  - type: input
+    id: prefab-id
+    attributes:
+      label: Prefab ID
+      description: The unique identifier for your prefab (kebab-case)
+      placeholder: "e.g., video-to-audio"
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Semantic version number
+      placeholder: "e.g., 1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: repo-url
+    attributes:
+      label: Repository URL
+      description: GitHub repository URL for your prefab
+      placeholder: "https://github.com/username/my-prefab"
+    validations:
+      required: true
+
+  - type: input
+    id: release-url
+    attributes:
+      label: Release URL
+      description: GitHub Release URL with the .whl file
+      placeholder: "https://github.com/username/my-prefab/releases/tag/v1.0.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Prefab Description
+      description: Describe what your prefab does (10-500 characters)
+      placeholder: A high-performance tool that converts video files to audio format using FFmpeg...
+    validations:
+      required: true
+
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      description: Comma-separated tags for categorization
+      placeholder: "video, audio, conversion, ffmpeg"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: Primary category for your prefab
+      options:
+        - Media Processing
+        - Data Processing
+        - AI/ML
+        - Utilities
+        - Web Services
+        - File Operations
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Submission Checklist
+      description: Please verify the following before submitting
+      options:
+        - label: I have created a GitHub Release with the .whl file
+          required: true
+        - label: The .whl file name follows the format `{id}-{version}.whl`
+          required: true
+        - label: My prefab-manifest.json is valid and matches the PR entry
+          required: true
+        - label: I have tested my prefab thoroughly
+          required: true
+        - label: I have read and agree to the Contributor License Agreement
+          required: true
+
+  - type: textarea
+    id: testing
+    attributes:
+      label: Testing Information
+      description: How have you tested this prefab?
+      placeholder: |
+        - Tested on macOS 14.0, Ubuntu 22.04
+        - Tested with various input formats
+        - All test cases pass
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Notes
+      description: Any other information about your prefab
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 📝 Next Steps
+        
+        After submitting this issue:
+        1. Create a Pull Request to `prefabs/releases/community-prefabs.json`
+        2. Reference this issue in your PR description
+        3. Wait for automated validation to complete
+        4. Address any feedback from maintainers
+        5. Your prefab will be deployed after PR approval!
+        
+        [📖 Detailed Guide](https://github.com/OpenSQZ/GTPlanner/blob/main/prefabs/releases/CONTRIBUTING.md)
+
