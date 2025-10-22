@@ -13,7 +13,7 @@ dependencies = [
     "pyyaml>=6.0",
     "pocketflow==0.0.3",
     "pocketflow-agui==0.1.0",
-    "pocketflow-tracing>=0.1.4",
+    "pocketflow-tracing>=0.1.5",
     "aiohttp >= 3.12.14",
     "json-repair>=0.45.0",
     "fastapi == 0.115.9",
