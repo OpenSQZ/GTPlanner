@@ -1,0 +1,79 @@
+name: Prefab PR Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'prefabs/releases/community-prefabs.json'
+
+jobs:
+  validate-prefab:
+    name: Validate Prefab Submission
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      
+      - name: Install dependencies
+        working-directory: prefabs/releases
+        run: |
+          uv sync
+      
+      - name: Check file changes
+        run: |
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          echo "Changed files: $CHANGED_FILES"
+          
+          # 只允许修改 community-prefabs.json
+          if echo "$CHANGED_FILES" | grep -v "^prefabs/releases/community-prefabs.json$" | grep -q "."; then
+            echo "❌ Error: Only prefabs/releases/community-prefabs.json should be modified"
+            echo "Changed files:"
+            echo "$CHANGED_FILES"
+            exit 1
+          fi
+          
+          echo "✅ File change validation passed"
+      
+      - name: Extract PR changes
+        working-directory: prefabs/releases
+        run: |
+          uv run python scripts/extract_pr_changes.py
+      
+      - name: Validate JSON Schema
+        working-directory: prefabs/releases
+        run: |
+          uv run python scripts/validate_schema.py
+      
+      - name: Check artifact URL
+        working-directory: prefabs/releases
+        run: |
+          uv run python scripts/check_artifact_url.py
+      
+      - name: Verify artifact content
+        working-directory: prefabs/releases
+        run: |
+          uv run python scripts/verify_artifact.py
+      
+      - name: Check duplicates
+        working-directory: prefabs/releases
+        run: |
+          uv run python scripts/check_duplicates.py
+      
+      - name: Validation Success
+        run: |
+          echo "✅ All validation checks passed!"
+          echo "Your prefab submission is ready for manual review."
+

@@ -45,7 +45,10 @@ class AgentsToolRecommendNodeToolRecommendTemplates:
 
 注意：
 - 只返回真正合适的工具，不要为了凑数而选择不相关的工具
-- 索引必须是有效的（0到{tools_count}）
+- 索引必须是有效的（0到{
+
+
+}）
 - 按相关性从高到低排序
 - 如果没有合适的工具，selected_tools可以为空数组"""
     

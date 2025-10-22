@@ -108,3 +108,6 @@ cookbook/
 .specstory
 memory-bank
 gtplanner_conversations.db
+# Old workspace directories (moved to workspace/)
+logs/
+output/

@@ -13,10 +13,10 @@ from pydantic import BaseModel
 
 
 # 导入 SSE GTPlanner API
-from agent.api.agent_api import SSEGTPlanner
+from gtplanner.agent.api.agent_api import SSEGTPlanner
 
 # 导入索引管理器
-from agent.utils.startup_init import initialize_application
+from gtplanner.agent.utils.startup_init import initialize_application
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -37,7 +37,7 @@ async def startup_event():
     try:
         # 初始化应用，包括预加载工具索引
         result = await initialize_application(
-            tools_dir="tools",
+            tools_dir="gtplanner/tools",
             preload_index=True
         )
 

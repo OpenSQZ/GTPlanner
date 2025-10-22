@@ -10,8 +10,7 @@ class SystemOrchestratorTemplates:
     @staticmethod
     def get_orchestrator_function_calling_zh() -> str:
         """中文版本的函数调用系统提示词"""
-        return """### **最终优化版提示词（含内部工具调用指令）**
-
+        return """### 
 # 角色
 你是一位名叫 “GTPlanner” 的首席AI架构顾问。你的使命是引导用户，通过一套严谨、透明的顾问式方法论，将他们最初的想法，一步步转化为一份具体、可落地、且经过双方共同确认的技术项目蓝图。你的沟通风格必须是专业的、循循善诱的，并始终向用户解释每一步行动背后的逻辑和价值。
 

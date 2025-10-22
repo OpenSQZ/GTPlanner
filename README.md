@@ -49,9 +49,10 @@ For developers looking for deep integration and custom development, we also prov
 - **🛠️ Function Calling**: Integrates with OpenAI Function Calling for intelligent tool invocation and task execution.
 - **🌐 Multi-Interface Support**: Offers multiple integration methods, including CLI, FastAPI REST API, and MCP services.
 
-This project consists of two core parts:
+This project consists of three core parts:
 - **💻 GTPlanner-frontend (Web UI)**: Provides a feature-rich and interactive online planning experience. (Recommended) [🚀 Try the Live Demo!](https://the-agent-builder.com/)
 - **⚙️ GTPlanner (Backend)**: A powerful backend engine based on an Agent architecture, offering various integration methods like CLI and API.
+- **🧩 Prefab Ecosystem**: A standardized, reusable AI component system for building, publishing, and sharing AI capabilities. [Learn more](prefabs/README.md)
 
 ## 💻 Web UI (Recommended)
 
@@ -551,46 +552,55 @@ GTPlanner/
 ├── fastapi_main.py           # FastAPI backend service
 ├── settings.toml             # Configuration file
 ├── pyproject.toml            # Project metadata and dependencies
-├── agent/                     # Core Agent system
-│   ├── __init__.py           # Agent module entry point
-│   ├── gtplanner.py          # Stateful GTPlanner main controller
-│   ├── stateless_planner.py  # Stateless GTPlanner implementation
-│   ├── context_types.py      # Stateless data type definitions
-│   ├── pocketflow_factory.py # PocketFlow data conversion factory
-│   ├── flows/                # Main control flows
-│   │   └── react_orchestrator_refactored/ # Main controller flow
-│   ├── subflows/             # Specialized Agent subflows
-│   │   ├── short_planning/   # Short-term planning subflow
-│   │   ├── research/         # Technical research subflow
-│   │   └── architecture/     # Architecture design subflow
-│   ├── nodes/                # Atomic capability nodes
-│   │   ├── node_search.py    # Search engine node
-│   │   ├── node_url.py       # URL parsing node
-│   │   ├── node_compress.py  # Context compression node
-│   │   └── node_output.py    # Output document node
-│   ├── function_calling/     # Function Calling tools
-│   │   └── agent_tools.py    # Agent tool definitions
-│   ├── streaming/            # Streaming response system
-│   │   ├── stream_types.py   # Stream event type definitions
-│   │   ├── stream_interface.py # Streaming session interface
-│   │   └── sse_handler.py    # SSE handler
-│   ├── api/                  # Agent API implementation
-│   │   └── agent_api.py      # SSE GTPlanner API
-│   ├── cli/                  # Modern CLI implementation
-│   │   ├── gtplanner_cli.py  # Main CLI implementation
-│   │   └── cli_text_manager.py # CLI multilingual text manager
-│   └── persistence/          # Data persistence
-│       ├── sqlite_session_manager.py # SQLite session manager
-│       └── smart_compressor.py # Smart compressor
+│
+├── gtplanner/                # Core application code
+│   ├── __init__.py           # Module entry point
+│   ├── agent/                # Agent system
+│   │   ├── gtplanner.py      # Stateful GTPlanner controller
+│   │   ├── stateless_planner.py  # Stateless implementation
+│   │   ├── flows/            # Main control flows
+│   │   ├── subflows/         # Specialized Agent subflows
+│   │   │   ├── short_planning/   # Short-term planning
+│   │   │   ├── research/         # Technical research
+│   │   │   └── architecture/     # Architecture design
+│   │   ├── nodes/            # Atomic capability nodes
+│   │   ├── function_calling/ # Function Calling tools
+│   │   ├── streaming/        # Streaming response system
+│   │   ├── api/              # Agent API implementation
+│   │   ├── cli/              # CLI implementation
+│   │   ├── persistence/      # Data persistence
+│   │   └── utils/            # Agent utilities
+│   ├── tools/                # Tool recommendation system
+│   │   ├── apis/             # API tools
+│   │   └── python_packages/  # Python packages
+│   └── utils/                # Utility functions
+│
+├── prefabs/                  # 🧩 Prefab Ecosystem
+│   ├── README.md             # Ecosystem overview
+│   ├── releases/             # Release management
+│   │   ├── community-prefabs.json  # Central index
+│   │   ├── scripts/          # Validation scripts
+│   │   ├── CONTRIBUTING.md   # Contribution guide
+│   │   └── README.md         # Release documentation
+│
 ├── mcp/                      # MCP service
-│   ├── mcp_service.py       # MCP server implementation
-│   └── pyproject.toml       # MCP-specific dependencies
-├── tools/                    # Tool recommendation system
-│   ├── apis/                # API-type tool definitions
-│   └── python_packages/     # Python package-type tool definitions
-├── utils/                    # Utility functions
-│   └── config_manager.py    # Configuration manager
-├── docs/                     # Design documents
+│   ├── mcp_service.py        # MCP server
+│   └── pyproject.toml        # MCP dependencies
+│
+├── workspace/                # Runtime workspace
+│   ├── logs/                 # Log files
+│   └── output/               # Output files
+│
+├── docs/                     # Documentation
+│   ├── architecture/         # Architecture docs
+│   ├── api/                  # API docs
+│   └── guides/               # User guides
+│
+├── tests/                    # Tests
+│   ├── gtplanner/            # GTPlanner tests
+│   └── prefabs/              # Prefab tests
+│
+├── scripts/                  # Helper scripts
 └── assets/                   # Project assets
 ```
 
@@ -686,6 +696,76 @@ supported_languages = ["en", "zh", "es", "fr", "ja"]
 ```
 
 For detailed multilingual feature descriptions and configuration guides, please refer to the [Multilingual Guide](docs/multilingual-guide.md).
+
+---
+
+## 🧩 Prefab Ecosystem
+
+GTPlanner includes a comprehensive **Prefab (AI Component) Ecosystem** that enables developers to build, publish, and share standardized, reusable AI capabilities.
+
+### What is a Prefab?
+
+A Prefab is a packaged, ready-to-use AI function that can be:
+- 🎯 **Discovered** - Browsed in the marketplace
+- 🚀 **Deployed** - Automatically deployed to the platform
+- 🔌 **Integrated** - Called through standard APIs
+- 🔄 **Versioned** - Managed with semantic versioning
+
+### Quick Start with Prefabs
+
+**For Users:**
+```bash
+# Browse available Prefabs
+cat prefabs/releases/community-prefabs.json | jq '.'
+
+# Use a Prefab (via API)
+curl -X POST "https://api.example.com/v1/prefabs/{prefab-id}/run" \
+  -H "Content-Type: application/json" \
+  -d '{"version": "1.0.0", "inputs": {...}}'
+```
+
+**For Developers:**
+```bash
+# Create a new Prefab using the template
+git clone https://github.com/The-Agent-Builder/Prefab-Template.git my-prefab
+cd my-prefab
+uv sync --dev
+
+# Develop your function
+# Edit src/main.py and prefab-manifest.json
+
+# Test and build
+uv run pytest tests/ -v
+uv run python scripts/validate_manifest.py
+
+# Publish to GTPlanner ecosystem
+# 1. Create GitHub Release with .whl file
+# 2. Submit PR to prefabs/releases/community-prefabs.json
+```
+
+### Ecosystem Features
+
+- **📋 Central Index**: `prefabs/releases/community-prefabs.json` - Authoritative registry of all published Prefabs
+- **✅ Automated Validation**: CI/CD pipeline validates schema, URLs, and manifest consistency
+- **🔐 Security Review**: Human review for code quality and safety
+- **🚀 Auto Deployment**: Webhook-triggered deployment upon PR merge
+- **📚 Rich Documentation**: Comprehensive guides for contributors and users
+
+### Documentation
+
+- [Prefab Ecosystem Overview](prefabs/README.md)
+- [Release Documentation](prefabs/releases/README.md)
+- [Contribution Guide](prefabs/releases/CONTRIBUTING.md)
+- [Prefab Template](https://github.com/The-Agent-Builder/Prefab-Template)
+
+### Example Prefabs
+
+- **Media Processing**: Video-to-audio converter, image background removal
+- **Data Processing**: PDF text extraction, Excel analysis
+- **AI Integration**: Text generation, image recognition
+- **Utilities**: Weather query ([Amap-Weather](../Amap-Weather/)), map services
+
+For more details, visit the [Prefab Ecosystem documentation](prefabs/README.md).
 
 ---
 

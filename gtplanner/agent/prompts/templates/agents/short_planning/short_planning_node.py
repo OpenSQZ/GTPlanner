@@ -11,7 +11,7 @@ class AgentsShortPlanningShortPlanningNodeTemplates:
     def get_short_planning_generation_zh() -> str:
         """中文版本的短规划生成提示词"""
         return """# 🎯 角色定位
-你是后端架构师，专注于后端业务逻辑和数据处理方案设计。
+你是业务需求分析师，专注于后端业务逻辑和数据处理方案设计。
 
 # ⚠️ 重要约束
 **只规划后端逻辑，不涉及前端UI、界面、用户交互等内容**
@@ -21,7 +21,7 @@ class AgentsShortPlanningShortPlanningNodeTemplates:
 
 ## 🔄 规划阶段机制
 **当前规划阶段：{planning_stage}**
-
+#todo 拆开initial和technical
 ### 📝 初始规划阶段 (planning_stage='initial')
 - **目标**：建立后端功能框架和业务逻辑
 - **重点**：后端需求分析、功能拆解、数据流程设计
