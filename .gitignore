@@ -100,14 +100,19 @@ output/*
 doc.pdf
 *.bak
 
-# Cookbook and examples (development only)
-cookbook/
-
-# GTPlanner session data
+# GTPlanner runtime data
 .gtplanner_sessions/
-.specstory
-memory-bank
+.specstory/
 gtplanner_conversations.db
-# Old workspace directories (moved to workspace/)
-logs/
-output/
+
+# Workspace directory (runtime files)
+workspace/logs/*.log
+workspace/output/*
+workspace/memory-bank/*
+
+# Temporary test workspace
+test_workspace/
+
+# Old directories (cleaned up in refactor)
+api/
+document_embedding/
