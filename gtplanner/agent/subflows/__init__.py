@@ -7,12 +7,12 @@ GTPlanner 专业Agent子流程模块
 子流程列表：
 - ShortPlanningFlow: 短规划Agent子流程
 - ResearchFlow: 研究调研Agent子流程
-- ArchitectureFlow: 架构设计和文档生成Agent子流程（集成了文档生成功能）
+- DesignFlow: 设计文档生成Agent子流程（统一的单节点流程）
 """
 
 # 导入已实现的Agent
 from .research import ResearchFlow
-from .deep_design_docs import ArchitectureFlow
+from .design import DesignFlow
 
 # 暂时注释掉未实现的导入
 # from .short_planning_flow import ShortPlanningFlow
@@ -20,5 +20,5 @@ from .deep_design_docs import ArchitectureFlow
 __all__ = [
     # 'ShortPlanningFlow',
     'ResearchFlow',
-    'ArchitectureFlow'
+    'DesignFlow'
 ]

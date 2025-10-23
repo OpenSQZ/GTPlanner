@@ -1,18 +1,11 @@
 #!/usr/bin/env python3
 """
-现代化GTPlanner CLI
-
-基于新的流式响应架构的CLI实现：
-1. 集成StreamingSession和CLIStreamHandler
-2. 使用StatelessGTPlanner而不是旧的ReActOrchestratorFlow
-3. 支持类型安全的流式响应（StreamEventType/StreamCallbackType）
-4. 保持会话管理和配置功能
-5. 优雅的中断处理和资源清理
+GTPlanner CLI
 
 使用方式:
-    python cli/modern_gtplanner_cli.py                    # 启动交互式CLI
-    python cli/modern_gtplanner_cli.py "设计用户管理系统"   # 直接处理需求
-    python cli/modern_gtplanner_cli.py --load <session_id> # 加载指定会话
+    python gtplanner.py                    # 启动交互式CLI
+    python gtplanner.py "设计用户管理系统"   # 直接处理需求
+    python gtplanner.py --load <session_id> # 加载指定会话
 """
 
 import sys
@@ -49,7 +42,7 @@ from agent.utils.startup_init import initialize_application
 
 
 class ModernGTPlannerCLI:
-    """基于新流式响应架构的现代化GTPlanner CLI"""
+    """GTPlanner CLI"""
 
     def __init__(self,
                  enable_streaming: bool = True,
@@ -58,7 +51,7 @@ class ModernGTPlannerCLI:
                  verbose: bool = False,
                  language: str = "zh"):
         """
-        初始化现代化CLI
+        初始化CLI
 
         Args:
             enable_streaming: 是否启用流式响应
@@ -90,10 +83,10 @@ class ModernGTPlannerCLI:
             "                                                         "
         ]
         
-        # 使用新的StatelessGTPlanner
+        # GTPlanner 实例
         self.planner = StatelessGTPlanner()
 
-        # 使用新的SQLite会话管理器
+        # 会话管理器
         self.session_manager = SQLiteSessionManager()
         
         # 流式响应组件
@@ -189,26 +182,17 @@ class ModernGTPlannerCLI:
 
         if self.language == "zh":
             return f"""
-# {self.text_manager.get_text("welcome_title")}
-
 {self.text_manager.get_text("welcome_subtitle")}
 
-## {self.text_manager.get_text("new_features")}
-- 🌊 **真实流式响应**: 基于StreamEventType/StreamCallbackType的类型安全架构
-- 🎯 **无状态设计**: 使用StatelessGTPlanner，支持高并发和水平扩展
-- 🔧 **智能工具调用**: 实时显示工具执行状态和进度
-- 💬 **优雅交互**: Rich库美化显示，支持中断处理
-- 📊 **会话管理**: 完整的会话创建、加载、切换功能
-
-## {self.text_manager.get_text("usage_method")}
+**使用方式**
 {self.text_manager.get_text("usage_description")}
 
-## {self.text_manager.get_text("config_options")}
+**当前配置**
 - 流式响应: {streaming_status}
 - 时间戳显示: {timestamps_status}
 - 元数据显示: {metadata_status}
 
-## {self.text_manager.get_text("available_commands")}
+**常用命令**
 - `/help` - {self.text_manager.get_text("help_command")}
 - `/sessions` - {self.text_manager.get_text("sessions_command")}
 - `/new` - {self.text_manager.get_text("new_command")}
@@ -218,26 +202,17 @@ class ModernGTPlannerCLI:
             """
         elif self.language == "en":
             return f"""
-# {self.text_manager.get_text("welcome_title")}
-
 {self.text_manager.get_text("welcome_subtitle")}
 
-## {self.text_manager.get_text("new_features")}
-- 🌊 **Real Streaming Response**: Type-safe architecture based on StreamEventType/StreamCallbackType
-- 🎯 **Stateless Design**: Using StatelessGTPlanner, supports high concurrency and horizontal scaling
-- 🔧 **Smart Tool Calls**: Real-time display of tool execution status and progress
-- 💬 **Elegant Interaction**: Rich library beautified display with interrupt handling support
-- 📊 **Session Management**: Complete session creation, loading, and switching functionality
-
-## {self.text_manager.get_text("usage_method")}
+**Usage**
 {self.text_manager.get_text("usage_description")}
 
-## {self.text_manager.get_text("config_options")}
+**Current Config**
 - Streaming Response: {streaming_status}
 - Timestamp Display: {timestamps_status}
 - Metadata Display: {metadata_status}
 
-## {self.text_manager.get_text("available_commands")}
+**Common Commands**
 - `/help` - {self.text_manager.get_text("help_command")}
 - `/sessions` - {self.text_manager.get_text("sessions_command")}
 - `/new` - {self.text_manager.get_text("new_command")}
@@ -248,19 +223,17 @@ class ModernGTPlannerCLI:
         else:
             # 对于其他语言，使用简化版本
             return f"""
-# {self.text_manager.get_text("welcome_title")}
-
 {self.text_manager.get_text("welcome_subtitle")}
 
-## {self.text_manager.get_text("usage_method")}
+**{self.text_manager.get_text("usage_method")}**
 {self.text_manager.get_text("usage_description")}
 
-## {self.text_manager.get_text("config_options")}
+**{self.text_manager.get_text("config_options")}**
 - Streaming: {streaming_status}
 - Timestamps: {timestamps_status}
 - Metadata: {metadata_status}
 
-## {self.text_manager.get_text("available_commands")}
+**{self.text_manager.get_text("available_commands")}**
 - `/help` - {self.text_manager.get_text("help_command")}
 - `/sessions` - {self.text_manager.get_text("sessions_command")}
 - `/new` - {self.text_manager.get_text("new_command")}
@@ -361,7 +334,7 @@ I want to build an online education platform
     
     async def process_user_input(self, user_input: str) -> bool:
         """
-        处理用户输入（新架构）
+        处理用户输入
         
         Args:
             user_input: 用户输入内容
@@ -385,22 +358,22 @@ I want to build an online education platform
                 self.console.print(self.text_manager.get_text("context_build_failed"))
                 return True
             
-            # 创建流式会话（统一流式架构，总是创建）
+            # 创建流式会话
             streaming_session = self._create_streaming_session(
                 self.session_manager.current_session_id
             )
             self.current_streaming_session = streaming_session
 
-            # 只有在启用流式显示时才启动流式会话
+            # 启动流式会话
             if self.enable_streaming:
                 await streaming_session.start()
 
-            # 使用StatelessGTPlanner处理，传递语言参数
+            # 处理用户输入
             result = await self.planner.process(user_input, context, streaming_session, language=self.language)
 
             # 处理结果
             if result.success:
-                # 使用SQLiteSessionManager的update_from_agent_result方法，传递用户输入以避免重复保存
+                # 保存结果到数据库
                 update_success = self.session_manager.update_from_agent_result(result, user_input=user_input)
 
                 if not update_success:
@@ -754,7 +727,7 @@ I want to build an online education platform
 
 async def main():
     """主函数"""
-    parser = argparse.ArgumentParser(description="现代化GTPlanner CLI")
+    parser = argparse.ArgumentParser(description="GTPlanner CLI")
     parser.add_argument("requirement", nargs="?", help="直接处理的需求")
     parser.add_argument("--no-streaming", action="store_true", help="禁用流式响应")
     parser.add_argument("--timestamps", action="store_true", help="显示时间戳")
@@ -768,7 +741,7 @@ async def main():
 
     args = parser.parse_args()
 
-    # 创建现代化CLI实例
+    # 创建CLI实例
     cli = ModernGTPlannerCLI(
         enable_streaming=not args.no_streaming,
         show_timestamps=args.timestamps,

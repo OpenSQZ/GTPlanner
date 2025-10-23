@@ -726,9 +726,29 @@ class OpenAIClient:
                         # 清空已处理的工具调用，避免重复
                         tag_filter.extracted_tool_calls.clear()
 
+                    # 提前结束：如果收到finish_reason，先输出再终止循环
+                    finish_reason = None
+                    try:
+                        finish_reason = chunk.choices[0].finish_reason
+                    except Exception:
+                        finish_reason = None
+
                     yield filtered_chunk
+
+                    if finish_reason is not None:
+                        break
                 else:
+                    # 提前结束：如果收到finish_reason，先输出再终止循环
+                    finish_reason = None
+                    try:
+                        finish_reason = chunk.choices[0].finish_reason
+                    except Exception:
+                        finish_reason = None
+
                     yield chunk
+
+                    if finish_reason is not None:
+                        break
 
             # 如果启用了过滤，处理剩余的内容
             if filter_tool_tags_param and tag_filter:

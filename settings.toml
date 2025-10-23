@@ -47,9 +47,3 @@ tools_index_name = "document_gtplanner_tools"
 # Vector field name for document embedding - override with VECTOR_SERVICE_VECTOR_FIELD
 vector_field = "combined_text"
 
-[default.deep_design_docs]
-# Deep design documents configuration
-# Enable deep design docs feature (uses architecture module's progressive design logic)
-# When false, falls back to planning.py logic for compatibility
-enable_deep_design_docs = false
-

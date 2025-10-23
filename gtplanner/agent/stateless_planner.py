@@ -90,6 +90,7 @@ class StatelessGTPlanner:
             orchestrator = ReActOrchestratorFlow()
 
             # 4. 执行处理（完全独立的执行环境）
+            start_time = asyncio.get_event_loop().time()
             await orchestrator.run_async(shared)
 
             # 5. 计算执行时间

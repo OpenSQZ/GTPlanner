@@ -34,17 +34,8 @@ class AgentPromptType(Enum):
     # 工具推荐Agent
     TOOL_RECOMMENDATION = "tool_recommendation"
 
-    # 快速设计Agent
-    QUICK_REQUIREMENTS_ANALYSIS = "quick_requirements_analysis"
-    QUICK_DESIGN_OPTIMIZATION = "quick_design_optimization"
-
-    # 深度设计Agent
-    DEEP_REQUIREMENTS_ANALYSIS = "deep_requirements_analysis"
-    NODE_IDENTIFICATION = "node_identification"
-    FLOW_DESIGN = "flow_design"
-    DATA_STRUCTURE_DESIGN = "data_structure_design"
-    NODE_DESIGN = "node_design"
-    DOCUMENT_GENERATION = "document_generation"
+    # 设计Agent（统一）
+    DESIGN = "design"
 
 
 class CommonPromptType(Enum):
@@ -126,22 +117,8 @@ class PromptTypeRegistry:
                 return "agents.research.result_assembly_node"
             elif prompt_type.value == "tool_recommendation":
                 return "agents.tool_recommend.node_tool_recommend"
-            elif prompt_type.value == "quick_requirements_analysis":
-                return "agents.quick_design.quick_requirements_analysis_node"
-            elif prompt_type.value == "quick_design_optimization":
-                return "agents.quick_design.quick_design_optimization_node"
-            elif prompt_type.value == "deep_requirements_analysis":
-                return "agents.deep_design.agent_requirements_analysis_node"
-            elif prompt_type.value == "node_identification":
-                return "agents.deep_design.node_identification_node"
-            elif prompt_type.value == "flow_design":
-                return "agents.deep_design.flow_design_node"
-            elif prompt_type.value == "data_structure_design":
-                return "agents.deep_design.data_structure_design_node"
-            elif prompt_type.value == "node_design":
-                return "agents.deep_design.node_design_node"
-            elif prompt_type.value == "document_generation":
-                return "agents.deep_design.document_generation_node"
+            elif prompt_type.value == "design":
+                return "agents.design.design_node"
         
         elif category == PromptCategory.COMMON:
             if prompt_type.value.endswith("_analysis"):

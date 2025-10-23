@@ -36,15 +36,15 @@ class CLITextManager:
         "user_interrupt": "\n👋 用户中断，再见！",
         
         # 欢迎信息
-        "welcome_title": "🚀 现代化GTPlanner CLI",
-        "welcome_subtitle": "欢迎使用基于新流式响应架构的智能规划助手！",
+        "welcome_title": "🚀 GTPlanner CLI",
+        "welcome_subtitle": "欢迎使用智能规划助手！",
         "new_features": "✨ 新特性",
         "usage_method": "🎯 使用方法",
         "config_options": "⚙️ 配置选项",
         "available_commands": "📝 可用命令",
         "streaming_enabled": "启用",
         "streaming_disabled": "禁用",
-        "usage_description": "直接输入您的需求，我将通过现代化的流式响应为您提供智能规划服务。",
+        "usage_description": "直接输入您的需求，我将为您提供智能规划服务。",
         
         # 帮助信息
         "help_title": "帮助信息",
@@ -93,15 +93,15 @@ class CLITextManager:
         "user_interrupt": "\n👋 User interrupted, goodbye!",
         
         # 欢迎信息
-        "welcome_title": "🚀 Modern GTPlanner CLI",
-        "welcome_subtitle": "Welcome to the intelligent planning assistant based on new streaming response architecture!",
+        "welcome_title": "🚀 GTPlanner CLI",
+        "welcome_subtitle": "Welcome to the intelligent planning assistant!",
         "new_features": "✨ New Features",
         "usage_method": "🎯 Usage",
         "config_options": "⚙️ Configuration Options",
         "available_commands": "📝 Available Commands",
         "streaming_enabled": "Enabled",
         "streaming_disabled": "Disabled",
-        "usage_description": "Simply enter your requirements, and I will provide intelligent planning services through modern streaming responses.",
+        "usage_description": "Simply enter your requirements, and I will provide intelligent planning services.",
         
         # 帮助信息
         "help_title": "Help Information",
@@ -150,15 +150,15 @@ class CLITextManager:
         "user_interrupt": "\n👋 ユーザーが中断しました、さようなら！",
         
         # ウェルカム情報
-        "welcome_title": "🚀 モダンGTPlanner CLI",
-        "welcome_subtitle": "新しいストリーミングレスポンスアーキテクチャに基づくインテリジェント計画アシスタントへようこそ！",
+        "welcome_title": "🚀 GTPlanner CLI",
+        "welcome_subtitle": "インテリジェント計画アシスタントへようこそ！",
         "new_features": "✨ 新機能",
         "usage_method": "🎯 使用方法",
         "config_options": "⚙️ 設定オプション",
         "available_commands": "📝 利用可能なコマンド",
         "streaming_enabled": "有効",
         "streaming_disabled": "無効",
-        "usage_description": "要件を直接入力してください。モダンなストリーミングレスポンスを通じてインテリジェントな計画サービスを提供します。",
+        "usage_description": "要件を直接入力してください。インテリジェントな計画サービスを提供します。",
         
         # ヘルプ情報
         "help_title": "ヘルプ情報",
@@ -245,15 +245,15 @@ class CLITextManager:
             "user_interrupt": "\n👋 Usuario interrumpido, ¡adiós!",
 
             # 欢迎信息
-            "welcome_title": "🚀 GTPlanner CLI Moderno",
-            "welcome_subtitle": "¡Bienvenido al asistente de planificación inteligente basado en nueva arquitectura de respuesta streaming!",
+            "welcome_title": "🚀 GTPlanner CLI",
+            "welcome_subtitle": "¡Bienvenido al asistente de planificación inteligente!",
             "new_features": "✨ Nuevas Características",
             "usage_method": "🎯 Uso",
             "config_options": "⚙️ Opciones de Configuración",
             "available_commands": "📝 Comandos Disponibles",
             "streaming_enabled": "Habilitado",
             "streaming_disabled": "Deshabilitado",
-            "usage_description": "Simplemente ingrese sus requisitos, y proporcionaré servicios de planificación inteligente a través de respuestas streaming modernas.",
+            "usage_description": "Simplemente ingrese sus requisitos, y proporcionaré servicios de planificación inteligente.",
 
             # 帮助信息
             "help_title": "Información de Ayuda",
@@ -303,15 +303,15 @@ class CLITextManager:
             "user_interrupt": "\n👋 Utilisateur interrompu, au revoir !",
 
             # 欢迎信息
-            "welcome_title": "🚀 GTPlanner CLI Moderne",
-            "welcome_subtitle": "Bienvenue dans l'assistant de planification intelligent basé sur la nouvelle architecture de réponse streaming !",
+            "welcome_title": "🚀 GTPlanner CLI",
+            "welcome_subtitle": "Bienvenue dans l'assistant de planification intelligent !",
             "new_features": "✨ Nouvelles Fonctionnalités",
             "usage_method": "🎯 Utilisation",
             "config_options": "⚙️ Options de Configuration",
             "available_commands": "📝 Commandes Disponibles",
             "streaming_enabled": "Activé",
             "streaming_disabled": "Désactivé",
-            "usage_description": "Entrez simplement vos exigences, et je fournirai des services de planification intelligente via des réponses streaming modernes.",
+            "usage_description": "Entrez simplement vos exigences, et je fournirai des services de planification intelligente.",
 
             # 帮助信息
             "help_title": "Informations d'Aide",
