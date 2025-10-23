@@ -1,8 +1,8 @@
 # 贡献指南 (Contributing Guide)
 
-感谢你对 AI 预制件生态系统的贡献！本文档将指导你如何向 `prefab-releases` 仓库提交你的预制件。
+感谢你对 AI 预制件生态系统的贡献！本文档将指导你如何向 GTPlanner 仓库提交你的预制件。
 
-## 📋 目录
+## 目录
 
 - [贡献者许可协议](#贡献者许可协议)
 - [准备工作](#准备工作)
@@ -13,7 +13,7 @@
 - [最佳实践](#最佳实践)
 - [故障排除](#故障排除)
 
-## 📜 贡献者许可协议
+## 贡献者许可协议
 
 通过提交 Pull Request，你同意：
 
@@ -22,7 +22,7 @@
 3. **质量承诺**：你的代码经过充分测试且不包含恶意内容
 4. **维护责任**：你承诺对你发布的预制件进行基本的维护和支持
 
-## 🛠️ 准备工作
+## 准备工作
 
 ### 1. 创建你的预制件
 
@@ -69,11 +69,11 @@ git push origin v1.0.0
 ```bash
 # 在 GitHub 上 Fork 本仓库
 # 然后克隆你的 fork
-git clone https://github.com/your-username/prefab-releases.git
-cd prefab-releases
+git clone https://github.com/your-username/GTPlanner.git
+cd GTPlanner
 ```
 
-## 🚀 提交流程
+## 提交流程
 
 ### 第一步：创建分支
 
@@ -148,21 +148,21 @@ git push origin publish/your-prefab-id-1.0.0
 
 ### 第六步：等待审核
 
-- ⏳ **自动检查**（约 2-5 分钟）：CI 会自动验证你的提交
-- 👀 **人工审核**（约 24 小时内）：维护者会审查代码和功能
-- ✅ **合并**：审核通过后，PR 会被合并到 main 分支
-- ⏰ **部署**：部署服务会定时轮询索引文件并自动部署你的预制件
+- **自动检查**（约 2-5 分钟）：CI 会自动验证你的提交
+- **人工审核**（约 24 小时内）：维护者会审查代码和功能
+- **合并**：审核通过后，PR 会被合并到 main 分支
+- **部署**：部署服务会定时轮询索引文件并自动部署你的预制件
 
-## 📝 编写规范
+## 编写规范
 
 ### ID 命名规范
 
 预制件 ID 应该：
 
-- ✅ 使用 kebab-case 格式（小写字母和连字符）
-- ✅ 描述性强，清晰表达功能
-- ✅ 长度 3-64 字符
-- ✅ 在整个生态系统中唯一
+- 使用 kebab-case 格式（小写字母和连字符）
+- 描述性强，清晰表达功能
+- 长度 3-64 字符
+- 在整个生态系统中唯一
 
 **好的例子**：
 - `video-to-audio`
@@ -231,7 +231,7 @@ git push origin publish/your-prefab-id-1.0.0
 - **操作类型**：`conversion`, `editing`, `analysis`, `generation`
 - **技术工具**：`ffmpeg`, `opencv`, `pillow`, `pandas`
 
-## ✅ 自动化检查
+## 自动化检查
 
 你的 PR 会经过以下自动检查：
 
@@ -246,12 +246,12 @@ git push origin publish/your-prefab-id-1.0.0
 
 如果某项检查失败，点击查看详细日志，根据错误提示修复问题。
 
-## 👀 审核流程
+## 审核流程
 
 ### 自动化阶段（即时）
 
-1. ✅ 所有 CI 检查必须通过
-2. 🚨 任何失败都会阻止合并
+1. 所有 CI 检查必须通过
+2. 任何失败都会阻止合并
 
 ### 人工审核阶段（24小时内）
 
@@ -279,11 +279,11 @@ git push origin publish/your-prefab-id-1.0.0
 
 ### 可能的结果
 
-- ✅ **批准并合并**：一切正常，PR 被合并
-- 🔄 **请求修改**：需要你修复一些问题
-- ❌ **拒绝**：不符合质量或安全标准（会说明原因）
+- **批准并合并**：一切正常，PR 被合并
+- **请求修改**：需要你修复一些问题
+- **拒绝**：不符合质量或安全标准（会说明原因）
 
-## 🌟 最佳实践
+## 最佳实践
 
 ### 代码质量
 
@@ -352,7 +352,7 @@ git push origin publish/your-prefab-id-1.0.0
    - 测试版使用 0.x.x
    - 确保版本稳定后再发布
 
-## 🔧 故障排除
+## 故障排除
 
 ### 常见问题
 
@@ -421,7 +421,7 @@ python3 -c "import json; json.load(open('community-prefabs.json'))"
 3. **提问讨论**：在 GitHub Discussions 中提问
 4. **联系维护者**：在 PR 中 @ 维护者或发送邮件
 
-## 📊 发布后
+## 发布后
 
 ### 验证部署
 
@@ -451,7 +451,7 @@ PR 合并后：
 
 **注意**：不要修改已存在的条目，而是添加新的条目。
 
-## 🎉 成功案例
+## 成功案例
 
 查看已发布的预制件获取灵感：
 
@@ -466,13 +466,12 @@ cat community-prefabs.json | jq '.[] | select(.author=="username")'
 cat community-prefabs.json | jq '.[] | select(.tags[] | contains("video"))'
 ```
 
-## 📞 联系我们
+## 联系我们
 
-- 🐛 **报告问题**：[GitHub Issues](https://github.com/The-Agent-Builder/Prefab-Releases/issues)
-- 💬 **讨论交流**：[GitHub Discussions](https://github.com/The-Agent-Builder/Prefab-Releases/discussions)
-- 📧 **邮件联系**：maintainers@example.com
+- **报告问题**：[GitHub Issues](https://github.com/OpenSQZ/GTPlanner/issues)
+- **讨论交流**：[GitHub Discussions](https://github.com/OpenSQZ/GTPlanner/discussions)
 
 ---
 
-**感谢你的贡献！让我们一起构建更强大的 AI 预制件生态系统！** 🚀
+**感谢你的贡献！让我们一起构建更强大的 AI 预制件生态系统！**
 
