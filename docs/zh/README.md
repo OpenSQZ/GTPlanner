@@ -65,6 +65,9 @@ GTPlanner 是一款专为 "vibe coding" 设计的先进 AI 工具，旨在将高
 
 ## 🔌 MCP 集成
 
+<details>
+<summary>点击展开 MCP 集成说明</summary>
+
 GTPlanner 支持 Model Context Protocol (MCP)，可直接在 AI 编程工具中使用。
 
 <table>
@@ -85,6 +88,8 @@ GTPlanner 支持 Model Context Protocol (MCP)，可直接在 AI 编程工具中�
 </table>
 
 📖 详细配置指南 → [MCP 文档](../../mcp/README.md)
+
+</details>
 
 ---
 
