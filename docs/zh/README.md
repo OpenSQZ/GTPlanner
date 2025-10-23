@@ -29,41 +29,41 @@
 
 ---
 
-## 🎯 概览
+## 概览
 
 GTPlanner 是一款专为 "vibe coding" 设计的先进 AI 工具，旨在将高层次的想法和需求，高效转化为结构清晰、内容详尽的技术文档。
 
-### 🚀 核心特性
+### 核心特性
 
-- **🧠 智能推理**：分析需求，生成专业的技术规划方案
-- **🧩 Prefab 生态**：可复用的 AI 组件，扩展规划能力
-- **🌐 多接口支持**：CLI、REST API、MCP 多种集成方式
+- **智能推理**：分析需求，生成专业的技术规划方案
+- **Prefab 生态**：可复用的 AI 组件，扩展规划能力
+- **多接口支持**：CLI、REST API、MCP 多种集成方式
 
-### 📦 三大核心部分
+### 三大核心部分
 
-- **💻 [GTPlanner-frontend](https://the-agent-builder.com/)**：现代化 Web UI，提供流畅的在线规划体验（推荐）
-- **⚙️ GTPlanner Backend**：基于 Agent 架构的强大后端引擎
-- **🧩 Prefab 生态系统**：标准化、可复用的 AI 组件系统 [了解更多](../../prefabs/README.md)
+- **[GTPlanner-frontend](https://the-agent-builder.com/)**：现代化 Web UI，提供流畅的在线规划体验（推荐）
+- **GTPlanner Backend**：基于 Agent 架构的强大后端引擎
+- **Prefab 生态系统**：标准化、可复用的 AI 组件系统 [了解更多](../../prefabs/README.md)
 
 ---
 
-## 💻 Web UI (推荐)
+## Web UI (推荐)
 
 为了获得最佳体验，我们强烈推荐使用 Web UI。它提供了为现代开发者量身打造的流畅 AI 规划工作流。
 
 ![GTPlanner Web UI](../../assets/web.gif)
 
 **核心优势:**
-- 🎯 **智能规划助手**：AI 辅助快速生成系统架构和项目计划
-- 📝 **即时文档生成**：自动创建全面的技术文档
-- 🔌 **完美适配 Vibe Coding**：优化输出，适配 Cursor、Windsurf、GitHub Copilot
-- 🤝 **团队协作**：多格式导出，方便共享
+- **智能规划助手**：AI 辅助快速生成系统架构和项目计划
+- **即时文档生成**：自动创建全面的技术文档
+- **完美适配 Vibe Coding**：优化输出，适配 Cursor、Windsurf、GitHub Copilot
+- **团队协作**：多格式导出，方便共享
 
-👉 [🚀 立刻体验 Live Demo!](https://the-agent-builder.com/)
+[立刻体验 Live Demo](https://the-agent-builder.com/)
 
 ---
 
-## 🔌 MCP 集成
+## MCP 集成
 
 <details>
 <summary>点击展开 MCP 集成说明</summary>
@@ -87,19 +87,19 @@ GTPlanner 支持 Model Context Protocol (MCP)，可直接在 AI 编程工具中�
 </tr>
 </table>
 
-📖 详细配置指南 → [MCP 文档](../../mcp/README.md)
+详细配置指南 → [MCP 文档](../../mcp/README.md)
 
 </details>
 
 ---
 
-## ⚡ 快速开始
+## 快速开始
 
-### 1️⃣ 在线极速体验（无需安装）
+### 在线极速体验（无需安装）
 
-👉 [体验 Web UI](https://the-agent-builder.com/) - 所见即所得的规划与文档生成体验
+[体验 Web UI](https://the-agent-builder.com/) - 所见即所得的规划与文档生成体验
 
-### 2️⃣ 本地运行（5 分钟上手）
+### 本地运行
 
 #### 环境准备
 
@@ -130,12 +130,12 @@ cp .env.example .env
 ```bash
 LLM_API_KEY="your-api-key-here"
 LLM_BASE_URL="https://api.openai.com/v1"
-LLM_MODEL="gpt-4"
+LLM_MODEL="gpt-5"
 ```
 
-📖 详细配置指南（包括常见供应商、Langfuse 等）→ [配置文档](configuration.md)
+详细配置指南（包括常见供应商、Langfuse 等）→ [配置文档](configuration.md)
 
-### 3️⃣ CLI 使用
+### CLI 使用
 
 #### 交互模式
 
@@ -154,9 +154,9 @@ python gtplanner.py
 python gtplanner.py "设计一个文档分析助手，支持PDF、Word文档解析和智能问答"
 ```
 
-📖 CLI 详细文档（会话管理、参数说明等）→ [CLI 文档](../../gtplanner/agent/cli/README.md)
+CLI 详细文档（会话管理、参数说明等）→ [CLI 文档](../../gtplanner/agent/cli/README.md)
 
-### 4️⃣ API 使用
+### API 使用
 
 启动 FastAPI 服务：
 
@@ -167,9 +167,9 @@ uv run fastapi_main.py
 
 访问 `http://0.0.0.0:11211/docs` 查看 API 文档
 
-📖 API 详细文档（端点说明、使用示例等）→ [API 文档](../../gtplanner/agent/api/README.md)
+API 详细文档（端点说明、使用示例等）→ [API 文档](../../gtplanner/agent/api/README.md)
 
-### 5️⃣ MCP 集成
+### MCP 集成
 
 ```bash
 cd mcp
@@ -177,11 +177,11 @@ uv sync
 uv run python mcp_service.py
 ```
 
-📖 MCP 详细文档（客户端配置、可用工具等）→ [MCP 文档](../../mcp/README.md)
+MCP 详细文档（客户端配置、可用工具等）→ [MCP 文档](../../mcp/README.md)
 
 ---
 
-## ⚙️ 配置
+## 配置
 
 GTPlanner 支持多种配置方式：
 
@@ -189,11 +189,11 @@ GTPlanner 支持多种配置方式：
 - **配置文件** (settings.toml)：语言、追踪、向量服务等
 - **Langfuse 追踪**（可选）：执行过程追踪和性能分析
 
-📖 完整配置指南 → [配置文档](configuration.md)
+完整配置指南 → [配置文档](configuration.md)
 
 ---
 
-## 📦 项目结构
+## 项目结构
 
 ```
 GTPlanner/
@@ -211,7 +211,7 @@ GTPlanner/
 │   │   └── ...
 │   └── utils/              # 辅助函数
 │
-├── prefabs/                 # 🧩 Prefab 生态系统
+├── prefabs/                 # Prefab 生态系统
 │   ├── README.md           # → [Prefab 文档](../../prefabs/README.md)
 │   └── releases/           # 发布管理
 │       ├── community-prefabs.json  # Prefab 注册表
@@ -220,7 +220,7 @@ GTPlanner/
 ├── mcp/                    # MCP 服务
 │   └── README.md          # → [MCP 文档](../../mcp/README.md)
 │
-├── docs/                   # 📚 文档
+├── docs/                   # 文档
 │   ├── zh/                # 中文文档
 │   ├── ja/                # 日文文档
 │   ├── configuration.md   # 配置指南
@@ -233,29 +233,29 @@ GTPlanner/
 └── tests/                # 测试
 ```
 
-📖 系统架构文档 → [架构文档](../architecture/README.md)
+系统架构文档 → [架构文档](../architecture/README.md)
 
 ---
 
-## 🧩 Prefab 生态系统
+## Prefab 生态系统
 
 GTPlanner 通过 Prefab 生态系统实现能力扩展。每个 Prefab 都是一个标准化、可复用的 AI 功能组件。
 
 ### 什么是 Prefab？
 
 Prefab 是即用型的 AI 功能模块，可以：
-- 🎯 **被发现**：GTPlanner 自动识别可用 Prefab
-- 🚀 **被部署**：PR 合并后自动部署到平台
-- 🔌 **被集成**：通过标准 API 调用
-- 🔄 **版本管理**：语义化版本控制
+- **被发现**：GTPlanner 自动识别可用 Prefab
+- **被部署**：PR 合并后自动部署到平台
+- **被集成**：通过标准 API 调用
+- **版本管理**：语义化版本控制
 
 ### Prefab 如何增强 GTPlanner？
 
 当你贡献一个 Prefab 到 `community-prefabs.json` 时：
 
-1. **📋 扩展规划能力**：GTPlanner 知道了一个新的解决方案
-2. **🎯 智能推荐**：GTPlanner 会在生成规划时推荐合适的 Prefab
-3. **🔗 自动集成**：规划文档中会包含 Prefab 的使用说明
+1. **扩展规划能力**：GTPlanner 知道了一个新的解决方案
+2. **智能推荐**：GTPlanner 会在生成规划时推荐合适的 Prefab
+3. **自动集成**：规划文档中会包含 Prefab 的使用说明
 
 **示例 Prefab：**
 - **媒体处理**：[视频处理 Prefab](../../Video-processing/) - 视频转音频、字幕提取
@@ -291,24 +291,24 @@ uv sync --dev
 # 开发、测试、发布
 ```
 
-📖 完整 Prefab 文档 → [Prefab 指南](../../prefabs/README.md)  
-📖 网关调用详情 → [Prefab 使用指南](../../prefabs/README.md#对于用户使用-prefab)
+完整 Prefab 文档 → [Prefab 指南](../../prefabs/README.md)  
+网关调用详情 → [Prefab 使用指南](../../prefabs/README.md#对于用户使用-prefab)
 
 ---
 
-## 🤝 参与贡献
+## 参与贡献
 
 我们深信，一个卓越的工具离不开社区的智慧与共建。GTPlanner 期待您的参与！
 
-### 🧩 贡献 Prefab（最简单的贡献方式）
+### 贡献 Prefab（最简单的贡献方式）
 
 **为什么贡献 Prefab？**
 
 每个 Prefab 都会：
-- ✅ 扩展 GTPlanner 的规划能力
-- ✅ 帮助其他开发者解决问题
-- ✅ 被自动纳入推荐系统
-- ✅ 获得社区认可
+- 扩展 GTPlanner 的规划能力
+- 帮助其他开发者解决问题
+- 被自动纳入推荐系统
+- 获得社区认可
 
 **如何贡献？**
 
@@ -318,37 +318,37 @@ uv sync --dev
 4. 向 `prefabs/releases/community-prefabs.json` 提交 PR
 
 **Prefab 影响力：**
-- 📋 **进入推荐系统**：`community-prefabs.json` 中的 Prefab 会被 GTPlanner 识别
-- 🎯 **智能匹配**：规划时自动推荐给合适的场景
-- 🚀 **自动部署**：PR 合并后自动部署到 Prefab 平台
+- **进入推荐系统**：`community-prefabs.json` 中的 Prefab 会被 GTPlanner 识别
+- **智能匹配**：规划时自动推荐给合适的场景
+- **自动部署**：PR 合并后自动部署到 Prefab 平台
 
-📖 详细贡献指南 → [Prefab 贡献文档](../../prefabs/releases/CONTRIBUTING.md)
+详细贡献指南 → [Prefab 贡献文档](../../prefabs/releases/CONTRIBUTING.md)
 
-### 💻 贡献核心代码
+### 贡献核心代码
 
 通过评测驱动的开发方式，提升 GTPlanner 的规划质量和系统性能。
 
-📖 核心代码贡献 → [贡献指南](CONTRIBUTING.md)
+核心代码贡献 → [贡献指南](CONTRIBUTING.md)
 
-### 📚 分享实践案例
+### 分享实践案例
 
 分享您的使用经验，帮助社区发掘 GTPlanner 的全部潜力：
 
-- 💡 **使用案例**：真实项目中的应用
-- 📝 **GTPlanner 生成的 PRD**：展示规划质量
-- 📖 **教程和最佳实践**：帮助新用户上手
+- **使用案例**：真实项目中的应用
+- **GTPlanner 生成的 PRD**：展示规划质量
+- **教程和最佳实践**：帮助新用户上手
 
 提交案例 → 在 `docs/examples/community-cases/` 创建 PR
 
 ---
 
-## 📄 许可证
+## 许可证
 
 本项目基于 MIT 许可证。详情请参阅 [LICENSE](../../LICENSE.md) 文件。
 
 ---
 
-## 🙏 致谢
+## 致谢
 
 - 基于 [PocketFlow](https://github.com/The-Pocket/PocketFlow) 异步工作流引擎构建
 - 配置管理由 [Dynaconf](https://www.dynaconf.com/) 提供支持
