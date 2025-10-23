@@ -8,7 +8,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 # 导入 SSE GTPlanner API
@@ -69,9 +68,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# 挂载静态文件
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 现有路由已移除，只保留 SSE Agent 路由
 
