@@ -1,5 +1,9 @@
 # GTPlanner 配置指南
 
+**Language**: [English](configuration.md) | [简体中文](configuration_zh.md) | [日本語](configuration_ja.md)
+
+---
+
 本文档详细说明 GTPlanner 的所有配置选项。
 
 ---
@@ -298,9 +302,9 @@ uv run python fastapi_main.py
 ## 🔗 相关文档
 
 - [快速开始](README.md#快速开始) - 基础配置和使用
-- [CLI 文档](../../gtplanner/agent/cli/README.md) - CLI 特定配置
-- [API 文档](../../gtplanner/agent/api/README.md) - API 服务配置
-- [MCP 文档](../../mcp/README.md) - MCP 服务配置
+- [CLI 文档](../gtplanner/agent/cli/README_zh.md) - CLI 特定配置
+- [API 文档](../gtplanner/agent/api/README_zh.md) - API 服务配置
+- [MCP 文档](../mcp/README_zh.md) - MCP 服务配置
 
 ---
 

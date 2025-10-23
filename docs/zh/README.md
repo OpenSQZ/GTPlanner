@@ -43,7 +43,7 @@ GTPlanner 是一款专为 "vibe coding" 设计的先进 AI 工具，旨在将高
 
 - **[GTPlanner-frontend](https://the-agent-builder.com/)**：现代化 Web UI，提供流畅的在线规划体验（推荐）
 - **GTPlanner Backend**：基于 Agent 架构的强大后端引擎
-- **Prefab 生态系统**：标准化、可复用的 AI 组件系统 [了解更多](../../prefabs/README.md)
+- **Prefab 生态系统**：标准化、可复用的 AI 组件系统 [了解更多](../../prefabs/README_zh.md)
 
 ---
 
@@ -87,7 +87,7 @@ GTPlanner 支持 Model Context Protocol (MCP)，可直接在 AI 编程工具中�
 </tr>
 </table>
 
-详细配置指南 → [MCP 文档](../../mcp/README.md)
+详细配置指南 → [MCP 文档](../../mcp/README_zh.md)
 
 </details>
 
@@ -133,7 +133,7 @@ LLM_BASE_URL="https://api.openai.com/v1"
 LLM_MODEL="gpt-5"
 ```
 
-详细配置指南（包括常见供应商、Langfuse 等）→ [配置文档](configuration.md)
+详细配置指南（包括常见供应商、Langfuse 等）→ [配置文档](../configuration_zh.md)
 
 ### CLI 使用
 
@@ -154,7 +154,7 @@ python gtplanner.py
 python gtplanner.py "设计一个文档分析助手，支持PDF、Word文档解析和智能问答"
 ```
 
-CLI 详细文档（会话管理、参数说明等）→ [CLI 文档](../../gtplanner/agent/cli/README.md)
+CLI 详细文档（会话管理、参数说明等）→ [CLI 文档](../../gtplanner/agent/cli/README_zh.md)
 
 ### API 使用
 
@@ -167,7 +167,7 @@ uv run fastapi_main.py
 
 访问 `http://0.0.0.0:11211/docs` 查看 API 文档
 
-API 详细文档（端点说明、使用示例等）→ [API 文档](../../gtplanner/agent/api/README.md)
+API 详细文档（端点说明、使用示例等）→ [API 文档](../../gtplanner/agent/api/README_zh.md)
 
 ### MCP 集成
 
@@ -177,7 +177,7 @@ uv sync
 uv run python mcp_service.py
 ```
 
-MCP 详细文档（客户端配置、可用工具等）→ [MCP 文档](../../mcp/README.md)
+MCP 详细文档（客户端配置、可用工具等）→ [MCP 文档](../../mcp/README_zh.md)
 
 ---
 
@@ -189,7 +189,7 @@ GTPlanner 支持多种配置方式：
 - **配置文件** (settings.toml)：语言、追踪、向量服务等
 - **Langfuse 追踪**（可选）：执行过程追踪和性能分析
 
-完整配置指南 → [配置文档](configuration.md)
+完整配置指南 → [配置文档](../configuration_zh.md)
 
 ---
 
@@ -204,21 +204,21 @@ GTPlanner/
 │
 ├── gtplanner/                # 核心代码
 │   ├── agent/               # Agent 系统
-│   │   ├── cli/            # → [CLI 文档](../../gtplanner/agent/cli/README.md)
-│   │   ├── api/            # → [API 文档](../../gtplanner/agent/api/README.md)
+│   │   ├── cli/            # → [CLI 文档](../../gtplanner/agent/cli/README_zh.md)
+│   │   ├── api/            # → [API 文档](../../gtplanner/agent/api/README_zh.md)
 │   │   ├── flows/          # 控制流程
 │   │   ├── subflows/       # 专业子流程
 │   │   └── ...
 │   └── utils/              # 辅助函数
 │
 ├── prefabs/                 # Prefab 生态系统
-│   ├── README.md           # → [Prefab 文档](../../prefabs/README.md)
+│   ├── README_zh.md        # → [Prefab 文档](../../prefabs/README_zh.md)
 │   └── releases/           # 发布管理
 │       ├── community-prefabs.json  # Prefab 注册表
-│       └── CONTRIBUTING.md # → [Prefab 贡献指南](../../prefabs/releases/CONTRIBUTING.md)
+│       └── CONTRIBUTING_zh.md # → [Prefab 贡献指南](../../prefabs/releases/CONTRIBUTING_zh.md)
 │
 ├── mcp/                    # MCP 服务
-│   └── README.md          # → [MCP 文档](../../mcp/README.md)
+│   └── README_zh.md       # → [MCP 文档](../../mcp/README_zh.md)
 │
 ├── docs/                   # 文档
 │   ├── zh/                # 中文文档
@@ -291,8 +291,8 @@ uv sync --dev
 # 开发、测试、发布
 ```
 
-完整 Prefab 文档 → [Prefab 指南](../../prefabs/README.md)  
-网关调用详情 → [Prefab 使用指南](../../prefabs/README.md#对于用户使用-prefab)
+完整 Prefab 文档 → [Prefab 指南](../../prefabs/README_zh.md)  
+网关调用详情 → [Prefab 使用指南](../../prefabs/README_zh.md#对于用户使用-prefab)
 
 ---
 
@@ -322,7 +322,7 @@ uv sync --dev
 - **智能匹配**：规划时自动推荐给合适的场景
 - **自动部署**：PR 合并后自动部署到 Prefab 平台
 
-详细贡献指南 → [Prefab 贡献文档](../../prefabs/releases/CONTRIBUTING.md)
+详细贡献指南 → [Prefab 贡献文档](../../prefabs/releases/CONTRIBUTING_zh.md)
 
 ### 贡献核心代码
 

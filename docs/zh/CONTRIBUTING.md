@@ -36,7 +36,7 @@
 
 **完整的 Prefab 贡献流程、代码示例、测试要求等，请查看：**
 
-**[Prefab 完整贡献指南](../../prefabs/releases/CONTRIBUTING.md)**
+**[Prefab 完整贡献指南](../../prefabs/releases/CONTRIBUTING_zh.md)**
 
 该文档包含：
 - 详细的准备工作和环境配置
@@ -121,7 +121,7 @@
 
 ## 相关资源
 
-- [Prefab 贡献指南](../../prefabs/releases/CONTRIBUTING.md)
+- [Prefab 贡献指南](../../prefabs/releases/CONTRIBUTING_zh.md)
 - [Prefab 模板](https://github.com/The-Agent-Builder/Prefab-Template)
 - [GitHub Issues](https://github.com/OpenSQZ/GTPlanner/issues)
 - [GitHub Discussions](https://github.com/OpenSQZ/GTPlanner/discussions)
