@@ -6,7 +6,7 @@ GTPlanner 提供功能强大的命令行界面，支持交互模式和直接执�
 
 ---
 
-## 📋 目录
+## 目录
 
 - [快速开始](#快速开始)
 - [交互模式](#交互模式)
@@ -19,7 +19,7 @@ GTPlanner 提供功能强大的命令行界面，支持交互模式和直接执�
 
 ---
 
-## 🚀 快速开始
+## 快速开始
 
 ### 启动交互式 CLI
 
@@ -49,7 +49,7 @@ python gtplanner.py --language zh "为视频字幕提取工具生成PRD"
 
 ---
 
-## 💬 交互模式
+## 交互模式
 
 ### 启动交互模式
 
@@ -103,7 +103,7 @@ GTPlanner 会流式显示处理过程：
 
 ---
 
-## ⚡ 直接执行模式
+## 直接执行模式
 
 不进入交互模式，直接处理单个需求：
 
@@ -133,7 +133,7 @@ python gtplanner.py --verbose --language zh "创建视频字幕生成工具"
 
 ---
 
-## 💾 会话管理
+## 会话管理
 
 GTPlanner 自动保存所有对话历史，支持随时加载和继续。
 
@@ -183,7 +183,7 @@ python gtplanner.py --load session_20241023_123456
 
 ---
 
-## 🎛️ 命令参数
+## 命令参数
 
 ### 位置参数
 
@@ -216,7 +216,7 @@ python gtplanner.py -L zh -v -l session_123
 
 ---
 
-## 📝 CLI 命令
+## CLI 命令
 
 在交互模式中可用的命令（以 `/` 开头）：
 
@@ -264,7 +264,7 @@ python gtplanner.py -L zh -v -l session_123
 
 ---
 
-## 🌍 多语言支持
+## 多语言支持
 
 GTPlanner CLI 支持多种语言界面。
 
@@ -311,7 +311,7 @@ python gtplanner.py "Design a video summary generator"
 
 ---
 
-## 💡 使用技巧
+## 使用技巧
 
 ### 1. 高效的需求描述
 
@@ -393,7 +393,7 @@ python gtplanner.py \
 
 ---
 
-## 🔧 高级用法
+## 高级用法
 
 ### 环境变量
 
@@ -432,7 +432,7 @@ chmod +x my_gtplanner.sh
 
 ---
 
-## ❓ 常见问题
+## 常见问题
 
 ### Q1: 如何退出交互模式？
 
@@ -461,7 +461,7 @@ chmod +x my_gtplanner.sh
 
 ---
 
-## 🔗 相关文档
+## 相关文档
 
 - [快速开始](../../../docs/zh/README.md#快速开始)
 - [配置指南](../../../docs/zh/configuration.md)
