@@ -6,6 +6,38 @@
 
 Prefab（预制件）生态系统是 GTPlanner 项目的重要组成部分，致力于为 AI 应用提供标准化、可复用的功能模块。通过 Prefab，开发者可以轻松地将各种功能集成到自己的 AI 工作流中。
 
+### 🎯 Prefab 如何增强 GTPlanner？
+
+当你向 `community-prefabs.json` 贡献 Prefab 后，GTPlanner 会：
+
+1. **📋 智能推荐**
+   - 在生成规划时，根据需求自动识别适用的 Prefab
+   - 基于功能描述、标签和上下文进行匹配
+   - 在 PRD 文档中推荐使用
+
+2. **🔗 无缝集成**
+   - 提供标准化的集成代码示例
+   - 自动生成 Prefab 调用说明
+   - 包含依赖安装指引
+
+3. **💡 方案优化**
+   - 减少从零开发的时间
+   - 提高方案的可行性
+   - 基于社区验证的最佳实践
+
+**示例场景：**
+```
+需求：创建一个视频分析助手
+
+GTPlanner 规划输出：
+├── 核心功能模块
+│   ├── 视频字幕提取 ← 推荐使用 video-subtitle-extractor Prefab
+│   ├── 文本摘要生成 ← 推荐使用 text-summarizer Prefab
+│   └── 关键帧提取 ← 推荐使用 video-keyframe Prefab
+├── 数据存储
+└── API 接口
+```
+
 ## 🏗️ 组织结构
 
 ```
@@ -180,27 +212,143 @@ flowchart LR
 
 ## 📊 示例 Prefab
 
-以下是一些典型的 Prefab 类别：
+以下是一些典型的 Prefab 类别和实际示例：
 
-### 媒体处理
-- 视频转音频转换器
-- 图片背景去除
-- 音频降噪处理
+### 🎬 媒体处理类
+- **视频处理** ([Video-processing](../../Video-processing/))
+  - 视频格式转换
+  - 字幕提取和生成
+  - 关键帧提取
+- **音频处理**
+  - 音频降噪
+  - 语音转文字
+  - 音频格式转换
+- **图像处理**
+  - 图片压缩优化
+  - 背景去除
+  - 格式转换
 
-### 数据处理
-- PDF 文本提取
-- Excel 数据分析
-- JSON/XML 转换
+### 📄 文档处理类
+- **PDF 工具**
+  - 文本提取
+  - 表格识别
+  - PDF 转 Markdown
+- **Office 文档**
+  - Word/Excel 解析
+  - 数据提取和分析
+  - 格式转换
 
-### AI 集成
-- 文本生成
-- 图像识别
-- 语音合成
+### 🤖 AI 服务类
+- **文本处理**
+  - 智能摘要生成
+  - 文本分类
+  - 情感分析
+- **图像识别**
+  - 物体检测
+  - 图片描述生成
+  - OCR 文字识别
+- **语音处理**
+  - 语音合成
+  - 语音识别
+  - 声纹识别
 
-### 工具集成
-- 天气查询 (如 [Amap-Weather](../../Amap-Weather/))
-- 地图服务
-- 通知推送
+### 🌐 API 集成类
+- **地理位置**
+  - 天气查询 ([Amap-Weather](../../Amap-Weather/))
+  - 地图服务
+  - 地理编码
+- **通知服务**
+  - 邮件发送
+  - 短信推送
+  - WebHook 调用
+- **数据服务**
+  - 汇率查询
+  - 新闻聚合
+  - 数据分析
+
+### 💼 业务工具类
+- **数据处理**
+  - 数据清洗
+  - 格式转换
+  - 数据验证
+- **自动化**
+  - 任务调度
+  - 工作流执行
+  - 批量处理
+
+## 🎯 实际使用场景
+
+### 场景 1：智能文档助手
+
+**需求：** 创建一个 PDF 分析助手
+
+**GTPlanner 推荐的 Prefab：**
+```json
+{
+  "prefabs": [
+    {
+      "name": "pdf-text-extractor",
+      "usage": "提取 PDF 文本内容"
+    },
+    {
+      "name": "text-summarizer", 
+      "usage": "生成文档摘要"
+    },
+    {
+      "name": "qa-generator",
+      "usage": "基于文档内容实现问答"
+    }
+  ]
+}
+```
+
+### 场景 2：视频分析工具
+
+**需求：** 构建视频内容分析系统
+
+**GTPlanner 推荐的 Prefab：**
+```json
+{
+  "prefabs": [
+    {
+      "name": "video-subtitle-extractor",
+      "usage": "提取视频字幕"
+    },
+    {
+      "name": "keyframe-extractor",
+      "usage": "提取关键帧"
+    },
+    {
+      "name": "image-description",
+      "usage": "生成图片描述"
+    }
+  ]
+}
+```
+
+### 场景 3：数据分析助手
+
+**需求：** Excel 数据自动分析
+
+**GTPlanner 推荐的 Prefab：**
+```json
+{
+  "prefabs": [
+    {
+      "name": "excel-parser",
+      "usage": "解析 Excel 文件"
+    },
+    {
+      "name": "data-cleaner",
+      "usage": "数据清洗和预处理"
+    },
+    {
+      "name": "chart-generator",
+      "usage": "生成可视化图表"
+    }
+  ]
+}
+```
 
 ## 📞 获取帮助
 
