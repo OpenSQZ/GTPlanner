@@ -1,7 +1,7 @@
 # GTPlanner: AI驱动的PRD生成工具
 
 <p align="center">
-  <img src="./assets/banner.png" width="800" alt="GTPlanner Banner"/>
+  <img src="../../assets/banner.png" width="800" alt="GTPlanner Banner"/>
 </p>
 
 <p align="center">
@@ -28,9 +28,9 @@
 
 <p align="center">
   <strong>语言版本:</strong>
-  <a href="README.md">🇺🇸 English</a> •
-  <a href="README_zh-CN.md">🇨🇳 简体中文</a> •
-  <a href="README_ja.md">🇯🇵 日本語</a>
+  <a href="../../README.md">🇺🇸 English</a> •
+  <a href="README.md">🇨🇳 简体中文</a> •
+  <a href="../ja/README.md">🇯🇵 日本語</a>
 </p>
 
 ---
@@ -60,7 +60,7 @@ GTPlanner 是一款专为 "vibe coding" 设计的先进 AI 工具，旨在将高
 
 
 
-![GTPlanner Web UI](assets/web.gif)
+![GTPlanner Web UI](../../assets/web.gif)
 
 **核心优势:**
 - **智能规划助手**: 通过 AI 辅助，快速生成复杂的系统架构和项目计划。
@@ -72,9 +72,9 @@ GTPlanner 是一款专为 "vibe coding" 设计的先进 AI 工具，旨在将高
 GTPlanner 生成的计划可以直接在您最喜欢的 AI 编程工具中使用，无缝衔接您的开发流程：
 
 - 在 Cherry Studio 中:
-  - ![MCP usage in Cherry Studio](assets/Cherry_Studio_2025-06-24_01-05-49.png)
+  - ![MCP usage in Cherry Studio](../../assets/Cherry_Studio_2025-06-24_01-05-49.png)
 - 在 Cursor 中:
-  - ![MCP usage in Cursor](assets/Cursor_2025-06-24_01-12-05.png)
+  - ![MCP usage in Cursor](../../assets/Cursor_2025-06-24_01-12-05.png)
 
 
 ---
@@ -391,7 +391,7 @@ LLM_API_KEY="your-api-key-here"
 
 对于喜欢命令行的开发者，GTPlanner 提供了功能强大的命令行界面，支持**交互模式**和**直接执行模式**。
 
-![GTPlanner CLI](assets/cil.png)
+![GTPlanner CLI](../../assets/cil.png)
 
 #### 交互模式
 
@@ -800,11 +800,11 @@ uv run python scripts/validate_manifest.py
 ### 📖 详细指南
 中文: 接受两种类型的贡献：工具规范或核心代码。
 完整的贡献方式、技术规范和提交流程，请查看：
-**[贡献指南](contribute_zh.md)** - 包含详细的贡献流程、模板和示例
+**[贡献指南](CONTRIBUTING.md)** - 包含详细的贡献流程、模板和示例
 
 ## 📄 许可证
 
-本项目基于 MIT 许可证。详情请参阅 [LICENSE](LICENSE.md) 文件。
+本项目基于 MIT 许可证。详情请参阅 [LICENSE](../../LICENSE.md) 文件。
 
 ## 🙏 致谢
 

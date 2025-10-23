@@ -29,8 +29,8 @@
 <p align="center">
   <strong>Languages:</strong>
   <a href="README.md">🇺🇸 English</a> •
-  <a href="README_zh.md">🇨🇳 简体中文</a> •
-  <a href="README_ja.md">🇯🇵 日本語</a>
+  <a href="docs/zh/README.md">🇨🇳 简体中文</a> •
+  <a href="docs/ja/README.md">🇯🇵 日本語</a>
 </p>
 
 ---

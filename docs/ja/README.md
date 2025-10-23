@@ -1,7 +1,7 @@
 # GTPlanner: AI搭載のPRD生成ツール
 
 <p align="center">
-  <img src="./assets/banner.png" width="800" alt="GTPlanner Banner"/>
+  <img src="../../assets/banner.png" width="800" alt="GTPlanner Banner"/>
 </p>
 
 <p align="center">
@@ -28,9 +28,9 @@
 
 <p align="center">
   <strong>言語:</strong>
-  <a href="README.md">🇺🇸 English</a> •
-  <a href="README_zh-CN.md">🇨🇳 简体中文</a> •
-  <a href="README_ja.md">🇯🇵 日本語</a>
+  <a href="../../README.md">🇺🇸 English</a> •
+  <a href="../zh/README.md">🇨🇳 简体中文</a> •
+  <a href="README.md">🇯🇵 日本語</a>
 </p>
 
 ---
@@ -57,7 +57,7 @@ GTPlannerは、「vibeコーディング」のために設計された先進的�
 
 最高かつ最も便利な体験を得るために、Web UIの使用を強くお勧めします。現代の開発者向けにカスタマイズされた、スムーズなAI計画ワークフローを提供します。
 
-![GTPlanner Web UI](assets/web.gif)
+![GTPlanner Web UI](../../assets/web.gif)
 
 **主な利点:**
 - **インテリジェント計画アシスタント**: AIの支援により、複雑なシステムアーキテクチャとプロジェクト計画を迅速に生成します。
@@ -69,9 +69,9 @@ GTPlannerは、「vibeコーディング」のために設計された先進的�
 GTPlannerが生成した計画は、お気に入りのAIプログラミングツールで直接使用でき、開発フローにシームレスに接続します。
 
 - Cherry Studioでの使用:
-  - ![Cherry StudioでのMCP使用](assets/Cherry_Studio_2025-06-24_01-05-49.png)
+  - ![Cherry StudioでのMCP使用](../../assets/Cherry_Studio_2025-06-24_01-05-49.png)
 - Cursorでの使用:
-  - ![CursorでのMCP使用](assets/Cursor_2025-06-24_01-12-05.png)
+  - ![CursorでのMCP使用](../../assets/Cursor_2025-06-24_01-12-05.png)
 
 
 ---
@@ -389,7 +389,7 @@ LLM_API_KEY="your-api-key-here"
 
 GTPlannerは、新しいストリーミング応答アーキテクチャに基づいたモダンなCLIを提供し、リアルタイムのストリーミング表示、セッション管理、多言語インターフェースをサポートします。
 
-![GTPlanner CLI](assets/cil.png)
+![GTPlanner CLI](../../assets/cil.png)
 
 #### 対話モード
 
@@ -714,11 +714,11 @@ GTPlannerがより多くの利用可能なソリューションを理解し、�
 ### 📖 詳細ガイド
 日语: 2種類の貢献を受け付けています：ツール仕様またはコアコードです。
 貢献方法、技術仕様、提出プロセスの詳細については、以下をご覧ください：
-**[貢献ガイド](contribute_ja.md)** - 詳細な貢献プロセス、テンプレート、例が含まれています
+**[貢献ガイド](CONTRIBUTING.md)** - 詳細な貢献プロセス、テンプレート、例が含まれています
 
 ## 📄 ライセンス
 
-このプロジェクトはMITライセンスに基づいています。詳細は[LICENSE](LICENSE.md)ファイルをご覧ください。
+このプロジェクトはMITライセンスに基づいています。詳細は[LICENSE](../../LICENSE.md)ファイルをご覧ください。
 
 ## 🙏 謝辞
 
