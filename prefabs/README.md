@@ -50,20 +50,20 @@ prefabs/
 │   └── README.md          # 发布流程文档
 ```
 
-## 🎯 快速开始
+## 快速开始
 
 ### 对于用户：使用 Prefab
 
 Prefab 通过 **Prefab Gateway（预制件网关）** 提供统一的调用接口。所有 Prefab 都遵循标准化的输入输出规范，无需了解内部实现细节。
 
-#### 🔑 获取 API Key
+#### 获取 API Key
 
-1. 访问 [AgentBuilder 平台](https://agentbuilder.example.com)
+1. 访问 [AgentBuilder 平台](https://the-agent-builder.com/api-keys)
 2. 注册/登录账号
 3. 在控制台创建 API Key
 4. 保存你的 Key（仅显示一次）
 
-#### 🌐 通过网关调用 Prefab
+#### 通过网关调用 Prefab
 
 **基本调用格式：**
 ```bash
@@ -107,9 +107,9 @@ curl -X POST "https://gateway.agentbuilder.com/v1/prefabs/amap-weather/execute" 
 }
 ```
 
-#### 📦 使用 Prefab SDK（开发中）
+#### 使用 Prefab SDK（开发中）
 
-> 🚧 SDK 正在开发中，敬请期待
+> SDK 正在开发中，敬请期待
 
 未来将提供多语言 SDK，让调用更简单：
 
@@ -171,7 +171,7 @@ const result = await client.execute('amap-weather', 'get_weather', {
 
 完整的贡献指南：[releases/CONTRIBUTING.md](releases/CONTRIBUTING.md)
 
-## 🔍 浏览已发布的 Prefab
+## 浏览已发布的 Prefab
 
 查看所有可用的预制件：
 ```bash
@@ -203,14 +203,14 @@ cat prefabs/releases/community-prefabs.json | jq '.[] | select(.author=="usernam
 - [产品需求文档](releases/prd.md) - 发布系统的设计理念
 - [安全性指南](releases/SECURITY.md) - 安全最佳实践
 
-## 🛡️ 质量保证
+## 质量保证
 
 ### 自动化验证
 每个提交的 Prefab 都会经过严格的自动化检查：
-- ✅ JSON Schema 验证
-- ✅ URL 可达性检查
-- ✅ Manifest 一致性验证
-- ✅ 重复条目检测
+- JSON Schema 验证
+- URL 可达性检查
+- Manifest 一致性验证
+- 重复条目检测
 
 ### 人工审核
 维护者会审查：
@@ -219,7 +219,7 @@ cat prefabs/releases/community-prefabs.json | jq '.[] | select(.author=="usernam
 - 贡献者信誉
 - 生态系统兼容性
 
-## 🌟 生态统计
+## 生态统计
 
 ```bash
 # 查看已发布的预制件数量
@@ -232,7 +232,7 @@ cat prefabs/releases/community-prefabs.json | jq -r '.[].author' | sort | uniq -
 cat prefabs/releases/community-prefabs.json | jq -r '.[].tags[]' | sort | uniq -c | sort -rn
 ```
 
-## 🔧 技术架构
+## 技术架构
 
 ### 发布流程
 ```mermaid
@@ -256,27 +256,27 @@ flowchart LR
 - **GitHub Actions**：自动化 CI/CD 流程
 - **部署服务**：接收 Webhook 并自动部署新版本
 
-## 🤝 社区贡献
+## 社区贡献
 
 我们欢迎各种形式的贡献：
 
-### 🔧 贡献 Prefab
+### 贡献 Prefab
 分享你的创意和实现，让更多人受益。参考 [releases/CONTRIBUTING.md](releases/CONTRIBUTING.md)。
 
-### 📝 改进文档
+### 改进文档
 发现文档问题或有改进建议？欢迎提交 PR。
 
-### 🐛 报告问题
+### 报告问题
 在使用 Prefab 时遇到问题？请创建 Issue 描述问题。
 
-### 💬 参与讨论
+### 参与讨论
 加入 GitHub Discussions 与社区交流。
 
-## 📊 示例 Prefab
+## 示例 Prefab
 
 以下是一些典型的 Prefab 类别和实际示例：
 
-### 🎬 媒体处理类
+### 媒体处理类
 - **视频处理** ([Video-processing](../../Video-processing/))
   - 视频格式转换
   - 字幕提取和生成
@@ -290,7 +290,7 @@ flowchart LR
   - 背景去除
   - 格式转换
 
-### 📄 文档处理类
+### 文档处理类
 - **PDF 工具**
   - 文本提取
   - 表格识别
@@ -300,7 +300,7 @@ flowchart LR
   - 数据提取和分析
   - 格式转换
 
-### 🤖 AI 服务类
+### AI 服务类
 - **文本处理**
   - 智能摘要生成
   - 文本分类
@@ -314,7 +314,7 @@ flowchart LR
   - 语音识别
   - 声纹识别
 
-### 🌐 API 集成类
+### API 集成类
 - **地理位置**
   - 天气查询 ([Amap-Weather](../../Amap-Weather/))
   - 地图服务
@@ -328,7 +328,7 @@ flowchart LR
   - 新闻聚合
   - 数据分析
 
-### 💼 业务工具类
+### 业务工具类
 - **数据处理**
   - 数据清洗
   - 格式转换
@@ -338,7 +338,7 @@ flowchart LR
   - 工作流执行
   - 批量处理
 
-## 🎯 实际使用场景
+## 实际使用场景
 
 ### 场景 1：智能文档助手
 
@@ -412,17 +412,16 @@ flowchart LR
 }
 ```
 
-## 📞 获取帮助
+## 获取帮助
 
-- 🐛 **报告问题**：[GitHub Issues](https://github.com/OpenSQZ/GTPlanner/issues)
-- 💬 **讨论交流**：[GitHub Discussions](https://github.com/OpenSQZ/GTPlanner/discussions)
-- 📖 **文档中心**：[releases/DOCS_INDEX.md](releases/DOCS_INDEX.md)
+- **报告问题**：[GitHub Issues](https://github.com/OpenSQZ/GTPlanner/issues)
+- **讨论交流**：[GitHub Discussions](https://github.com/OpenSQZ/GTPlanner/discussions)
 
-## 📄 许可证
+## 许可证
 
-本生态系统采用 MIT 许可证，鼓励开源和共享。具体请查看 [releases/LICENSE](releases/LICENSE)。
+本生态系统采用 MIT 许可证，鼓励开源和共享。具体请查看 [LICENSE](../LICENSE.md)。
 
 ---
 
-**让我们一起构建更强大的 AI 预制件生态系统！** 🚀
+**让我们一起构建更强大的 AI 预制件生态系统！**
 
