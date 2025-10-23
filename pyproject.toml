@@ -27,6 +27,9 @@ dependencies = [
     "pydantic>=2.5.0",
 ]
 
+[project.scripts]
+gtplanner = "agent.cli.gtplanner_cli:main"
+
 [tool.setuptools.packages.find]
 include = ["agent*", "utils*"]
 exclude = ["mcp*", "static*", "assets*"]

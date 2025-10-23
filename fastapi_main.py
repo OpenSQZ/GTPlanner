@@ -18,6 +18,10 @@ from agent.api.agent_api import SSEGTPlanner
 # 导入索引管理器
 from agent.utils.startup_init import initialize_application
 
+# 导入导出器
+from agent.utils.export_planner import PlannerExporter
+from agent.persistence.sqlite_session_manager import SQLiteSessionManager
+
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -71,6 +75,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 创建全局 SSE API 实例
 sse_api = SSEGTPlanner(verbose=True)
+
+# 创建全局会话管理器和导出器
+session_manager = SQLiteSessionManager()
+exporter = PlannerExporter(session_manager)
 
 # 请求模型
 class AgentContextRequest(BaseModel):
@@ -252,6 +260,114 @@ async def chat_agent_stream(request: AgentContextRequest):
 
     except Exception as e:
         logger.error(f"Chat agent stream error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+# 导出端点
+class ExportRequest(BaseModel):
+    """导出请求模型"""
+    session_id: str
+    include_conversation: bool = True
+    language: str = "zh"
+
+@app.post("/api/export/markdown")
+async def export_to_markdown(request: ExportRequest):
+    """
+    导出会话规划到 Markdown 文件
+
+    参数:
+    - session_id: 会话ID
+    - include_conversation: 是否包含完整对话历史（默认 True）
+    - language: 输出语言 (zh/en)
+
+    返回:
+    - file_path: 保存的文件路径
+    - content: Markdown 内容
+    """
+    try:
+        # 验证会话是否存在
+        from agent.persistence.database_dao import DatabaseDAO
+        dao = DatabaseDAO()
+        session_info = dao.get_session(request.session_id)
+        if not session_info:
+            raise HTTPException(status_code=404, detail=f"Session not found: {request.session_id}")
+
+        # 创建导出器（使用请求的语言）
+        exporter_instance = PlannerExporter(session_manager, language=request.language)
+
+        # 导出到文件（不指定output_path，让系统自动生成文件名）
+        file_path = exporter_instance.export_session_to_markdown(
+            session_id=request.session_id,
+            include_conversation=request.include_conversation
+        )
+
+        # 读取生成的内容
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        logger.info(f"Exported session {request.session_id} to {file_path}")
+
+        return {
+            "success": True,
+            "file_path": file_path,
+            "content": content,
+            "session_id": request.session_id,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Export error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/export/preview/{session_id}")
+async def preview_markdown(
+    session_id: str,
+    language: str = Query("zh", description="输出语言 (zh/en)"),
+    max_length: int = Query(1000, description="最大预览长度")
+):
+    """
+    预览会话规划的 Markdown 内容（不保存文件）
+
+    参数:
+    - session_id: 会话ID
+    - language: 输出语言
+    - max_length: 最大预览长度
+
+    返回:
+    - preview: Markdown 预览内容
+    """
+    try:
+        # 验证会话是否存在
+        from agent.persistence.database_dao import DatabaseDAO
+        dao = DatabaseDAO()
+        session_info = dao.get_session(session_id)
+        if not session_info:
+            raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+        # 创建导出器（使用请求的语言）
+        exporter_instance = PlannerExporter(session_manager, language=language)
+
+        # 获取预览
+        preview_content = exporter_instance.get_markdown_preview(
+            session_id=session_id,
+            max_length=max_length
+        )
+
+        return {
+            "success": True,
+            "preview": preview_content,
+            "session_id": session_id,
+            "language": language,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Preview error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
