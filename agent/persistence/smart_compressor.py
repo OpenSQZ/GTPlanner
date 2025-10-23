@@ -5,7 +5,7 @@
 1. 基于token和消息数量的即时阈值判断
 2. 每次对话后自动检查并异步压缩
 3. 不阻塞对话流程，用户无感知
-4. 与SQLiteSessionManager原生集成
+4. 支持多种数据源（SQLite、Redis、MongoDB等）
 """
 
 import asyncio
@@ -17,8 +17,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from agent.context_types import Message, MessageRole
 from utils.openai_client import OpenAIClient
+from .data_source_interface import DataSourceInterface, SQLiteDataSourceAdapter
 
 
 class CompressionLevel(Enum):
@@ -40,12 +40,23 @@ class CompressionConfig:
     enable_compression: bool = True  # 启用压缩
     default_level: CompressionLevel = CompressionLevel.MEDIUM
 
+    # 重试
+    MAX_RETRIES = 3  # 定义最大重试次数
+    RETRY_DELAY = 5  # 重试前的等待时间（秒）
+
 
 class SmartCompressor:
     """智能压缩器"""
     
-    def __init__(self, session_manager, config: Optional[CompressionConfig] = None):
-        self.session_manager = session_manager
+    def __init__(self, data_source: DataSourceInterface, config: Optional[CompressionConfig] = None):
+        """
+        初始化智能压缩器
+        
+        Args:
+            data_source: 数据源接口实现
+            config: 压缩配置
+        """
+        self.data_source = data_source
         self.config = config or CompressionConfig()
         self.openai_client = OpenAIClient()
         
@@ -79,9 +90,9 @@ class SmartCompressor:
         
         print("🗜️ 智能压缩服务已停止")
     
-    def should_compress(self, session_id: str) -> bool:
+    async def should_compress(self, session_id: str) -> bool:
         """
-        检查会话是否需要压缩（同步方法，快速判断）
+        检查会话是否需要压缩（异步方法，快速判断）
         
         Args:
             session_id: 会话ID
@@ -93,8 +104,8 @@ class SmartCompressor:
             return False
         
         try:
-            # 从compressed_context表获取token统计信息
-            compressed_context = self.session_manager.dao.get_active_compressed_context(session_id)
+            # 从数据源获取token统计信息
+            compressed_context = await self.data_source.get_active_compressed_context(session_id)
 
             if not compressed_context:
                 # 这是异常情况，说明数据不一致
@@ -120,7 +131,7 @@ class SmartCompressor:
         Args:
             session_id: 会话ID
         """
-        if self.should_compress(session_id):
+        if await self.should_compress(session_id):
             # 异步调度压缩任务
             await self._schedule_compression(session_id)
     
@@ -129,7 +140,8 @@ class SmartCompressor:
         try:
             task = {
                 'session_id': session_id,
-                'scheduled_at': datetime.now()
+                'scheduled_at': datetime.now(),
+                'retries': 0,
             }
             
             await self.compression_queue.put(task)
@@ -156,21 +168,43 @@ class SmartCompressor:
 
             except asyncio.TimeoutError:
                 continue
+            except Exception as e:
+                print(f"任务 {task} 执行失败: {e}")
+                if task and task.get("retries", 0) < self.config.MAX_RETRIES:
+                    task["retries"] += 1
+                    print(
+                        f"任务 {task} 准备重试 "
+                        f"(第 {task.get('retries')} 次)。"
+                        f"等待 {self.config.RETRY_DELAY} 秒后重新入队。"
+                    )
+                    
+                    # 等待一段时间
+                    await asyncio.sleep(self.config.RETRY_DELAY) 
+                    
+                    # 重新将封装后的任务放回队列
+                    await self.compression_queue.put(task) 
+                else:
+                    # 达到最大重试次数或 task_wrapper 无效，放弃任务
+                    if task:
+                        print(
+                            f"任务 {task} 达到最大重试次数 "
+                            f"({self.config.MAX_RETRIES})，任务失败并放弃。"
+                        )
+                    # 标记任务完成 (失败放弃时)
+                    ## TODO 增加告警机制，需要感知到这个问题
+                    self.compression_queue.task_done()
     
     async def _execute_compression(self, task: Dict[str, Any]):
         """执行压缩"""
         session_id = task['session_id']
         start_time = time.time()
 
-        # 保存当前会话
-        original_session = self.session_manager.current_session_id
-
         # 加载目标会话
-        if not self.session_manager.load_session(session_id):
+        if not await self.data_source.load_session(session_id):
             raise Exception(f"无法加载会话进行压缩: {session_id}")
 
         # 获取消息
-        messages = self.session_manager.get_messages()
+        messages = await self.data_source.get_messages(session_id)
 
         if len(messages) <= self.config.preserve_recent_count:
             print(f"⚠️ 消息数量不足，跳过压缩: {session_id}")
@@ -181,10 +215,6 @@ class SmartCompressor:
 
         # 保存压缩结果
         await self._save_compression_result(session_id, compressed_data)
-
-        # 恢复原会话
-        if original_session:
-            self.session_manager.load_session(original_session)
 
         execution_time = time.time() - start_time
 
@@ -322,7 +352,7 @@ class SmartCompressor:
     async def _save_compression_result(self, session_id: str, compressed_data: Dict[str, Any]):
         """保存压缩结果"""
         # 获取现有压缩版本
-        existing = self.session_manager.dao.get_compressed_contexts(session_id)
+        existing = await self.data_source.get_compressed_contexts(session_id)
         next_version = len(existing) + 1
 
         # 计算压缩比
@@ -330,8 +360,8 @@ class SmartCompressor:
         compressed_count = compressed_data.get('compressed_count', 0)
         compression_ratio = compressed_count / original_count if original_count > 0 else 0
 
-        # 保存到数据库
-        self.session_manager.dao.save_compressed_context(
+        # 保存到数据源
+        await self.data_source.save_compressed_context(
             session_id=session_id,
             compressed_data=compressed_data,
             version=next_version,
@@ -351,9 +381,24 @@ class SmartCompressor:
 _compressor: Optional[SmartCompressor] = None
 
 
-def get_compressor(session_manager) -> SmartCompressor:
+def get_compressor(data_source: DataSourceInterface, config: Optional[CompressionConfig] = None) -> SmartCompressor:
     """获取全局压缩器实例"""
     global _compressor
     if _compressor is None:
-        _compressor = SmartCompressor(session_manager)
+        _compressor = SmartCompressor(data_source, config)
     return _compressor
+
+
+def create_sqlite_compressor(session_manager, config: Optional[CompressionConfig] = None) -> SmartCompressor:
+    """
+    创建SQLite压缩器的便捷方法
+    
+    Args:
+        session_manager: SQLiteSessionManager实例
+        config: 压缩配置
+        
+    Returns:
+        SmartCompressor实例
+    """
+    data_source = SQLiteDataSourceAdapter(session_manager)
+    return SmartCompressor(data_source, config)

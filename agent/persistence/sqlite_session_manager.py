@@ -34,8 +34,8 @@ class SQLiteSessionManager:
     def compressor(self):
         """获取压缩器实例（延迟初始化）"""
         if self._compressor is None:
-            from .smart_compressor import SmartCompressor
-            self._compressor = SmartCompressor(self)
+            from .smart_compressor import create_sqlite_compressor
+            self._compressor = create_sqlite_compressor(self)
         return self._compressor
     
     # ==================== 会话管理 ====================
