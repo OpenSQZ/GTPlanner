@@ -2,7 +2,7 @@
 
 基于新的流式响应架构的GTPlanner API实现，提供HTTP Server-Sent Events (SSE) 接口来处理实时数据流传输。
 
-## 🚀 特性
+## 特性
 
 - **流式响应**: 基于SSE的实时数据传输
 - **无状态设计**: 使用StatelessGTPlanner，支持高并发
@@ -78,7 +78,7 @@ async def main():
 asyncio.run(main())
 ```
 
-## 🔧 API 参考
+## API 参考
 
 ### SSEGTPlanner
 
@@ -280,7 +280,7 @@ data: {"event_type": "tool_call_start", "timestamp": "2024-01-01T12:00:01", "ses
 | 错误处理 | ✅ 一致 | ✅ 一致 |
 | 资源清理 | ✅ 一致 | ✅ 一致 |
 
-## 📝 注意事项
+## 注意事项
 
 1. **无会话管理**: API层不提供会话管理功能，每次请求都是独立的
 2. **资源清理**: API会自动清理流式会话资源
