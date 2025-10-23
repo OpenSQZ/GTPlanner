@@ -6,7 +6,7 @@ import os
 import aiohttp
 import asyncio
 from typing import Dict, List, Optional, Any
-from utils.config_manager import get_jina_api_key
+from gtplanner.utils.config_manager import get_jina_api_key
 
 
 class JinaSearchClient:

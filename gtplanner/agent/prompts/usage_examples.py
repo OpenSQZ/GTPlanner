@@ -4,9 +4,9 @@
 展示如何使用新的多语言提示词管理系统，包括直接指定语言和自动检测。
 """
 
-from agent.prompts import get_prompt, PromptTypes
-from agent.prompts.text_manager import get_text, build_dynamic_content
-from utils.language_detection import SupportedLanguage
+from gtplanner.agent.prompts import get_prompt, PromptTypes
+from gtplanner.agent.prompts.text_manager import get_text, build_dynamic_content
+from gtplanner.utils.language_detection import SupportedLanguage
 
 
 def example_direct_language_specification():

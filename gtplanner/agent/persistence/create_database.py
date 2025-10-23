@@ -11,7 +11,7 @@ from pathlib import Path
 # 添加项目根目录到Python路径
 sys.path.insert(0, str(Path(__file__).parent))
 
-from agent.persistence.database_schema import initialize_database, get_database_info
+from gtplanner.agent.persistence.database_schema import initialize_database, get_database_info
 
 
 def main():

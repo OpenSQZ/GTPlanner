@@ -7,11 +7,9 @@ A powerful planning and documentation generation system with intelligent agent c
 __version__ = "0.1.0"
 
 # Import core components for easy access
-from gtplanner.agent.gtplanner import GTPlanner
 from gtplanner.agent.stateless_planner import StatelessGTPlanner
 
 __all__ = [
-    "GTPlanner",
     "StatelessGTPlanner",
 ]
 

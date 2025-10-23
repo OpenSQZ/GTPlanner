@@ -9,8 +9,8 @@ Agent Function Calling工具包装器
 from typing import Dict, List, Any, Optional
 
 # 导入现有的子Agent流程
-from agent.subflows.short_planning.flows.short_planning_flow import ShortPlanningFlow
-from agent.subflows.research.flows.research_flow import ResearchFlow
+from gtplanner.agent.subflows.short_planning.flows.short_planning_flow import ShortPlanningFlow
+from gtplanner.agent.subflows.research.flows.research_flow import ResearchFlow
 # DesignFlow 在 _execute_design 中动态导入
 
 

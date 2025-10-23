@@ -6,7 +6,7 @@
 """
 
 from typing import Optional, List, Union
-from utils.language_detection import SupportedLanguage
+from gtplanner.utils.language_detection import SupportedLanguage
 from .prompt_manager import get_prompt_manager
 from .prompt_types import CommonPromptType
 

@@ -9,7 +9,7 @@ import importlib
 from typing import Dict, Optional, Any, Union
 from functools import lru_cache
 
-from utils.language_detection import LanguageDetector, SupportedLanguage
+from gtplanner.utils.language_detection import LanguageDetector, SupportedLanguage
 from .prompt_types import PromptTypeRegistry
 
 

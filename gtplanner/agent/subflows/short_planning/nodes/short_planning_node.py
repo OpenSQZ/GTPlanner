@@ -9,15 +9,15 @@ import json
 from typing import Dict, Any
 
 # 导入LLM工具
-from utils.openai_client import get_openai_client
+from gtplanner.utils.openai_client import get_openai_client
 
 # 导入多语言提示词系统
-from agent.prompts import get_prompt, PromptTypes
-from agent.prompts.text_manager import get_text, build_dynamic_content
-from agent.prompts.prompt_types import CommonPromptType
+from gtplanner.agent.prompts import get_prompt, PromptTypes
+from gtplanner.agent.prompts.text_manager import get_text, build_dynamic_content
+from gtplanner.agent.prompts.prompt_types import CommonPromptType
 
 from pocketflow import AsyncNode
-from agent.streaming import (
+from gtplanner.agent.streaming import (
     emit_processing_status,
     emit_error
 )

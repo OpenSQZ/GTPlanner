@@ -17,8 +17,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from agent.context_types import Message, MessageRole
-from utils.openai_client import OpenAIClient
+from gtplanner.agent.context_types import Message, MessageRole
+from gtplanner.utils.openai_client import OpenAIClient
 
 
 class CompressionLevel(Enum):

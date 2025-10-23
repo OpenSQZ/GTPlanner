@@ -37,12 +37,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # 导入新的流式响应架构
-from agent.stateless_planner import StatelessGTPlanner
-from agent.context_types import AgentContext, Message, MessageRole
-from agent.streaming import StreamingSession, streaming_manager
+from gtplanner.agent.stateless_planner import StatelessGTPlanner
+from gtplanner.agent.context_types import AgentContext, Message, MessageRole
+from gtplanner.agent.streaming import StreamingSession, streaming_manager
 
 # 导入SSE处理器
-from agent.streaming.sse_handler import SSEStreamHandler
+from gtplanner.agent.streaming.sse_handler import SSEStreamHandler
 
 
 logger = logging.getLogger(__name__)

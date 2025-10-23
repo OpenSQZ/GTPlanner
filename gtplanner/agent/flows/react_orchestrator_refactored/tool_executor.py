@@ -8,9 +8,9 @@ import json
 import time
 import asyncio
 from typing import Dict, List, Any
-from agent.function_calling import execute_agent_tool, validate_tool_arguments
-from agent.streaming.stream_types import StreamEventBuilder, ToolCallStatus
-from agent.streaming.stream_interface import StreamingSession
+from gtplanner.agent.function_calling import execute_agent_tool, validate_tool_arguments
+from gtplanner.agent.streaming.stream_types import StreamEventBuilder, ToolCallStatus
+from gtplanner.agent.streaming.stream_interface import StreamingSession
 
 
 class ToolExecutor:

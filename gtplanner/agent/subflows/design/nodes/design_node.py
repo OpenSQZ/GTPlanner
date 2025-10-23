@@ -10,16 +10,16 @@ from typing import Dict, Any
 from pocketflow import AsyncNode
 
 # 导入 OpenAI 客户端
-from utils.openai_client import get_openai_client
-from agent.streaming import (
+from gtplanner.utils.openai_client import get_openai_client
+from gtplanner.agent.streaming import (
     emit_processing_status,
     emit_error,
     emit_design_document
 )
 
 # 导入多语言提示词系统
-from agent.prompts import get_prompt, PromptTypes
-from agent.prompts.text_manager import get_text_manager
+from gtplanner.agent.prompts import get_prompt, PromptTypes
+from gtplanner.agent.prompts.text_manager import get_text_manager
 
 
 class DesignNode(AsyncNode):

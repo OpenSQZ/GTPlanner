@@ -12,7 +12,7 @@ import copy
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 
-from utils.logger_config import get_openai_logger
+from gtplanner.utils.logger_config import get_openai_logger
 
 try:
     from dynaconf import Dynaconf

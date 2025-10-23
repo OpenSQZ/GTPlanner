@@ -14,7 +14,7 @@ try:
 except ImportError:
     Dynaconf = None
 
-from utils.language_detection import get_supported_languages, is_supported_language
+from gtplanner.utils.language_detection import get_supported_languages, is_supported_language
 
 logger = logging.getLogger(__name__)
 

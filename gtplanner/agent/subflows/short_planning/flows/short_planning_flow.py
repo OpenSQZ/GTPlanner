@@ -10,7 +10,7 @@ ShortPlanningNode (直接处理用户需求)
 from pocketflow import AsyncFlow
 from pocketflow_tracing import trace_flow
 from ..nodes.short_planning_node import ShortPlanningNode
-from agent.streaming import (
+from gtplanner.agent.streaming import (
     emit_processing_status,
     emit_error
 )

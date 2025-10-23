@@ -10,12 +10,12 @@ from typing import Dict, List, Any, Optional
 from pocketflow import AsyncNode
 
 # 导入OpenAI SDK和Function Calling工具
-from utils.openai_client import get_openai_client
-from agent.function_calling import get_agent_function_definitions
+from gtplanner.utils.openai_client import get_openai_client
+from gtplanner.agent.function_calling import get_agent_function_definitions
 
 # 导入流式响应类型
-from agent.streaming.stream_types import StreamCallbackType
-from agent.streaming.stream_interface import StreamingSession
+from gtplanner.agent.streaming.stream_types import StreamCallbackType
+from gtplanner.agent.streaming.stream_interface import StreamingSession
 
 # 导入重构后的组件
 from .constants import (
@@ -24,7 +24,7 @@ from .constants import (
 )
 
 # 导入多语言提示词系统
-from agent.prompts import get_prompt, PromptTypes
+from gtplanner.agent.prompts import get_prompt, PromptTypes
 
 from .tool_executor import ToolExecutor
 

@@ -27,18 +27,18 @@ from rich.text import Text
 from rich.align import Align
 
 # 导入新的流式响应架构
-from agent.stateless_planner import StatelessGTPlanner
-from agent.context_types import AgentContext, Message, MessageRole
-from agent.streaming import StreamingSession, CLIStreamHandler, streaming_manager
+from gtplanner.agent.stateless_planner import StatelessGTPlanner
+from gtplanner.agent.context_types import AgentContext, Message, MessageRole
+from gtplanner.agent.streaming import StreamingSession, CLIStreamHandler, streaming_manager
 
 # 导入新的SQLite会话管理
-from agent.persistence.sqlite_session_manager import SQLiteSessionManager
+from gtplanner.agent.persistence.sqlite_session_manager import SQLiteSessionManager
 
 # 导入CLI多语言文本管理器
-from agent.cli.cli_text_manager import CLITextManager
+from gtplanner.agent.cli.cli_text_manager import CLITextManager
 
 # 导入索引管理器
-from agent.utils.startup_init import initialize_application
+from gtplanner.agent.utils.startup_init import initialize_application
 
 
 class ModernGTPlannerCLI:

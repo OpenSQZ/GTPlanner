@@ -5,7 +5,7 @@ ReAct Orchestrator 常量定义
 支持多语言提示词系统
 """
 
-from agent.prompts import get_prompt, PromptTypes
+from gtplanner.agent.prompts import get_prompt, PromptTypes
 
 
 class ToolNames:

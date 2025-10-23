@@ -14,9 +14,9 @@ import asyncio
 import logging
 from typing import Dict, Any, Optional
 
-from agent.utils.tool_index_manager import tool_index_manager, ensure_tool_index
-from utils.config_manager import get_vector_service_config
-from agent.streaming import emit_processing_status
+from gtplanner.agent.utils.tool_index_manager import tool_index_manager, ensure_tool_index
+from gtplanner.utils.config_manager import get_vector_service_config
+from gtplanner.agent.streaming import emit_processing_status
 
 logger = logging.getLogger(__name__)
 

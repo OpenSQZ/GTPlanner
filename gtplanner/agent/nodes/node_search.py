@@ -16,7 +16,7 @@ import time
 from typing import Dict, List, Any, Optional
 from pocketflow import AsyncNode
 from ..utils.search import JinaSearchClient
-from agent.streaming import (
+from gtplanner.agent.streaming import (
     emit_processing_status,
     emit_error
 )

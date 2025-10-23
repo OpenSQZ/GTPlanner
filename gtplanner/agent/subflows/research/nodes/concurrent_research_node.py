@@ -8,7 +8,7 @@ import asyncio
 from typing import Dict, List, Any
 from pocketflow import AsyncNode
 from ..flows.keyword_research_flow import create_keyword_research_subflow
-from agent.streaming import (
+from gtplanner.agent.streaming import (
     emit_processing_status_from_prep,
     emit_error_from_prep,
     emit_processing_status,

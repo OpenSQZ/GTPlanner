@@ -7,7 +7,7 @@ Design Flow - 统一的设计文档生成流程
 from pocketflow import AsyncFlow
 from pocketflow_tracing import trace_flow
 from ..nodes.design_node import DesignNode
-from agent.streaming import (
+from gtplanner.agent.streaming import (
     emit_processing_status,
     emit_error
 )

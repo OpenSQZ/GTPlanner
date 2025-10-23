@@ -18,15 +18,15 @@ import asyncio
 import json
 from typing import Dict, List, Any, Optional
 from pocketflow import AsyncNode
-from utils.openai_client import OpenAIClient
-from utils.config_manager import get_vector_service_config
-from agent.streaming import (
+from gtplanner.utils.openai_client import OpenAIClient
+from gtplanner.utils.config_manager import get_vector_service_config
+from gtplanner.agent.streaming import (
     emit_processing_status,
     emit_error
 )
 
 # 导入多语言提示词系统
-from agent.prompts import get_prompt, PromptTypes
+from gtplanner.agent.prompts import get_prompt, PromptTypes
 
 
 class NodeToolRecommend(AsyncNode):

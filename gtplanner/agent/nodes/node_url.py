@@ -17,7 +17,7 @@ from typing import Dict, List, Any, Optional
 from urllib.parse import urlparse
 from pocketflow import AsyncNode
 from ..utils.URL_to_Markdown import JinaWebClient
-from agent.streaming import (
+from gtplanner.agent.streaming import (
     emit_processing_status,
     emit_error
 )

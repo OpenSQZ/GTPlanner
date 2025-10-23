@@ -15,8 +15,8 @@ GTPlanner (Graph Task Planner) 是一个基于ReAct模式的智能任务规划�
 使用示例：
 ```python
 from agent import GTPlanner
-from agent.context_types import AgentContext, create_user_message
-from agent.pocketflow_factory import PocketFlowSharedFactory
+from gtplanner.agent.context_types import AgentContext, create_user_message
+from gtplanner.agent.pocketflow_factory import PocketFlowSharedFactory
 
 # 创建GTPlanner实例
 planner = GTPlanner()

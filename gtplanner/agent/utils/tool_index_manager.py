@@ -19,9 +19,9 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 from pathlib import Path
 
-from agent.nodes.node_tool_index import NodeToolIndex
-from utils.config_manager import get_vector_service_config
-from agent.streaming import emit_processing_status, emit_error
+from gtplanner.agent.nodes.node_tool_index import NodeToolIndex
+from gtplanner.utils.config_manager import get_vector_service_config
+from gtplanner.agent.streaming import emit_processing_status, emit_error
 
 
 class ToolIndexManager:

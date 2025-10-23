@@ -9,14 +9,14 @@ configuration management.
 from typing import Optional, Dict, Any, Tuple
 import logging
 
-from utils.language_detection import (
+from gtplanner.utils.language_detection import (
     SupportedLanguage, 
     LanguageDetector, 
     detect_language, 
     is_supported_language,
     get_supported_languages
 )
-from utils.prompt_templates import (
+from gtplanner.utils.prompt_templates import (
     PromptType, 
     get_prompt_template, 
     get_prompt_template_by_code
