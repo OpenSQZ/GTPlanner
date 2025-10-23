@@ -570,9 +570,9 @@ GTPlanner/
 │   │   ├── cli/              # CLI implementation
 │   │   ├── persistence/      # Data persistence
 │   │   └── utils/            # Agent utilities
-│   ├── tools/                # Tool recommendation system
-│   │   ├── apis/             # API tools
-│   │   └── python_packages/  # Python packages
+│   ├── tools/                # Prefab recommendation system
+│   │   ├── apis/             # API-based Prefabs
+│   │   └── python_packages/  # Python package Prefabs
 │   └── utils/                # Utility functions
 │
 ├── prefabs/                  # 🧩 Prefab Ecosystem
