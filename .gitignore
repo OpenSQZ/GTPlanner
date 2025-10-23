@@ -23,11 +23,10 @@ __pycache__/
 settings.local.toml
 
 # IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+.vscode/
+
+# IDE - Cursor
+.cursorindexingignore
 
 # IDE - JetBrains
 .idea/
