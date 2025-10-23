@@ -3,14 +3,13 @@ import json
 import logging
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-
-
 
 # 导入 SSE GTPlanner API
 from gtplanner.agent.api.agent_api import SSEGTPlanner
@@ -22,18 +21,13 @@ from gtplanner.agent.utils.startup_init import initialize_application
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title="GTPlanner API",
-    description="智能规划助手 API，支持流式响应和实时工具调用",
-    version="1.0.0"
-)
-
-# 应用启动事件 - 预加载工具索引
-@app.on_event("startup")
-async def startup_event():
-    """应用启动时预加载工具索引"""
+# 应用生命周期管理
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期管理：启动和关闭事件"""
+    # 启动时执行
     logger.info("🚀 GTPlanner API 启动中...")
-
+    
     try:
         # 初始化应用，包括预加载工具索引
         result = await initialize_application(
@@ -54,6 +48,18 @@ async def startup_event():
     except Exception as e:
         logger.error(f"❌ 启动时初始化失败: {str(e)}")
         # 不阻止应用启动，但记录错误
+    
+    yield  # 应用运行期间
+    
+    # 关闭时执行（如果需要清理资源）
+    logger.info("👋 GTPlanner API 正在关闭...")
+
+app = FastAPI(
+    title="GTPlanner API",
+    description="智能规划助手 API，支持流式响应和实时工具调用",
+    version="1.0.0",
+    lifespan=lifespan
+)
 
 # CORS 配置
 app.add_middleware(
