@@ -9,22 +9,22 @@
 </p>
 
 <p align="center">
-  <a href="#-概览">概览</a> •
-  <a href="#-web-ui-推荐">Web UI</a> •
-  <a href="#mcp集成">MCP集成</a> •
-  <a href="#-快速开始">快速开始</a> •
-  <a href="#-配置">配置</a> •
-  <a href="#-项目结构">项目结构</a> •
-  <a href="#-prefab-生态系统">Prefab 生态系统</a> •
-  <a href="#-参与贡献">参与贡献</a> •
-  <a href="#-许可证">许可证</a>
+  <a href="#概览">概览</a> •
+  <a href="#web-ui-推荐">Web UI</a> •
+  <a href="#mcp-集成">MCP 集成</a> •
+  <a href="#快速开始">快速开始</a> •
+  <a href="#配置">配置</a> •
+  <a href="#项目结构">项目结构</a> •
+  <a href="#prefab-生态系统">Prefab 生态系统</a> •
+  <a href="#参与贡献">参与贡献</a> •
+  <a href="#许可证">许可证</a>
 </p>
 
 <p align="center">
   <strong>语言版本:</strong>
-  <a href="../../README.md">🇺🇸 English</a> •
-  <a href="README.md">🇨🇳 简体中文</a> •
-  <a href="../ja/README.md">🇯🇵 日本語</a>
+  <a href="../../README.md">English</a> •
+  <a href="README.md">简体中文</a> •
+  <a href="../ja/README.md">日本語</a>
 </p>
 
 ---
