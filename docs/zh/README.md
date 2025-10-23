@@ -260,6 +260,19 @@ Prefab 是即用型的 AI 功能模块，可以：
 
 ### 快速上手
 
+**使用 Prefab：**
+
+通过 Prefab Gateway 网关调用任何已发布的 Prefab：
+
+```bash
+# 1. 在 AgentBuilder 平台创建 API Key
+# 2. 通过网关调用 Prefab
+curl -X POST "https://gateway.agentbuilder.com/v1/prefabs/{prefab-id}/execute" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"function": "function_name", "parameters": {...}}'
+```
+
 **浏览可用 Prefab：**
 ```bash
 cat prefabs/releases/community-prefabs.json | jq '.'
@@ -273,7 +286,8 @@ uv sync --dev
 # 开发、测试、发布
 ```
 
-📖 完整 Prefab 文档 → [Prefab 指南](../../prefabs/README.md)
+📖 完整 Prefab 文档 → [Prefab 指南](../../prefabs/README.md)  
+📖 网关调用详情 → [Prefab 使用指南](../../prefabs/README.md#对于用户使用-prefab)
 
 ---
 

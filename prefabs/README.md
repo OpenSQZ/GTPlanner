@@ -54,22 +54,84 @@ prefabs/
 
 ### 对于用户：使用 Prefab
 
-Prefab 可以通过 GTPlanner 的前端界面或 API 直接调用。每个 Prefab 都提供标准化的输入输出接口，无需了解内部实现细节。
+Prefab 通过 **Prefab Gateway（预制件网关）** 提供统一的调用接口。所有 Prefab 都遵循标准化的输入输出规范，无需了解内部实现细节。
 
-**通过前端使用：**
-1. 访问 GTPlanner 前端界面
-2. 浏览 Prefab 市场
-3. 选择需要的 Prefab 并提供参数
-4. 执行并获取结果
+#### 🔑 获取 API Key
 
-**通过 API 使用：**
+1. 访问 [AgentBuilder 平台](https://agentbuilder.example.com)
+2. 注册/登录账号
+3. 在控制台创建 API Key
+4. 保存你的 Key（仅显示一次）
+
+#### 🌐 通过网关调用 Prefab
+
+**基本调用格式：**
 ```bash
-curl -X POST "https://api.example.com/v1/prefabs/{prefab-id}/run" \
+curl -X POST "https://gateway.agentbuilder.com/v1/prefabs/{prefab-id}/execute" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "version": "1.0.0",
-    "inputs": {...}
+    "function": "function_name",
+    "parameters": {
+      "param1": "value1",
+      "param2": "value2"
+    }
   }'
+```
+
+**示例：调用天气查询 Prefab**
+```bash
+curl -X POST "https://gateway.agentbuilder.com/v1/prefabs/amap-weather/execute" \
+  -H "Authorization: Bearer sk_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "function": "get_weather",
+    "parameters": {
+      "city": "北京",
+      "type": "base"
+    }
+  }'
+```
+
+**响应示例：**
+```json
+{
+  "success": true,
+  "result": {
+    "city": "北京",
+    "weather": "晴",
+    "temperature": "25°C",
+    "humidity": "45%"
+  },
+  "execution_time": "0.5s"
+}
+```
+
+#### 📦 使用 Prefab SDK（开发中）
+
+> 🚧 SDK 正在开发中，敬请期待
+
+未来将提供多语言 SDK，让调用更简单：
+
+```python
+# Python SDK (即将推出)
+from prefab_sdk import PrefabClient
+
+client = PrefabClient(api_key="YOUR_API_KEY")
+result = client.execute("amap-weather", "get_weather", {
+    "city": "北京",
+    "type": "base"
+})
+print(result)
+```
+
+```javascript
+// JavaScript SDK (规划中)
+const client = new PrefabClient({ apiKey: 'YOUR_API_KEY' });
+const result = await client.execute('amap-weather', 'get_weather', {
+  city: '北京',
+  type: 'base'
+});
 ```
 
 ### 对于开发者：创建 Prefab
