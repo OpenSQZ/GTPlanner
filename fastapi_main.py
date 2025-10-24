@@ -28,17 +28,16 @@ async def lifespan(app: FastAPI):
     logger.info("🚀 GTPlanner API 启动中...")
     
     try:
-        # 初始化应用，包括预加载工具索引
+        # 初始化应用，包括预加载预制件索引
         result = await initialize_application(
-            tools_dir="gtplanner/tools",
             preload_index=True
         )
 
         if result["success"]:
             logger.info("✅ 应用初始化成功")
-            if "tool_index" in result["components"]:
-                index_info = result["components"]["tool_index"]
-                logger.info(f"📋 工具索引已就绪: {index_info.get('index_name', 'N/A')}")
+            if "prefab_index" in result["components"]:
+                index_info = result["components"]["prefab_index"]
+                logger.info(f"📦 预制件索引已就绪: {index_info.get('index_name', 'N/A')}")
         else:
             logger.error("❌ 应用初始化失败")
             for error in result["errors"]:
