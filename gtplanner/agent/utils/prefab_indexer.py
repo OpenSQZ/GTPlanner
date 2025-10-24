@@ -210,6 +210,10 @@ class PrefabIndexer:
         """
         调用向量服务建立索引
         
+        步骤：
+        1. 创建索引（如果需要）
+        2. 添加文档
+        
         Args:
             documents: 文档列表
             force_reindex: 是否强制重建
@@ -217,28 +221,58 @@ class PrefabIndexer:
         Returns:
             索引结果
         """
-        # 构建索引请求
-        index_request = {
-            "documents": documents,
-            "index": self.index_name,
+        # 1. 创建索引（PUT /index/{index_name}）
+        if force_reindex:
+            # 先清空索引
+            try:
+                requests.delete(
+                    f"{self.vector_service_url}/index/{self.index_name}/clear",
+                    timeout=self.timeout
+                )
+            except:
+                pass  # 忽略清空错误
+        
+        # 创建/确保索引存在
+        create_index_request = {
             "vector_field": self.vector_field,
-            "force_reindex": force_reindex
+            "vector_dimension": 1024,  # 默认维度
+            "description": f"预制件索引: {self.index_name}"
         }
         
-        # 调用向量服务
+        response = requests.put(
+            f"{self.vector_service_url}/index/{self.index_name}",
+            json=create_index_request,
+            timeout=self.timeout,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if response.status_code != 200:
+            error_msg = f"创建索引失败: {response.status_code}, {response.text}"
+            print(f"❌ {error_msg}")
+            raise RuntimeError(error_msg)
+        
+        print(f"✅ 索引已就绪: {self.index_name}")
+        
+        # 2. 添加文档（POST /documents）
+        create_docs_request = {
+            "documents": documents,
+            "vector_field": self.vector_field,
+            "index": self.index_name
+        }
+        
         response = requests.post(
-            f"{self.vector_service_url}/index",
-            json=index_request,
+            f"{self.vector_service_url}/documents",
+            json=create_docs_request,
             timeout=self.timeout,
             headers={"Content-Type": "application/json"}
         )
         
         if response.status_code == 200:
             result = response.json()
-            print(f"✅ 索引构建成功: {self.index_name}")
+            print(f"✅ 已添加 {result.get('count', 0)} 个文档到索引: {self.index_name}")
             return result
         else:
-            error_msg = f"向量服务返回错误: {response.status_code}, {response.text}"
+            error_msg = f"添加文档失败: {response.status_code}, {response.text}"
             print(f"❌ {error_msg}")
             raise RuntimeError(error_msg)
 
