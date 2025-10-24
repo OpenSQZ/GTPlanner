@@ -161,6 +161,74 @@ async def cmd_init(tools_dir: str = "tools"):
     return result["success"]
 
 
+async def cmd_incremental_update(tools_dir: str = "tools"):
+    """执行增量更新"""
+    print("🔄 执行增量更新...")
+    print(f"工具目录: {tools_dir}")
+    
+    try:
+        success = await tool_index_manager.force_incremental_update(tools_dir)
+        
+        if success:
+            print("✅ 增量更新完成")
+        else:
+            print("ℹ️ 无文件变化，跳过增量更新")
+        
+        # 显示文件监控器信息
+        monitor_info = tool_index_manager.get_file_monitor_info()
+        print(f"\n📊 文件监控器信息:")
+        print(f"  缓存文件数: {monitor_info.get('total_cached_files', 0)}")
+        print(f"  缓存文件: {monitor_info.get('cache_file', 'N/A')}")
+        print(f"  工具目录: {monitor_info.get('tools_dir', 'N/A')}")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ 增量更新失败: {str(e)}")
+        return False
+
+
+async def cmd_check_changes(tools_dir: str = "tools"):
+    """检查文件变化"""
+    print("🔍 检查工具文件变化...")
+    print(f"工具目录: {tools_dir}")
+    
+    try:
+        from agent.utils.file_monitor import analyze_tool_file_changes
+        
+        result = analyze_tool_file_changes(tools_dir)
+        
+        print(f"\n📊 变化分析结果:")
+        print(f"  总文件数: {result.total_files}")
+        print(f"  新增文件: {len(result.new_files)}")
+        print(f"  修改文件: {len(result.changed_files)}")
+        print(f"  删除文件: {len(result.removed_files)}")
+        print(f"  未变化文件: {len(result.unchanged_files)}")
+        print(f"  需要更新: {result.update_needed}")
+        print(f"  摘要: {result.get_summary()}")
+        
+        if result.new_files:
+            print(f"\n📁 新增文件:")
+            for file in result.new_files:
+                print(f"  + {file}")
+        
+        if result.changed_files:
+            print(f"\n📝 修改文件:")
+            for file in result.changed_files:
+                print(f"  ~ {file}")
+        
+        if result.removed_files:
+            print(f"\n🗑️ 删除文件:")
+            for file in result.removed_files:
+                print(f"  - {file}")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ 检查变化失败: {str(e)}")
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="工具索引管理命令行工具",
@@ -171,12 +239,14 @@ def main():
   python scripts/manage_tool_index.py create --tools-dir tools
   python scripts/manage_tool_index.py force-refresh
   python scripts/manage_tool_index.py info
+  python scripts/manage_tool_index.py incremental-update
+  python scripts/manage_tool_index.py check-changes
         """
     )
     
     parser.add_argument(
         "command",
-        choices=["status", "create", "refresh", "force-refresh", "info", "init"],
+        choices=["status", "create", "refresh", "force-refresh", "info", "init", "incremental-update", "check-changes"],
         help="要执行的命令"
     )
     
@@ -212,6 +282,12 @@ def main():
                 await cmd_info()
             elif args.command == "init":
                 success = await cmd_init(args.tools_dir)
+                sys.exit(0 if success else 1)
+            elif args.command == "incremental-update":
+                success = await cmd_incremental_update(args.tools_dir)
+                sys.exit(0 if success else 1)
+            elif args.command == "check-changes":
+                success = await cmd_check_changes(args.tools_dir)
                 sys.exit(0 if success else 1)
         except KeyboardInterrupt:
             print("\n⚠️ 操作被用户中断")

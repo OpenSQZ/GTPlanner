@@ -80,6 +80,12 @@ class NodeToolIndex(AsyncNode):
             tools_dir = shared.get("tools_dir", self.tools_dir)
             index_name = shared.get("index_name", self.index_name)
             force_reindex = shared.get("force_reindex", False)
+            single_file_update = shared.get("single_file_update", False)
+            target_file = shared.get("target_file")
+            
+            # 检查是否是单文件更新
+            if single_file_update and target_file:
+                return await self._prep_single_file_update(target_file, index_name, shared)
             
             # 扫描工具文件
             tool_files = await self._scan_tool_files(tools_dir, shared)
@@ -131,6 +137,44 @@ class NodeToolIndex(AsyncNode):
                 "tools_count": 0
             }
     
+    async def _prep_single_file_update(self, target_file: str, index_name: str, shared: Dict[str, Any]) -> Dict[str, Any]:
+        """准备单文件更新"""
+        try:
+            if not os.path.exists(target_file):
+                return {
+                    "error": f"Target file does not exist: {target_file}",
+                    "tool_files": [],
+                    "tools_count": 0
+                }
+            
+            # 解析单个工具文件
+            tool_data = await self._parse_tool_file(target_file, shared)
+            if not tool_data:
+                return {
+                    "error": f"Failed to parse tool file: {target_file}",
+                    "tool_files": [target_file],
+                    "tools_count": 0
+                }
+            
+            return {
+                "tool_files": [target_file],
+                "parsed_tools": [tool_data],
+                "failed_files": [],
+                "tools_count": 1,
+                "index_name": index_name,
+                "force_reindex": False,
+                "single_file_update": True,
+                "target_file": target_file,
+                "streaming_session": shared.get("streaming_session")
+            }
+            
+        except Exception as e:
+            return {
+                "error": f"Single file update preparation failed: {str(e)}",
+                "tool_files": [target_file] if target_file else [],
+                "tools_count": 0
+            }
+    
     async def exec_async(self, prep_res: Dict[str, Any]) -> Dict[str, Any]:
         """
         执行阶段：调用向量服务进行工具索引
@@ -147,6 +191,7 @@ class NodeToolIndex(AsyncNode):
         parsed_tools = prep_res["parsed_tools"]
         index_name = prep_res["index_name"]
         force_reindex = prep_res.get("force_reindex", False)
+        single_file_update = prep_res.get("single_file_update", False)
 
         if not parsed_tools:
             raise ValueError("No tools to index")
@@ -156,9 +201,14 @@ class NodeToolIndex(AsyncNode):
 
         try:
             start_time = time.time()
-
-            # 每次启动都清除现有索引数据，确保使用最新的工具信息
             shared_for_events = {"streaming_session": prep_res.get("streaming_session")}
+
+            # 检查是否是单文件更新
+            if single_file_update:
+                return await self._execute_single_file_update(parsed_tools, index_name, shared_for_events, start_time, prep_res)
+
+            # 全量索引更新
+            # 每次启动都清除现有索引数据，确保使用最新的工具信息
             await self._clear_index(index_name, shared_for_events)
 
             # 构建文档列表
@@ -184,6 +234,102 @@ class NodeToolIndex(AsyncNode):
 
         except Exception as e:
             raise RuntimeError(f"Tool indexing execution failed: {str(e)}")
+    
+    async def _execute_single_file_update(
+        self,
+        parsed_tools: List[Dict[str, Any]],
+        index_name: str,
+        shared_for_events: Dict[str, Any],
+        start_time: float,
+        prep_res: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """执行单文件更新"""
+        try:
+            # 构建单个文档
+            tool = parsed_tools[0]  # 单文件更新只有一个工具
+            document = self._build_document(tool)
+            
+            # 对于单文件更新，我们使用upsert模式（如果向量服务支持）
+            # 这里先尝试直接索引，如果失败则回退到全量重建
+            try:
+                # 尝试单文档索引（upsert模式）
+                index_result = await self._index_single_document(document, index_name, shared_for_events)
+                
+                index_time = time.time() - start_time
+                
+                return {
+                    "indexed_count": 1,
+                    "index_name": index_result.get("index", index_name),
+                    "index_time": round(index_time * 1000),
+                    "documents": [document],
+                    "failed_tools": [],
+                    "total_processed": 1,
+                    "single_file_update": True,
+                    "update_mode": "upsert"
+                }
+                
+            except Exception as upsert_error:
+                # Upsert失败，回退到全量重建
+                await emit_processing_status(shared_for_events, f"⚠️ 单文件更新失败，回退到全量重建: {str(upsert_error)}")
+                
+                # 执行全量重建
+                await self._clear_index(index_name, shared_for_events)
+                index_result = await self._index_documents([document], index_name, shared_for_events)
+                
+                index_time = time.time() - start_time
+                
+                return {
+                    "indexed_count": index_result.get("count", 1),
+                    "index_name": index_result.get("index", index_name),
+                    "index_time": round(index_time * 1000),
+                    "documents": [document],
+                    "failed_tools": [],
+                    "total_processed": 1,
+                    "single_file_update": True,
+                    "update_mode": "rebuild"
+                }
+                
+        except Exception as e:
+            raise RuntimeError(f"Single file update execution failed: {str(e)}")
+    
+    async def _index_single_document(
+        self,
+        document: Dict[str, Any],
+        index_name: str,
+        shared_for_events: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """索引单个文档（upsert模式）"""
+        try:
+            # 构建单文档索引请求
+            request_data = {
+                "documents": [document],
+                "vector_field": self.vector_field,
+                "index": index_name,
+                "upsert": True  # 启用upsert模式
+            }
+
+            await emit_processing_status(shared_for_events, f"📝 单文件更新索引 {index_name}...")
+
+            response = requests.post(
+                f"{self.vector_service_url}/documents",
+                json=request_data,
+                timeout=self.timeout,
+                headers={"Content-Type": "application/json"}
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                await emit_processing_status(shared_for_events, f"✅ 单文件更新成功")
+                return result
+            else:
+                error_msg = f"单文件更新失败: {response.status_code}, {response.text}"
+                await emit_error(shared_for_events, f"❌ {error_msg}")
+                raise RuntimeError(error_msg)
+
+        except requests.exceptions.RequestException as e:
+            error_msg = f"单文件更新请求失败: {str(e)}"
+            await emit_error(shared_for_events, f"❌ {error_msg}")
+            raise RuntimeError(error_msg)
     
     async def post_async(self, shared, prep_res: Dict[str, Any], exec_res: Dict[str, Any]) -> str:
         """

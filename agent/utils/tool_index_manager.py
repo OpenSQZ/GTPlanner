@@ -10,18 +10,20 @@
 - 支持强制更新和增量更新
 - 异步索引操作，不阻塞业务流程
 - 索引状态监控和错误恢复
+- 增量更新机制，提升性能
 """
 
 import os
 import time
 import asyncio
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from pathlib import Path
 
 from agent.nodes.node_tool_index import NodeToolIndex
 from utils.config_manager import get_vector_service_config
 from agent.streaming import emit_processing_status, emit_error
+from agent.utils.file_monitor import ToolFileMonitor, analyze_tool_file_changes, IncrementalUpdateResult
 
 
 class ToolIndexManager:
@@ -54,6 +56,11 @@ class ToolIndexManager:
         # 配置
         self._tools_dir = "tools"
         self._index_node = None
+        
+        # 增量更新相关
+        self._file_monitor = ToolFileMonitor(self._tools_dir)
+        self._incremental_update_enabled = True
+        self._last_incremental_check = None
         
         self._initialized = True
     
@@ -94,7 +101,7 @@ class ToolIndexManager:
         force_reindex: bool,
         shared: Dict[str, Any] = None
     ) -> bool:
-        """检查是否需要重建索引 - 简化版：总是在首次调用时创建新索引"""
+        """检查是否需要重建索引 - 支持增量更新"""
 
         # 强制重建
         if force_reindex:
@@ -108,8 +115,146 @@ class ToolIndexManager:
                 await emit_processing_status(shared, "🆕 创建新的工具索引...")
             return True
 
-        # 已经创建过索引，不再重建
+        # 检查是否需要增量更新
+        if self._incremental_update_enabled:
+            return await self._check_incremental_update_needed(tools_dir, shared)
+
+        # 已经创建过索引且不需要增量更新
         return False
+    
+    async def _check_incremental_update_needed(
+        self,
+        tools_dir: str,
+        shared: Dict[str, Any] = None
+    ) -> bool:
+        """检查是否需要增量更新"""
+        try:
+            if shared:
+                await emit_processing_status(shared, "🔍 检查工具文件变化...")
+            
+            # 分析文件变化
+            result = analyze_tool_file_changes(tools_dir)
+            
+            if shared:
+                await emit_processing_status(shared, result.get_summary())
+            
+            # 如果有变化，执行增量更新
+            if result.has_changes():
+                await self._perform_incremental_update(result, shared)
+                return False  # 增量更新完成，不需要重建
+            
+            # 无变化，不需要更新
+            if shared:
+                await emit_processing_status(shared, "✅ 工具文件无变化，索引保持最新")
+            
+            return False
+            
+        except Exception as e:
+            if shared:
+                await emit_error(shared, f"❌ 增量更新检查失败: {str(e)}")
+            # 增量更新失败时，回退到全量重建
+            return True
+    
+    async def _perform_incremental_update(
+        self,
+        result: IncrementalUpdateResult,
+        shared: Dict[str, Any] = None
+    ):
+        """执行增量更新"""
+        try:
+            if shared:
+                await emit_processing_status(shared, "🔄 开始增量更新工具索引...")
+            
+            # 更新文件监控器
+            self._file_monitor = ToolFileMonitor(self._tools_dir)
+            
+            # 处理新增和修改的文件
+            files_to_update = result.new_files + result.changed_files
+            
+            if files_to_update:
+                if shared:
+                    await emit_processing_status(shared, f"📝 更新 {len(files_to_update)} 个文件...")
+                
+                # 批量更新文件到索引
+                await self._update_files_in_index(files_to_update, shared)
+            
+            # 处理删除的文件
+            if result.removed_files:
+                if shared:
+                    await emit_processing_status(shared, f"🗑️ 移除 {len(result.removed_files)} 个文件...")
+                
+                # 从索引中移除文件
+                await self._remove_files_from_index(result.removed_files, shared)
+            
+            # 更新文件缓存
+            for file_path in files_to_update:
+                self._file_monitor.update_file_cache(file_path)
+            
+            for file_path in result.removed_files:
+                self._file_monitor.remove_file_cache(file_path)
+            
+            self._file_monitor.save_cache()
+            
+            if shared:
+                await emit_processing_status(shared, "✅ 增量更新完成")
+            
+        except Exception as e:
+            if shared:
+                await emit_error(shared, f"❌ 增量更新失败: {str(e)}")
+            raise
+    
+    async def _update_files_in_index(
+        self,
+        file_paths: List[str],
+        shared: Dict[str, Any] = None
+    ):
+        """将文件更新到索引中"""
+        if not self._index_node:
+            self._index_node = NodeToolIndex()
+        
+        # 为每个文件创建独立的更新任务
+        for file_path in file_paths:
+            try:
+                if shared:
+                    await emit_processing_status(shared, f"  📄 更新文件: {os.path.basename(file_path)}")
+                
+                # 准备单文件更新参数
+                update_shared = {
+                    "tools_dir": os.path.dirname(file_path),
+                    "index_name": self._index_name,
+                    "force_reindex": False,
+                    "single_file_update": True,
+                    "target_file": file_path,
+                    "streaming_session": shared.get("streaming_session") if shared else None
+                }
+                
+                # 执行单文件更新
+                prep_result = await self._index_node.prep_async(update_shared)
+                if "error" not in prep_result:
+                    exec_result = await self._index_node.exec_async(prep_result)
+                    if shared:
+                        await emit_processing_status(shared, f"    ✅ 文件更新成功")
+                else:
+                    if shared:
+                        await emit_error(shared, f"    ❌ 文件更新失败: {prep_result['error']}")
+                        
+            except Exception as e:
+                if shared:
+                    await emit_error(shared, f"    ❌ 文件更新异常: {str(e)}")
+    
+    async def _remove_files_from_index(
+        self,
+        file_paths: List[str],
+        shared: Dict[str, Any] = None
+    ):
+        """从索引中移除文件"""
+        # 这里需要调用向量服务的删除API
+        # 由于当前向量服务可能不支持按文件路径删除，我们暂时记录日志
+        for file_path in file_paths:
+            if shared:
+                await emit_processing_status(shared, f"  🗑️ 移除文件: {os.path.basename(file_path)}")
+            # TODO: 实现向量服务中的文件删除功能
+            # await self._vector_service.delete_documents_by_file_path(file_path)
     
     # 简化版本：移除复杂的变化检测逻辑，每次启动时创建新索引
     
@@ -191,6 +336,40 @@ class ToolIndexManager:
         self._current_index_name = None
         self._last_index_time = None
         self._last_tools_dir_mtime = None
+        self._file_monitor.clear_cache()
+    
+    def enable_incremental_update(self):
+        """启用增量更新"""
+        self._incremental_update_enabled = True
+    
+    def disable_incremental_update(self):
+        """禁用增量更新"""
+        self._incremental_update_enabled = False
+    
+    def is_incremental_update_enabled(self) -> bool:
+        """检查是否启用增量更新"""
+        return self._incremental_update_enabled
+    
+    def get_file_monitor_info(self) -> Dict[str, Any]:
+        """获取文件监控器信息"""
+        return self._file_monitor.get_cache_info()
+    
+    async def force_incremental_update(self, tools_dir: str = None, shared: Dict[str, Any] = None) -> bool:
+        """强制执行增量更新"""
+        tools_dir = tools_dir or self._tools_dir
+        try:
+            result = analyze_tool_file_changes(tools_dir)
+            if result.has_changes():
+                await self._perform_incremental_update(result, shared)
+                return True
+            else:
+                if shared:
+                    await emit_processing_status(shared, "ℹ️ 无文件变化，跳过增量更新")
+                return False
+        except Exception as e:
+            if shared:
+                await emit_error(shared, f"❌ 强制增量更新失败: {str(e)}")
+            return False
 
 
 # 全局索引管理器实例
