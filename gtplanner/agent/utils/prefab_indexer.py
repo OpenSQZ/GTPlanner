@@ -35,7 +35,7 @@ class PrefabIndexer:
         
         # 从配置获取索引参数
         vector_config = get_vector_service_config()
-        self.index_name = vector_config.get("tools_index_name", "document_gtplanner_prefabs")
+        self.index_name = vector_config.get("prefabs_index_name", "document_gtplanner_prefabs")
         self.vector_field = vector_config.get("vector_field", "combined_text")
     
     def check_vector_service_available(self) -> bool:

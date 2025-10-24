@@ -41,7 +41,7 @@ class NodePrefabRecommend(AsyncNode):
         self.timeout = vector_config.get("timeout", 30)
         
         # 从配置文件读取索引相关参数
-        self.index_name = vector_config.get("tools_index_name", "document_gtplanner_prefabs")
+        self.index_name = vector_config.get("prefabs_index_name", "document_gtplanner_prefabs")
         self.vector_field = vector_config.get("vector_field", "combined_text")
         
         # 推荐配置

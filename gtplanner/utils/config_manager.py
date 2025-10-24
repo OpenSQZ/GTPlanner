@@ -235,7 +235,7 @@ class MultilingualConfig:
                 config.update({
                     "base_url": self._settings.get("vector_service.base_url"),
                     "timeout": self._settings.get("vector_service.timeout", 30),
-                    "tools_index_name": self._settings.get("vector_service.tools_index_name", "tools_index"),
+                    "prefabs_index_name": self._settings.get("vector_service.prefabs_index_name", "document_gtplanner_prefabs"),
                     "vector_field": self._settings.get("vector_service.vector_field", "combined_text")
                 })
             except Exception as e:
@@ -245,7 +245,7 @@ class MultilingualConfig:
         config.update({
             "base_url": os.getenv("VECTOR_SERVICE_BASE_URL") or os.getenv("GTPLANNER_VECTOR_SERVICE_BASE_URL") or config.get("base_url"),
             "timeout": int(os.getenv("VECTOR_SERVICE_TIMEOUT") or config.get("timeout", 30)),
-            "tools_index_name": os.getenv("VECTOR_SERVICE_INDEX_NAME") or config.get("tools_index_name", "tools_index"),
+            "prefabs_index_name": os.getenv("VECTOR_SERVICE_INDEX_NAME") or config.get("prefabs_index_name", "document_gtplanner_prefabs"),
             "vector_field": os.getenv("VECTOR_SERVICE_VECTOR_FIELD") or config.get("vector_field", "combined_text")
         })
 
