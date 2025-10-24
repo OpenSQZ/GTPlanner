@@ -65,43 +65,6 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                 }
             }
         },
-        {
-            "type": "function",
-            "function": {
-                "name": "tool_recommend",
-                "description": "『技术实现』阶段的**第一步**。基于在『范围确认』阶段已达成共识的项目范围，为项目推荐平台支持的API或库。它是`research`工具的**强制前置步骤**。",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "查询文本，描述需要的工具功能或技术需求"
-                        },
-                        "top_k": {
-                            "type": "integer",
-                            "description": "返回的推荐工具数量，默认5个",
-                            "default": 5,
-                            "minimum": 1,
-                            "maximum": 20
-                        },
-                        "tool_types": {
-                            "type": "array",
-                            "items": {
-                                "type": "string",
-                                "enum": ["PYTHON_PACKAGE", "APIS"]
-                            },
-                            "description": "工具类型过滤列表，可选值：PYTHON_PACKAGE（Python包）、APIS（API服务）"
-                        },
-                        "use_llm_filter": {
-                            "type": "boolean",
-                            "description": "是否使用大模型筛选，默认true",
-                            "default": True
-                        }
-                    },
-                    "required": ["query"]
-                }
-            }
-        }
     ]
 
     # 如果有JINA_API_KEY，添加research工具
@@ -166,6 +129,74 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
         }
     }
     tools.append(design_tool)
+    
+    # 添加 search_prefabs 工具（降级方案，无需向量服务）
+    search_prefabs_tool = {
+        "type": "function",
+        "function": {
+            "name": "search_prefabs",
+            "description": "在本地预制件库中搜索。这是一个降级工具，当向量服务不可用时使用。提供基于关键词、标签、作者的模糊搜索功能。**建议优先使用 prefab_recommend（如果向量服务可用），该工具提供更精准的语义匹配。**",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "搜索关键词，会在预制件的名称、描述、ID、标签中查找"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "标签过滤，至少匹配一个标签即可"
+                    },
+                    "author": {
+                        "type": "string",
+                        "description": "作者过滤，精确匹配作者名"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "返回结果数量限制，默认20",
+                        "default": 20,
+                        "minimum": 1,
+                        "maximum": 50
+                    }
+                },
+                "required": []
+            }
+        }
+    }
+    tools.append(search_prefabs_tool)
+    
+    # 添加 prefab_recommend 工具（需要向量服务）
+    prefab_recommend_tool = {
+        "type": "function",
+        "function": {
+            "name": "prefab_recommend",
+            "description": "基于向量语义检索推荐预制件。**这是推荐预制件的首选方法**，提供高精度的语义匹配。如果向量服务不可用，系统会提示使用 search_prefabs 作为降级方案。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "查询文本，描述需要的预制件功能或技术需求"
+                    },
+                    "top_k": {
+                        "type": "integer",
+                        "description": "返回的推荐预制件数量，默认5个",
+                        "default": 5,
+                        "minimum": 1,
+                        "maximum": 20
+                    },
+                    "use_llm_filter": {
+                        "type": "boolean",
+                        "description": "是否使用大模型进行二次筛选，默认true",
+                        "default": True
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    }
+    tools.append(prefab_recommend_tool)
 
     return tools
 
@@ -188,8 +219,10 @@ async def execute_agent_tool(tool_name: str, arguments: Dict[str, Any], shared: 
 
         if tool_name == "short_planning":
             return await _execute_short_planning(arguments, shared)
-        elif tool_name == "tool_recommend":
-            return await _execute_tool_recommend(arguments, shared)
+        elif tool_name == "search_prefabs":
+            return await _execute_search_prefabs(arguments, shared)
+        elif tool_name == "prefab_recommend":
+            return await _execute_prefab_recommend(arguments, shared)
         elif tool_name == "research":
             return await _execute_research(arguments, shared)
         elif tool_name == "design":
@@ -261,81 +294,6 @@ async def _execute_short_planning(arguments: Dict[str, Any], shared: Dict[str, A
             "success": False,
             "error": f"短期规划执行异常: {str(e)}",
             "tool_name": "short_planning"
-        }
-
-
-async def _execute_tool_recommend(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
-    """执行工具推荐 - 使用智能索引管理器确保索引可用"""
-    query = arguments.get("query", "")
-    top_k = arguments.get("top_k", 5)
-    tool_types = arguments.get("tool_types", [])
-    use_llm_filter = arguments.get("use_llm_filter", True)
-
-    # 参数验证
-    if not query:
-        return {
-            "success": False,
-            "error": "query is required and cannot be empty"
-        }
-
-    try:
-        # 1. 使用智能索引管理器确保索引存在
-        from agent.utils.tool_index_manager import ensure_tool_index
-
-        # 确保索引存在（智能检测，只在必要时重建）
-        index_name = await ensure_tool_index(
-            tools_dir="tools",
-            force_reindex=False,  # 不强制重建，让管理器智能判断
-            shared=shared
-        )
-
-        print(f"✅ 索引已就绪: {index_name}")
-
-        # 2. 执行工具推荐
-        from agent.nodes.node_tool_recommend import NodeToolRecommend
-        recommend_node = NodeToolRecommend()
-
-        # 直接在shared字典中添加工具参数，避免数据隔离
-        if shared is None:
-            shared = {}
-
-        # 添加工具参数到shared字典
-        shared["query"] = query
-        shared["top_k"] = top_k
-        shared["index_name"] = index_name  # 使用索引管理器返回的索引名
-        shared["tool_types"] = tool_types
-        shared["min_score"] = 0.1
-        shared["use_llm_filter"] = use_llm_filter
-
-        # 执行推荐节点流程（异步），直接使用shared字典
-        prep_result = await recommend_node.prep_async(shared)
-        if "error" in prep_result:
-            return {
-                "success": False,
-                "error": prep_result["error"]
-            }
-
-        exec_result = await recommend_node.exec_async(prep_result)
-
-        # 后处理：结果会直接写入shared字典
-        await recommend_node.post_async(shared, prep_result, exec_result)
-
-        return {
-            "success": True,
-            "result": {
-                "recommended_tools": exec_result["recommended_tools"],
-                "total_found": exec_result["total_found"],
-                "search_time_ms": exec_result["search_time"],
-                "query_used": exec_result["query_used"],
-                "index_name": index_name
-            },
-            "tool_name": "tool_recommend"
-        }
-
-    except Exception as e:
-        return {
-            "success": False,
-            "error": f"工具推荐执行异常: {str(e)}"
         }
 
 
@@ -505,6 +463,163 @@ async def _execute_design(arguments: Dict[str, Any], shared: Dict[str, Any] = No
         return {
             "success": False,
             "error": f"设计执行异常: {str(e)}"
+        }
+
+
+async def _execute_search_prefabs(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
+    """
+    执行预制件搜索（本地模糊搜索，降级方案）
+    
+    这是一个简单的搜索工具，不依赖向量服务。
+    适用于向量服务不可用时的降级场景。
+    """
+    query = arguments.get("query")
+    tags = arguments.get("tags")
+    author = arguments.get("author")
+    limit = arguments.get("limit", 20)
+    
+    # 至少需要一个搜索条件
+    if not query and not tags and not author:
+        return {
+            "success": False,
+            "error": "At least one search parameter (query, tags, or author) is required"
+        }
+    
+    try:
+        from gtplanner.agent.utils.local_prefab_searcher import get_local_prefab_searcher
+        
+        # 获取搜索器实例
+        searcher = get_local_prefab_searcher()
+        
+        # 执行搜索
+        results = searcher.search(
+            query=query,
+            tags=tags,
+            author=author,
+            limit=limit
+        )
+        
+        return {
+            "success": True,
+            "result": {
+                "prefabs": results,
+                "total_found": len(results),
+                "search_mode": "local_fuzzy_search",
+                "query": query,
+                "tags": tags,
+                "author": author
+            },
+            "tool_name": "search_prefabs"
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"预制件搜索执行异常: {str(e)}"
+        }
+
+
+async def _execute_prefab_recommend(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
+    """
+    执行预制件推荐（基于向量服务，需要先构建索引）
+    
+    这是推荐预制件的首选方法，提供高精度的语义匹配。
+    如果向量服务不可用，会返回错误提示使用 search_prefabs。
+    """
+    query = arguments.get("query", "")
+    top_k = arguments.get("top_k", 5)
+    use_llm_filter = arguments.get("use_llm_filter", True)
+    
+    # 参数验证
+    if not query:
+        return {
+            "success": False,
+            "error": "query is required and cannot be empty"
+        }
+    
+    try:
+        # 1. 检查向量服务是否可用
+        from gtplanner.utils.config_manager import get_vector_service_config
+        import requests
+        
+        vector_config = get_vector_service_config()
+        vector_service_url = vector_config.get("base_url")
+        
+        # 检查向量服务健康状态
+        vector_service_available = False
+        if vector_service_url:
+            try:
+                response = requests.get(f"{vector_service_url}/health", timeout=5)
+                vector_service_available = response.status_code == 200
+            except:
+                pass
+        
+        if not vector_service_available:
+            return {
+                "success": False,
+                "error": "Vector service is not available. Please use 'search_prefabs' tool as a fallback.",
+                "suggestion": f"Try calling search_prefabs with the same query: search_prefabs(query=\"{query}\")"
+            }
+        
+        # 2. 使用索引管理器确保索引存在（启动时已预加载，这里只是确认）
+        from gtplanner.agent.utils.prefab_index_manager import ensure_prefab_index
+        
+        # 智能检测：只在必要时重建（如文件更新）
+        index_name = await ensure_prefab_index(
+            force_reindex=False,
+            shared=shared
+        )
+        
+        if not index_name:
+            return {
+                "success": False,
+                "error": "Failed to initialize prefab index"
+            }
+        
+        # 3. 执行预制件推荐
+        from gtplanner.agent.nodes.node_prefab_recommend import NodePrefabRecommend
+        recommend_node = NodePrefabRecommend()
+        
+        # 准备参数
+        if shared is None:
+            shared = {}
+        
+        shared["query"] = query
+        shared["top_k"] = top_k
+        shared["index_name"] = index_name
+        shared["min_score"] = 0.1
+        shared["use_llm_filter"] = use_llm_filter
+        
+        # 执行推荐节点流程
+        prep_result = await recommend_node.prep_async(shared)
+        if "error" in prep_result:
+            return {
+                "success": False,
+                "error": prep_result["error"]
+            }
+        
+        exec_result = await recommend_node.exec_async(prep_result)
+        
+        # 后处理
+        await recommend_node.post_async(shared, prep_result, exec_result)
+        
+        return {
+            "success": True,
+            "result": {
+                "recommended_prefabs": exec_result["recommended_prefabs"],
+                "total_found": exec_result["total_found"],
+                "search_time_ms": exec_result["search_time"],
+                "query_used": exec_result["query_used"],
+                "search_mode": exec_result["search_mode"],
+                "index_name": index_name
+            },
+            "tool_name": "prefab_recommend"
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"预制件推荐执行异常: {str(e)}"
         }
 
 
