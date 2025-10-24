@@ -82,7 +82,7 @@ class PocketFlowSharedFactory:
         }
 
         # 只设置已存在且非空的工具执行结果
-        for key in ["recommended_tools", "research_findings", "short_planning"]:
+        for key in ["recommended_prefabs", "research_findings", "short_planning"]:
             value = context.tool_execution_results.get(key)
             if value is not None:
                 shared[key] = value
@@ -142,8 +142,8 @@ class PocketFlowSharedFactory:
             tool_execution_results_updates = {}
 
             # 检查各个工具的执行结果（统一字段名）
-            if "recommended_tools" in shared:
-                tool_execution_results_updates["recommended_tools"] = shared["recommended_tools"]
+            if "recommended_prefabs" in shared:
+                tool_execution_results_updates["recommended_prefabs"] = shared["recommended_prefabs"]
 
             if "research_findings" in shared:
                 tool_execution_results_updates["research_findings"] = shared["research_findings"]

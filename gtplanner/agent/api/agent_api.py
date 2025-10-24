@@ -11,7 +11,7 @@ GTPlanner SSE API
 
 使用方式:
     ```python
-    from agent.api.agent_api import SSEGTPlanner
+    from gtplanner.agent.api.agent_api import SSEGTPlanner
     
     api = SSEGTPlanner(verbose=True)
     

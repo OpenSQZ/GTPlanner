@@ -82,7 +82,7 @@ class AgentContext:
     """Agent上下文数据结构 - 客户端传入的上下文信息（可能已压缩）"""
     session_id: str
     dialogue_history: List[Message]  # 可能是压缩后的对话历史
-    tool_execution_results: Dict[str, Any]  # 工具执行结果集合（recommended_tools, short_planning, research_findings等）
+    tool_execution_results: Dict[str, Any]  # 工具执行结果集合（recommended_prefabs, short_planning, research_findings等）
     session_metadata: Dict[str, Any]
     last_updated: Optional[str] = None
     is_compressed: bool = False  # 标识上下文是否已被压缩

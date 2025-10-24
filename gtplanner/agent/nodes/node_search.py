@@ -142,7 +142,7 @@ class NodeSearch(AsyncNode):
                         # 搜索API不可用，跳过此关键词
                         streaming_session = prep_res.get("streaming_session")
                         if streaming_session:
-                            from agent.streaming import emit_error_from_prep
+                            from gtplanner.agent.streaming import emit_error_from_prep
                             await emit_error_from_prep(prep_res, f"⚠️ 搜索API不可用，跳过关键词: {keyword}")
                         continue
 
@@ -153,7 +153,7 @@ class NodeSearch(AsyncNode):
                     # 单个关键词搜索失败不影响其他关键词
                     streaming_session = prep_res.get("streaming_session")
                     if streaming_session:
-                        from agent.streaming import emit_error_from_prep
+                        from gtplanner.agent.streaming import emit_error_from_prep
                         await emit_error_from_prep(prep_res, f"❌ 搜索失败，关键词 '{keyword}': {str(e)}")
                     continue
             

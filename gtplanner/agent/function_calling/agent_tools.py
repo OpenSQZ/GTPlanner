@@ -22,7 +22,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
         OpenAI Function Calling格式的工具定义列表
     """
     # 检查JINA_API_KEY是否可用
-    from utils.config_manager import get_jina_api_key
+    from gtplanner.utils.config_manager import get_jina_api_key
     import os
 
     jina_api_key = get_jina_api_key() or os.getenv("JINA_API_KEY")
@@ -52,9 +52,9 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                             "items": {"type": "string"},
                             "description": "用户提出的改进点或补充需求（可选）"
                         },
-                        "recommended_tools": {
+                        "recommended_prefabs": {
                             "type": "string",
-                            "description": "推荐工具信息（可选）。如果之前调用了 prefab_recommend，可以将其结果的 JSON 字符串传入"
+                            "description": "推荐预制件信息（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，可以将其结果的 JSON 字符串传入"
                         },
                         "research_findings": {
                             "type": "string",
@@ -115,9 +115,9 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                         "type": "string",
                         "description": "项目规划内容（可选）。如果之前调用了 short_planning，可以将其结果传入"
                     },
-                    "recommended_tools": {
+                    "recommended_prefabs": {
                         "type": "string",
-                        "description": "推荐工具信息（可选）。如果之前调用了 tool_recommend，可以将其结果的 JSON 字符串传入"
+                        "description": "推荐预制件信息（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，可以将其结果的 JSON 字符串传入"
                     },
                     "research_findings": {
                         "type": "string",
@@ -245,7 +245,7 @@ async def _execute_short_planning(arguments: Dict[str, Any], shared: Dict[str, A
     user_requirements = arguments.get("user_requirements", "")
     previous_planning = arguments.get("previous_planning", "")
     improvement_points = arguments.get("improvement_points", [])
-    recommended_tools = arguments.get("recommended_tools", "")
+    recommended_prefabs = arguments.get("recommended_prefabs", "")
     research_findings = arguments.get("research_findings", "")
 
     # 验证必需参数
@@ -261,7 +261,7 @@ async def _execute_short_planning(arguments: Dict[str, Any], shared: Dict[str, A
             "user_requirements": user_requirements,
             "previous_planning": previous_planning,
             "improvement_points": improvement_points,
-            "recommended_tools": recommended_tools,
+            "recommended_prefabs": recommended_prefabs,
             "research_findings": research_findings,
             "language": shared.get("language") if shared else None,
             "streaming_session": shared.get("streaming_session") if shared else None  # 确保 SSE 支持
@@ -300,7 +300,7 @@ async def _execute_short_planning(arguments: Dict[str, Any], shared: Dict[str, A
 async def _execute_research(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
     """执行技术调研 - 使用ResearchFlow"""
     # 检查JINA_API_KEY环境变量
-    from utils.config_manager import get_jina_api_key
+    from gtplanner.utils.config_manager import get_jina_api_key
     import os
 
     jina_api_key = get_jina_api_key() or os.getenv("JINA_API_KEY")
@@ -384,7 +384,7 @@ async def _execute_design(arguments: Dict[str, Any], shared: Dict[str, Any] = No
     参数：
     - user_requirements: 必需，用户需求描述
     - project_planning: 可选，项目规划内容（如果之前调用了 short_planning）
-    - recommended_tools: 可选，推荐工具信息（JSON 字符串）
+    - recommended_prefabs: 可选，推荐预制件信息（JSON 字符串）
     - research_findings: 可选，技术调研结果（JSON 字符串）
     """
     import json
@@ -399,14 +399,14 @@ async def _execute_design(arguments: Dict[str, Any], shared: Dict[str, Any] = No
     
     # 获取可选参数（显式传入，不从 shared 读取）
     project_planning = arguments.get("project_planning", "")
-    recommended_tools_str = arguments.get("recommended_tools", "")
+    recommended_prefabs_str = arguments.get("recommended_prefabs", "")
     research_findings_str = arguments.get("research_findings", "")
     
     # 解析 JSON 字符串
-    recommended_tools = []
-    if recommended_tools_str:
+    recommended_prefabs = []
+    if recommended_prefabs_str:
         try:
-            recommended_tools = json.loads(recommended_tools_str)
+            recommended_prefabs = json.loads(recommended_prefabs_str)
         except:
             pass
     
@@ -421,15 +421,15 @@ async def _execute_design(arguments: Dict[str, Any], shared: Dict[str, Any] = No
         # 创建独立的流程 shared 字典（不污染全局 shared）
         flow_shared = {
             "user_requirements": user_requirements,
-            "short_planning": project_planning,  # 向后兼容字段名
-            "recommended_tools": recommended_tools,
+            "short_planning": project_planning,
+            "recommended_prefabs": recommended_prefabs,
             "research_findings": research_findings,
             "language": shared.get("language") if shared else None,  # 保留全局配置
             "streaming_session": shared.get("streaming_session") if shared else None  # 🔑 关键：传递 streaming_session
         }
         
         # 使用新的统一 DesignFlow
-        from agent.subflows.design.flows.design_flow import DesignFlow
+        from gtplanner.agent.subflows.design.flows.design_flow import DesignFlow
         flow = DesignFlow()
         
         print("🎨 生成设计文档...")
@@ -699,28 +699,6 @@ async def call_research(keywords: List[str], focus_areas: List[str], project_con
     })
 
 
-async def call_tool_recommend(
-    query: str,
-    top_k: int = 5,
-    tool_types: List[str] = None,
-    use_llm_filter: bool = True
-) -> Dict[str, Any]:
-    """便捷的工具推荐调用
-    
-    ⚠️  已废弃：请使用 call_prefab_recommend 代替
-    """
-    arguments = {
-        "query": query,
-        "top_k": top_k,
-        "use_llm_filter": use_llm_filter
-    }
-    if tool_types:
-        arguments["tool_types"] = tool_types
-
-    # 为了兼容性，仍然调用旧的 tool_recommend（如果存在）
-    return await execute_agent_tool("tool_recommend", arguments)
-
-
 async def call_prefab_recommend(
     query: str,
     top_k: int = 5,
@@ -769,7 +747,7 @@ async def call_search_prefabs(
 async def call_design(
     user_requirements: str,
     project_planning: str = None,
-    recommended_tools: str = None,
+    recommended_prefabs: str = None,
     research_findings: str = None
 ) -> Dict[str, Any]:
     """便捷的设计文档生成调用 - 原子化工具
@@ -777,14 +755,14 @@ async def call_design(
     Args:
         user_requirements: 用户需求描述（必需）
         project_planning: 项目规划内容（可选）
-        recommended_tools: 推荐工具信息 JSON 字符串（可选）
+        recommended_prefabs: 推荐预制件信息 JSON 字符串（可选）
         research_findings: 技术调研结果 JSON 字符串（可选）
     """
     arguments = {"user_requirements": user_requirements}
     if project_planning:
         arguments["project_planning"] = project_planning
-    if recommended_tools:
-        arguments["recommended_tools"] = recommended_tools
+    if recommended_prefabs:
+        arguments["recommended_prefabs"] = recommended_prefabs
     if research_findings:
         arguments["research_findings"] = research_findings
     return await execute_agent_tool("design", arguments)

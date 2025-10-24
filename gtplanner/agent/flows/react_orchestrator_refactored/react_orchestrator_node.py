@@ -138,7 +138,7 @@ class ReActOrchestratorNode(AsyncNode):
 
     def _add_assistant_message(self, shared: Dict[str, Any], message: str, tool_calls: Optional[List[Dict[str, Any]]]) -> None:
         """添加助手消息到预留字段（OpenAI API标准格式）"""
-        from agent.context_types import create_assistant_message
+        from gtplanner.agent.context_types import create_assistant_message
 
         assistant_message = create_assistant_message(
             content=message,
@@ -153,7 +153,7 @@ class ReActOrchestratorNode(AsyncNode):
 
     def _add_tool_message(self, shared: Dict[str, Any], tool_call_id: str, content: str) -> None:
         """添加tool消息到预留字段（OpenAI API标准格式）"""
-        from agent.context_types import create_tool_message
+        from gtplanner.agent.context_types import create_tool_message
 
         tool_message = create_tool_message(
             content=content,
@@ -183,20 +183,13 @@ class ReActOrchestratorNode(AsyncNode):
             result_data = tool_result.get("result", {})
             recommended_prefabs = result_data.get("recommended_prefabs")
             if recommended_prefabs:
-                shared["recommended_tools"] = recommended_prefabs  # 保持 recommended_tools 键名以兼容现有代码
+                shared["recommended_prefabs"] = recommended_prefabs
         
         elif tool_name == "search_prefabs" and tool_result.get("success"):
             result_data = tool_result.get("result", {})
             prefabs = result_data.get("prefabs")
             if prefabs:
-                shared["recommended_tools"] = prefabs  # 保持 recommended_tools 键名以兼容现有代码
-        
-        # 保留旧的 tool_recommend 用于兼容性
-        elif tool_name == "tool_recommend" and tool_result.get("success"):
-            result_data = tool_result.get("result", {})
-            recommended_tools = result_data.get("recommended_tools")
-            if recommended_tools:
-                shared["recommended_tools"] = recommended_tools
+                shared["recommended_prefabs"] = prefabs
 
         elif tool_name == "research" and tool_result.get("success"):
             result_data = tool_result.get("result", {})

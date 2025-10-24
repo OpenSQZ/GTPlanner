@@ -391,7 +391,7 @@ class RetryManager:
                 delay = self._calculate_delay(attempt)
 
                 # 使用日志记录重试信息
-                from utils.logger_config import get_logger
+                from gtplanner.utils.logger_config import get_logger
                 logger = get_logger("retry_manager")
                 logger.warning(f"⚠️ API调用失败 (尝试 {attempt + 1}/{self.max_retries + 1}): {e}")
                 logger.info(f"🔄 等待 {delay:.1f}秒后重试...")

@@ -25,8 +25,8 @@ class CommonTextFragmentsTemplates:
     
     @staticmethod
     def get_tools_header_zh() -> str:
-        """中文版本的工具清单标题"""
-        return "\n---推荐工具清单---"
+        """中文版本的预制件清单标题"""
+        return "\n---推荐预制件清单---"
     
     @staticmethod
     def get_research_header_zh() -> str:
@@ -35,8 +35,8 @@ class CommonTextFragmentsTemplates:
     
     @staticmethod
     def get_no_tools_placeholder_zh() -> str:
-        """中文版本的无工具占位符"""
-        return "暂无推荐工具"
+        """中文版本的无预制件占位符"""
+        return "暂无推荐预制件"
     
     @staticmethod
     def get_no_research_placeholder_zh() -> str:

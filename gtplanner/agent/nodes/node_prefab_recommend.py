@@ -46,7 +46,7 @@ class NodePrefabRecommend(AsyncNode):
         
         # 推荐配置
         self.default_top_k = 5
-        self.min_score_threshold = 0.1  # 最小相似度阈值
+        self.min_score_threshold = 0.4  # 最小相似度阈值（提高到0.4以过滤不相关结果）
         self.use_llm_filter = True  # 是否使用大模型筛选
         self.llm_candidate_count = 10  # 传给大模型的候选数量
         
@@ -356,9 +356,20 @@ class NodePrefabRecommend(AsyncNode):
             
             if response.status_code == 200:
                 result = response.json()
+                total_results = result.get('total', 0)
+                
+                # 打印每个预制件的相似度分数（调试用）
+                if result.get('results'):
+                    print(f"\n🔍 向量检索结果 (查询: '{query}'):")
+                    for idx, item in enumerate(result['results'][:10], 1):
+                        doc = item.get('document', {})
+                        score = item.get('score', 0)
+                        name = doc.get('name', 'Unknown')
+                        print(f"  {idx}. [{score:.3f}] {name}")
+                
                 await emit_processing_status(
                     shared, 
-                    f"✅ 检索到 {result.get('total', 0)} 个相关预制件"
+                    f"✅ 检索到 {total_results} 个相关预制件"
                 )
                 return result
             else:
@@ -381,16 +392,21 @@ class NodePrefabRecommend(AsyncNode):
             return []
         
         filtered = []
+        filtered_out_count = 0
         for result in search_results["results"]:
             # 检查相似度阈值
             score = result.get("score", 0.0)
             if score < min_score:
+                filtered_out_count += 1
                 continue
             
             # 添加分数到文档中
             document = result.get("document", {})
             document["score"] = score
             filtered.append(document)
+        
+        if filtered_out_count > 0:
+            print(f"📊 相似度过滤: 保留 {len(filtered)} 个 (过滤掉 {filtered_out_count} 个，阈值: {min_score:.2f})")
         
         return filtered
     

@@ -45,7 +45,7 @@ def example_formatted_prompts():
         PromptTypes.Agent.SHORT_PLANNING_GENERATION,
         language="zh",
         req_content="创建一个YouTube视频总结器",
-        tools_content="youtube_audio_fetch: 获取YouTube视频的音频\nASR_MCP: 将音频转换为文本",
+        prefabs_content="youtube_audio_fetch: 获取YouTube视频的音频\nASR_MCP: 将音频转换为文本",
         research_content="技术调研显示ASR技术已经成熟"
     )
     
@@ -54,7 +54,7 @@ def example_formatted_prompts():
         PromptTypes.Agent.SHORT_PLANNING_GENERATION,
         language="en",
         req_content="Create a YouTube video summarizer",
-        tools_content="youtube_audio_fetch: Get YouTube video audio\nASR_MCP: Convert audio to text",
+        prefabs_content="youtube_audio_fetch: Get YouTube video audio\nASR_MCP: Convert audio to text",
         research_content="Technical research shows ASR technology is mature"
     )
     

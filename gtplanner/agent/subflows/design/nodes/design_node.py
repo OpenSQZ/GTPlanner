@@ -44,8 +44,8 @@ class DesignNode(AsyncNode):
             # 可选参数：项目规划（如果之前调用了 short_planning）
             project_planning = shared.get("short_planning", "")
             
-            # 可选参数：推荐工具（如果之前调用了 tool_recommend）
-            recommended_tools = shared.get("recommended_tools", [])
+            # 可选参数：推荐预制件（如果之前调用了 prefab_recommend 或 search_prefabs）
+            recommended_prefabs = shared.get("recommended_prefabs", [])
             
             # 可选参数：技术调研结果（如果之前调用了 research）
             research_findings = shared.get("research_findings", {})
@@ -56,10 +56,10 @@ class DesignNode(AsyncNode):
             # 使用文本管理器格式化可选信息
             text_manager = get_text_manager()
             
-            tools_info = text_manager.build_tools_content(
-                recommended_tools=recommended_tools,
+            prefabs_info = text_manager.build_tools_content(
+                recommended_prefabs=recommended_prefabs,
                 language=language
-            ) if recommended_tools else ""
+            ) if recommended_prefabs else ""
             
             research_summary = text_manager.build_research_content(
                 research_findings=research_findings,
@@ -72,7 +72,7 @@ class DesignNode(AsyncNode):
             return {
                 "user_requirements": user_requirements,
                 "project_planning": project_planning,
-                "tools_info": tools_info,
+                "prefabs_info": prefabs_info,
                 "research_summary": research_summary,
                 "language": language,
                 "timestamp": time.time()
@@ -96,7 +96,7 @@ class DesignNode(AsyncNode):
                 language=prep_result.get("language"),
                 user_requirements=prep_result["user_requirements"],
                 project_planning=prep_result["project_planning"],
-                tools_info=prep_result["tools_info"],
+                prefabs_info=prep_result["prefabs_info"],
                 research_summary=prep_result["research_summary"]
             )
             

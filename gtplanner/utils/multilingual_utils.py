@@ -155,7 +155,7 @@ class MultilingualManager:
         Returns:
             Dictionary with language information
         """
-        from utils.language_detection import language_detector
+        from gtplanner.utils.language_detection import language_detector
         
         supported_languages = get_supported_languages()
         language_info = {}

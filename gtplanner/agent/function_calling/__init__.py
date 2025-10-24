@@ -9,7 +9,6 @@ from .agent_tools import (
     execute_agent_tool,
     get_tool_by_name,
     validate_tool_arguments,
-    call_tool_recommend,  # 已废弃，保留用于兼容性
     call_prefab_recommend,
     call_search_prefabs,
     call_research,
@@ -21,7 +20,6 @@ __all__ = [
     "execute_agent_tool",
     "get_tool_by_name",
     "validate_tool_arguments",
-    "call_tool_recommend",  # 已废弃，保留用于兼容性
     "call_prefab_recommend",
     "call_search_prefabs",
     "call_research",

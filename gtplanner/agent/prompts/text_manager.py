@@ -36,11 +36,11 @@ class TextManager:
         """
         return self.prompt_manager.get_prompt(text_type, language, user_input, **kwargs)
     
-    def build_dynamic_content(self, 
+    def build_dynamic_content(self,
                             user_requirements: str,
                             previous_planning: str = "",
                             improvement_points: List[str] = None,
-                            recommended_tools: List[dict] = None,
+                            recommended_prefabs: List[dict] = None,
                             research_findings: dict = None,
                             language: Optional[Union[SupportedLanguage, str]] = None) -> str:
         """
@@ -50,7 +50,7 @@ class TextManager:
             user_requirements: 用户需求
             previous_planning: 先前规划
             improvement_points: 改进点列表
-            recommended_tools: 推荐工具列表
+            recommended_prefabs: 推荐预制件列表
             research_findings: 研究发现
             language: 目标语言
             
@@ -83,23 +83,23 @@ class TextManager:
         return "\n".join(req_parts)
     
     def build_tools_content(self,
-                          recommended_tools: List[dict] = None,
+                          recommended_prefabs: List[dict] = None,
                           language: Optional[Union[SupportedLanguage, str]] = None) -> str:
         """
-        构建工具清单内容
+        构建预制件清单内容
         
         Args:
-            recommended_tools: 推荐工具列表
+            recommended_prefabs: 推荐预制件列表
             language: 目标语言
             
         Returns:
-            构建好的工具清单字符串
+            构建好的预制件清单字符串
         """
-        if not recommended_tools:
+        if not recommended_prefabs:
             return self.get_text(CommonPromptType.NO_TOOLS_PLACEHOLDER, language)
         
         tools_list = []
-        for tool in recommended_tools:
+        for tool in recommended_prefabs:
             # 使用多语言文本片段获取未知工具名称
             unknown_tool_text = self.get_text(CommonPromptType.UNKNOWN_TOOL, language)
             tool_name = tool.get("name", tool.get("id", unknown_tool_text))
@@ -172,11 +172,11 @@ def get_text(text_type: CommonPromptType,
 def build_dynamic_content(user_requirements: str,
                         previous_planning: str = "",
                         improvement_points: List[str] = None,
-                        recommended_tools: List[dict] = None,
+                        recommended_prefabs: List[dict] = None,
                         research_findings: dict = None,
                         language: Optional[Union[SupportedLanguage, str]] = None) -> str:
     """便捷的动态内容构建函数"""
     return get_text_manager().build_dynamic_content(
         user_requirements, previous_planning, improvement_points,
-        recommended_tools, research_findings, language
+        recommended_prefabs, research_findings, language
     )

@@ -12,24 +12,39 @@ class AgentsPrefabRecommendNodePrefabRecommendTemplates:
         """中文版本的预制件推荐提示词"""
         return """你是一个专业的预制件筛选专家，负责从候选预制件列表中筛选出最适合用户查询需求的预制件。
 
-**重要说明：你的任务是筛选决策，不是排序。只返回你认为真正适合用户需求的预制件，如果候选预制件都不合适，可以返回空列表。**
-
 用户查询: {query}
 
 候选预制件列表:
 {prefabs_info}
 
-请仔细分析用户查询的意图，考虑以下因素：
-1. 预制件功能与查询需求的**直接匹配度**
-2. 预制件名称和描述是否**真正适合**解决用户问题
-3. 预制件的标签是否与用户需求相关
-4. 预制件描述中是否包含用户需要的**核心功能**
+## 分析方法
 
-筛选标准：
-- 只选择与用户查询**高度相关**的预制件
-- 优先选择功能**直接匹配**的预制件
-- 如果某个预制件与查询需求不匹配，**不要选择它**
-- 最多返回{top_k}个预制件，但如果合适的预制件少于{top_k}个，只返回合适的
+**第一步：理解用户查询的核心需求**
+- 分析查询中的关键词和意图
+- 识别需要解决的核心问题
+- 注意：此工具可能会被多次调用，每次关注不同的方面
+
+**第二步：识别相关预制件**
+考虑以下维度：
+1. **功能匹配**：预制件的功能是否能帮助解决用户需求
+2. **技术相关**：预制件提供的技术能力是否与需求相关
+3. **标签匹配**：预制件的标签是否与查询关键词相关
+4. **组合可能**：预制件是否可以与其他工具组合使用
+
+**第三步：筛选决策**
+- 根据查询的具体表述，选择最相关的预制件
+- 可以推荐多个预制件，也可以只推荐一个，取决于查询的范围
+- 排除明显不相关的预制件
+- 最多返回 {top_k} 个预制件
+
+## 筛选原则
+
+- **准确匹配**：优先选择与查询直接相关的预制件
+- **适度推荐**：如果查询范围广，可推荐多个；如果查询具体，推荐少量
+- **避免过度**：不要为了凑数而推荐不相关的预制件
+- **信息充分**：每个推荐都要有清晰的理由
+
+## 输出格式
 
 请返回JSON格式的结果：
 
@@ -37,41 +52,57 @@ class AgentsPrefabRecommendNodePrefabRecommendTemplates:
     "selected_prefabs": [
         {{
             "index": 预制件在原列表中的索引,
-            "reason": "选择这个预制件的具体理由，说明它如何满足用户需求"
+            "reason": "选择理由（说明它在任务流程中的作用）"
         }}
     ],
-    "analysis": "整体分析说明，解释筛选逻辑"
+    "analysis": "整体分析：任务流程是什么？为什么选择这些预制件？它们如何协同工作？"
 }}
 
-注意：
-- 只返回真正合适的预制件，不要为了凑数而选择不相关的预制件
-- 索引必须是有效的（0到{prefabs_count}）
-- 按相关性从高到低排序
-- 如果没有合适的预制件，selected_prefabs可以为空数组"""
+**注意**：
+- 深入理解任务需求，不要只看字面意思
+- **优先推荐能组合成完整解决方案的预制件组合**
+- 索引范围：0 到 {prefabs_count}
+- 按在流程中的顺序或重要性排序
+- 如果没有合适的预制件，selected_prefabs 可以为空数组"""
     
     @staticmethod
     def get_prefab_recommendation_en() -> str:
         """English version of prefab recommendation prompt"""
         return """You are a professional prefab filtering expert responsible for selecting the most suitable prefabs from a candidate list based on user query requirements.
 
-**Important Note: Your task is filtering decisions, not ranking. Only return prefabs you believe are truly suitable for user needs. If no candidate prefabs are appropriate, you can return an empty list.**
-
 User Query: {query}
 
 Candidate Prefabs List:
 {prefabs_info}
 
-Please carefully analyze the user query intent, considering the following factors:
-1. **Direct match level** between prefab functionality and query requirements
-2. Whether the prefab name and description are **truly suitable** for solving user problems
-3. Whether prefab tags are relevant to user needs
-4. Whether prefab descriptions contain **core functionalities** needed by users
+## Analysis Method
 
-Filtering Criteria:
-- Only select prefabs **highly relevant** to user queries
-- Prioritize prefabs with **direct functional matches**
-- If a prefab doesn't match query requirements, **don't select it**
-- Return at most {top_k} prefabs, but if suitable prefabs are fewer than {top_k}, only return suitable ones
+**Step 1: Understand Core Requirements of User Query**
+- Analyze key terms and intent in the query
+- Identify the core problem to be solved
+- Note: This tool may be called multiple times, each focusing on different aspects
+
+**Step 2: Identify Relevant Prefabs**
+Consider these dimensions:
+1. **Functionality Match**: Does the prefab's functionality help solve user needs
+2. **Technical Relevance**: Are the technical capabilities provided by the prefab relevant to the requirements
+3. **Tag Match**: Do the prefab's tags match query keywords
+4. **Combination Potential**: Can the prefab be used in combination with other tools
+
+**Step 3: Filtering Decision**
+- Select the most relevant prefabs based on the specific query wording
+- Can recommend multiple prefabs or just one, depending on query scope
+- Exclude obviously irrelevant prefabs
+- Return at most {top_k} prefabs
+
+## Filtering Principles
+
+- **Accurate Match**: Prioritize prefabs directly related to the query
+- **Moderate Recommendation**: Recommend multiple if query is broad; recommend few if query is specific
+- **Avoid Excess**: Don't recommend irrelevant prefabs just to fill numbers
+- **Sufficient Information**: Every recommendation should have a clear reason
+
+## Output Format
 
 Please return results in JSON format:
 
@@ -79,16 +110,17 @@ Please return results in JSON format:
     "selected_prefabs": [
         {{
             "index": "Prefab index in original list",
-            "reason": "Specific reason for selecting this prefab, explaining how it meets user needs"
+            "reason": "Selection reason (explain its role in the task flow)"
         }}
     ],
-    "analysis": "Overall analysis explanation, explaining filtering logic"
+    "analysis": "Overall analysis: What is the task flow? Why select these prefabs? How do they work together?"
 }}
 
-Notes:
-- Only return truly suitable prefabs, don't select irrelevant prefabs just to fill numbers
-- Index must be valid (0 to {prefabs_count})
-- Sort by relevance from high to low
+**Notes**:
+- Deeply understand task requirements, don't just look at literal meaning
+- **Prioritize recommending prefab combinations that form complete solutions**
+- Index range: 0 to {prefabs_count}
+- Sort by order in flow or importance
 - If no suitable prefabs exist, selected_prefabs can be an empty array"""
     
     @staticmethod

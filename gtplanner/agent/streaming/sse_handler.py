@@ -6,8 +6,8 @@ SSE流式处理器
 使用示例:
     ```python
     import asyncio
-    from agent.streaming.sse_handler import SSEStreamHandler
-    from agent.streaming.stream_types import StreamEvent, StreamEventType
+    from gtplanner.agent.streaming.sse_handler import SSEStreamHandler
+    from gtplanner.agent.streaming.stream_types import StreamEvent, StreamEventType
 
     # 定义SSE写入函数
     async def write_sse_data(data: str):

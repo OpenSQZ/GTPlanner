@@ -26,9 +26,9 @@ class AgentsShortPlanningShortPlanningNodeTemplates:
    {req_content}
    ```
 
-2. **推荐工具清单：**
+2. **推荐预制件清单：**
    ```
-   {tools_content}
+   {prefabs_content}
    ```
 
 3. **技术调研结果：**
@@ -43,7 +43,7 @@ class AgentsShortPlanningShortPlanningNodeTemplates:
 - **要求**：
   * 每个步骤描述一个清晰的后端功能模块或处理环节
   * 使用后端业务语言（如：数据接收→验证→处理→存储→返回）
-  * **如果有推荐工具，优先使用**，格式：`步骤X：[处理描述] (推荐工具：[工具名称])`
+  * **如果有推荐预制件，优先使用**，格式：`步骤X：[处理描述] (推荐预制件：[预制件名称])`
   * **如果有技术调研结果，结合优化方案**，确保技术可行性
   * 标注可选功能：`(可选)`
   * 识别可并行的处理模块
@@ -55,7 +55,7 @@ class AgentsShortPlanningShortPlanningNodeTemplates:
 
 # 📚 输出示例参考
 
-## 示例1：基础功能规划（无推荐工具）
+## 示例1：基础功能规划（无推荐预制件）
 **需求**：视频智能总结系统
 
 1. **数据获取**：接收视频URL，获取音频数据
@@ -66,12 +66,12 @@ class AgentsShortPlanningShortPlanningNodeTemplates:
 
 ---
 
-## 示例2：技术方案规划（有推荐工具）
+## 示例2：技术方案规划（有推荐预制件）
 **需求**：视频智能总结系统  
-**推荐工具**：youtube_audio_fetch、ASR_MCP
+**推荐预制件**：youtube_audio_fetch、ASR_MCP
 
-1. **音频获取**：获取YouTube音频流 (推荐工具：youtube_audio_fetch)
-2. **语音识别**：音频转文本 (推荐工具：ASR_MCP)
+1. **音频获取**：获取YouTube音频流 (推荐预制件：youtube_audio_fetch)
+2. **语音识别**：音频转文本 (推荐预制件：ASR_MCP)
 3. **内容解析**：NLP提取主题和问题点
 4. **并行处理**：
    * 主题总结：生成主题数据
@@ -84,7 +84,7 @@ class AgentsShortPlanningShortPlanningNodeTemplates:
 - 只输出后端步骤化流程
 - 不要包含前端、UI、用户交互等内容
 - 不要添加额外的解释或评论
-- 根据可用信息（推荐工具、调研结果）智能调整规划详细程度"""
+- 根据可用信息（推荐预制件、调研结果）智能调整规划详细程度"""
     
     @staticmethod
     def get_short_planning_generation_en() -> str:
@@ -105,9 +105,9 @@ Generate a clear, step-by-step backend implementation plan based on user require
    {req_content}
    ```
 
-2. **Recommended Tools List:**
+2. **Recommended Prefabs List:**
    ```
-   {tools_content}
+   {prefabs_content}
    ```
 
 3. **Technical Research Results:**
@@ -122,7 +122,7 @@ Generate a clear, step-by-step backend implementation plan based on user require
 - **Requirements**:
   * Each step describes a clear backend functional module or processing stage
   * Use backend business language (e.g., data reception → validation → processing → storage → return)
-  * **If recommended tools are available, prioritize using them**, Format: `Step X: [Description] (Recommended Tool: [Tool Name])`
+  * **If recommended prefabs are available, prioritize using them**, Format: `Step X: [Description] (Recommended Prefab: [Prefab Name])`
   * **If technical research results are available, incorporate optimizations**, ensure technical feasibility
   * Mark optional features: `(Optional)`
   * Identify parallel processing modules
@@ -134,7 +134,7 @@ Generate a clear, step-by-step backend implementation plan based on user require
 
 # Example Outputs
 
-## Example 1: Basic Feature Planning (No Recommended Tools)
+## Example 1: Basic Feature Planning (No Recommended Prefabs)
 **Requirements**: Video Intelligence Summary System
 
 1. **Data Acquisition**: Receive video URL, obtain audio data
@@ -145,12 +145,12 @@ Generate a clear, step-by-step backend implementation plan based on user require
 
 ---
 
-## Example 2: Technical Solution Planning (With Recommended Tools)
+## Example 2: Technical Solution Planning (With Recommended Prefabs)
 **Requirements**: Video Intelligence Summary System  
-**Recommended Tools**: youtube_audio_fetch, ASR_MCP
+**Recommended Prefabs**: youtube_audio_fetch, ASR_MCP
 
-1. **Audio Acquisition**: Fetch YouTube audio stream (Recommended Tool: youtube_audio_fetch)
-2. **Speech Recognition**: Audio to text (Recommended Tool: ASR_MCP)
+1. **Audio Acquisition**: Fetch YouTube audio stream (Recommended Prefab: youtube_audio_fetch)
+2. **Speech Recognition**: Audio to text (Recommended Prefab: ASR_MCP)
 3. **Content Parsing**: NLP extract topics and key points
 4. **Parallel Processing**:
    * Topic Summary: Generate topic data
@@ -163,7 +163,7 @@ Generate a clear, step-by-step backend implementation plan based on user require
 - Only output backend step-by-step workflow
 - Do not include frontend, UI, or user interaction content
 - Do not add extra explanations or comments
-- Intelligently adjust planning detail based on available information (recommended tools, research results)"""
+- Intelligently adjust planning detail based on available information (recommended prefabs, research results)"""
     
     @staticmethod
     def get_short_planning_generation_ja() -> str:

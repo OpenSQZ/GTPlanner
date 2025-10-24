@@ -26,20 +26,23 @@ class AgentsDesignDesignNodeTemplates:
 **输入信息**：
 - 用户需求：{user_requirements}
 - 项目规划（可选）：{project_planning}
-- 推荐工具（可选）：{tools_info}
+- 推荐预制件（可选）：{prefabs_info}
 - 技术调研（可选）：{research_summary}
+
+**⚠️ 重要提示**：
+- 下面的模板中包含"给 AI 的提示"部分，这些提示**仅供你理解如何生成内容**
+- **在你生成的最终文档中，不要包含任何"给 AI 的提示"内容**
+- 只输出实际的设计文档内容，不要输出以 `>` 开头的提示行
 
 # 输出格式（严格遵循）
 
 ```markdown
 # Design Doc: [Agent 名称]
 
-> 请勿删除给 AI 的提示
-
 ## Requirements
 
-> 给 AI 的提示：保持简单清晰。
-> 如果需求比较抽象，请写具体的用户故事
+> 给 AI 的提示：保持简单清晰。如果需求比较抽象，请写具体的用户故事
+> ⚠️ 注意：不要在最终文档中包含这些提示行
 
 [描述系统的核心需求，以清晰的功能点列表呈现]
 
@@ -77,18 +80,36 @@ flowchart TD
 ```
 \```
 
+## Prefabs
+
+> 给 AI 的提示：
+> 1. 如果 `recommended_prefabs` 参数中有预制件信息，**必须在此列出所有推荐的预制件**。
+> 2. ⚠️ **预制件ID是最关键的信息**，会在后续代码调用中使用，务必从 `recommended_prefabs` 参数中准确复制，一个字符都不能错！
+> 3. 说明每个预制件在系统中的具体用途。
+> 4. 如果没有推荐预制件，可以省略此部分。
+> 5. **不要在最终文档中输出任何警告符号（⚠️）和提示性文字**。
+
+[如果有推荐的预制件，按以下格式列出]
+
+### 1. [预制件名称]
+- **ID**: `[预制件ID]`
+- **描述**: [预制件功能描述]
+- **用途**: [在本系统中的具体使用场景和调用方式]
+
 ## Utility Functions
 
 > 给 AI 的提示：
-> 1. 深入理解工具函数的定义。
-> 2. 只包含基于流程中节点所需的必要工具函数。
+> 1. **预制件优先**：优先使用上面推荐的预制件提供的功能。
+> 2. **辅助性功能**：只列出预制件无法覆盖的辅助性工具函数（如数据验证、格式转换、简单计算等）。
+> 3. **避免重复**：不要创建与预制件功能重复的工具函数。
+> 4. 如果预制件已经能满足所有需求，可以省略此部分。
 
-[列出系统需要的工具函数，但不要包含具体实现]
+[如果需要辅助性工具函数，按以下格式列出]
 
 1. **[工具函数名]** (`utils/xxx.py`)
    - *Input*: [输入参数]
    - *Output*: [输出内容]
-   - *Necessity*: [为什么需要这个函数]
+   - *Necessity*: [为什么需要这个函数，为什么预制件无法覆盖]
 
 ## Node Design
 
@@ -196,12 +217,19 @@ flowchart TD
     E --> C
 \```
 
+## Prefabs
+
+### 1. 大模型客户端预制件
+- **ID**: `llm-client`
+- **描述**: 智能内容分析与生成工具，支持文本理解、SQL生成等 AI 能力
+- **用途**: 在 `GenerateSQL` 和 `DebugSQL` 节点中调用，用于生成和修正 SQL 查询语句
+
 ## Utility Functions
 
-1. **调用 LLM** (`utils/call_llm.py`)
-   - *Input*: `prompt` (字符串)
-   - *Output*: `response` (字符串)
-   - *Necessity*: 由 `GenerateSQL` 和 `DebugSQL` 节点使用，与语言模型交互以生成和修正 SQL
+1. **数据库连接管理** (`utils/db_connection.py`)
+   - *Input*: `db_path` (数据库路径)
+   - *Output*: `connection` (数据库连接对象)
+   - *Necessity*: 管理数据库连接的生命周期，预制件无法提供此功能
 
 ## Node Design
 
@@ -268,6 +296,8 @@ shared = {{
 **重要提醒**：
 - 你的输出应该**只包含**完整的 Markdown 文档内容
 - **不要使用 ```markdown ... ``` 代码块包裹**，直接输出 Markdown 内容
+- ⚠️ **不要在最终文档中包含任何以 `>` 开头的"给 AI 的提示"行**
+- 这些提示仅用于帮助你理解如何生成内容，不应出现在最终文档中
 - 不要添加任何额外的对话或解释
 - 严格遵循上述格式和约束
 
@@ -303,20 +333,23 @@ Based on the following inputs, generate a complete system design document (Markd
 **Input Information**:
 - User Requirements: {user_requirements}
 - Project Planning (optional): {project_planning}
-- Recommended Tools (optional): {tools_info}
+- Recommended Prefabs (optional): {prefabs_info}
 - Technical Research (optional): {research_summary}
+
+**⚠️ Important Notice**:
+- The template below contains "Notes for AI" sections to help you understand how to generate content
+- **Do NOT include any "Notes for AI" content in your final generated document**
+- Only output the actual design document content, do not output lines starting with `>`
 
 # Output Format (Strictly Follow)
 
 ```markdown
 # Design Doc: [Agent Name]
 
-> Please DON'T remove notes for AI
-
 ## Requirements
 
-> Notes for AI: Keep it simple and clear.
-> If the requirements are abstract, write concrete user stories
+> Notes for AI: Keep it simple and clear. If the requirements are abstract, write concrete user stories.
+> ⚠️ Note: Do NOT include these note lines in the final document
 
 [Describe the core requirements of the system as a clear list of functional points]
 
@@ -354,18 +387,36 @@ flowchart TD
 ```
 \```
 
+## Prefabs
+
+> Notes for AI:
+> 1. If there are prefabs in the `recommended_prefabs` parameter, **you MUST list all recommended prefabs here**.
+> 2. ⚠️ **The prefab ID is the most critical information** - it will be used in code implementation. You must copy it accurately from the `recommended_prefabs` parameter, character by character, without any mistakes!
+> 3. Explain the specific use case for each prefab in this system.
+> 4. If no prefabs are recommended, you may omit this section.
+> 5. **Do not output any warning symbols (⚠️) or instructional text in the final document**.
+
+[If there are recommended prefabs, list them in the following format]
+
+### 1. [Prefab Name]
+- **ID**: `[prefab-id]`
+- **Description**: [Prefab functionality description]
+- **Usage**: [Specific use case and how to call it in this system]
+
 ## Utility Functions
 
-> 给 AI 的提示：
-> 1. 深入理解工具函数的定义。
-> 2. 只包含基于流程中节点所需的必要工具函数。
+> Notes for AI:
+> 1. **Prefabs First**: Prioritize using the prefabs recommended above.
+> 2. **Auxiliary Functions Only**: Only list auxiliary utility functions that prefabs cannot cover (e.g., data validation, format conversion, simple calculations).
+> 3. **Avoid Duplication**: Do not create utility functions that duplicate prefab functionality.
+> 4. If prefabs can meet all requirements, you may omit this section.
 
-[List the utility functions the system needs, but don't include specific implementations]
+[If auxiliary utility functions are needed, list them in the following format]
 
 1. **[Function Name]** (`utils/xxx.py`)
    - *Input*: [Input parameters]
    - *Output*: [Output content]
-   - *Necessity*: [Why this function is needed]
+   - *Necessity*: [Why this function is needed and why prefabs cannot cover it]
 
 ## Node Design
 
@@ -446,6 +497,8 @@ Now, based on the above input information and format requirements, generate a co
 **Important Reminder**:
 - Your output should **only contain** the complete Markdown document content
 - **Do NOT wrap output in ```markdown ... ``` code blocks**, output Markdown directly
+- ⚠️ **Do NOT include any lines starting with `>` (Notes for AI) in the final document**
+- These notes are only to help you understand how to generate content, they should not appear in the final document
 - Do not add any extra conversation or explanations
 - Strictly follow the above format and constraints
 
