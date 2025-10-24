@@ -35,7 +35,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
             "type": "function",
             "function": {
                 "name": "short_planning",
-                "description": "生成项目的步骤化实施计划。这是一个原子化的工具，所有需要的信息都通过参数显式传入。如果之前调用了 tool_recommend 或 research，可以将它们的结果作为可选参数传入，以生成更完善的规划。此工具可以根据用户反馈被**重复调用**，直到与用户就项目规划达成最终共识。",
+                "description": "生成项目的步骤化实施计划。这是一个原子化的工具，所有需要的信息都通过参数显式传入。如果之前调用了 prefab_recommend 或 research，可以将它们的结果作为可选参数传入，以生成更完善的规划。此工具可以根据用户反馈被**重复调用**，直到与用户就项目规划达成最终共识。",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -54,7 +54,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                         },
                         "recommended_tools": {
                             "type": "string",
-                            "description": "推荐工具信息（可选）。如果之前调用了 tool_recommend，可以将其结果的 JSON 字符串传入"
+                            "description": "推荐工具信息（可选）。如果之前调用了 prefab_recommend，可以将其结果的 JSON 字符串传入"
                         },
                         "research_findings": {
                             "type": "string",
@@ -73,7 +73,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
             "type": "function",
             "function": {
                 "name": "research",
-                "description": "(可选工具) 用于对`tool_recommend`推荐的技术栈进行深入的可行性或实现方案调研。**必须**在`tool_recommend`成功调用之后才能使用。",
+                "description": "(可选工具) 用于对`prefab_recommend`推荐的技术栈进行深入的可行性或实现方案调研。**建议**在`prefab_recommend`成功调用之后使用。",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -103,7 +103,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
         "type": "function",
         "function": {
             "name": "design",
-            "description": "生成系统设计文档（design.md）。这是一个原子化的工具，所有需要的信息都通过参数显式传入。如果之前调用了 short_planning、tool_recommend 或 research，可以将它们的结果作为可选参数传入，以生成更完善的设计文档。",
+            "description": "生成系统设计文档（design.md）。这是一个原子化的工具，所有需要的信息都通过参数显式传入。如果之前调用了 short_planning、prefab_recommend 或 research，可以将它们的结果作为可选参数传入，以生成更完善的设计文档。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -705,7 +705,10 @@ async def call_tool_recommend(
     tool_types: List[str] = None,
     use_llm_filter: bool = True
 ) -> Dict[str, Any]:
-    """便捷的工具推荐调用"""
+    """便捷的工具推荐调用
+    
+    ⚠️  已废弃：请使用 call_prefab_recommend 代替
+    """
     arguments = {
         "query": query,
         "top_k": top_k,
@@ -714,7 +717,53 @@ async def call_tool_recommend(
     if tool_types:
         arguments["tool_types"] = tool_types
 
+    # 为了兼容性，仍然调用旧的 tool_recommend（如果存在）
     return await execute_agent_tool("tool_recommend", arguments)
+
+
+async def call_prefab_recommend(
+    query: str,
+    top_k: int = 5,
+    use_llm_filter: bool = True
+) -> Dict[str, Any]:
+    """便捷的预制件推荐调用（向量检索）
+    
+    Args:
+        query: 查询文本，描述需要的预制件功能
+        top_k: 返回的推荐预制件数量，默认5
+        use_llm_filter: 是否使用LLM进行二次筛选，默认True
+    """
+    arguments = {
+        "query": query,
+        "top_k": top_k,
+        "use_llm_filter": use_llm_filter
+    }
+    return await execute_agent_tool("prefab_recommend", arguments)
+
+
+async def call_search_prefabs(
+    query: str = None,
+    tags: List[str] = None,
+    author: str = None,
+    limit: int = 20
+) -> Dict[str, Any]:
+    """便捷的预制件搜索调用（本地模糊搜索）
+    
+    Args:
+        query: 搜索关键词（可选）
+        tags: 标签过滤列表（可选）
+        author: 作者过滤（可选）
+        limit: 返回结果数量限制，默认20
+    """
+    arguments = {"limit": limit}
+    if query:
+        arguments["query"] = query
+    if tags:
+        arguments["tags"] = tags
+    if author:
+        arguments["author"] = author
+    
+    return await execute_agent_tool("search_prefabs", arguments)
 
 
 async def call_design(

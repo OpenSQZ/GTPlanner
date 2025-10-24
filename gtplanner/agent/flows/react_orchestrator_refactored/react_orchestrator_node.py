@@ -179,7 +179,20 @@ class ReActOrchestratorNode(AsyncNode):
     def _extract_tool_execution_results(self, shared: Dict[str, Any], tool_name: str, tool_result: Dict[str, Any]) -> None:
         """提取工具执行结果到主shared字典"""
         # 根据工具名称提取特定的结果
-        if tool_name == "tool_recommend" and tool_result.get("success"):
+        if tool_name == "prefab_recommend" and tool_result.get("success"):
+            result_data = tool_result.get("result", {})
+            recommended_prefabs = result_data.get("recommended_prefabs")
+            if recommended_prefabs:
+                shared["recommended_tools"] = recommended_prefabs  # 保持 recommended_tools 键名以兼容现有代码
+        
+        elif tool_name == "search_prefabs" and tool_result.get("success"):
+            result_data = tool_result.get("result", {})
+            prefabs = result_data.get("prefabs")
+            if prefabs:
+                shared["recommended_tools"] = prefabs  # 保持 recommended_tools 键名以兼容现有代码
+        
+        # 保留旧的 tool_recommend 用于兼容性
+        elif tool_name == "tool_recommend" and tool_result.get("success"):
             result_data = tool_result.get("result", {})
             recommended_tools = result_data.get("recommended_tools")
             if recommended_tools:
