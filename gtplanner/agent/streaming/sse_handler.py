@@ -252,11 +252,14 @@ class SSEStreamHandler(StreamHandler):
 
     async def _handle_prefabs_info(self, event: StreamEvent) -> None:
         """处理预制件信息事件"""
+        logger.info(f"📦 [SSE Handler] 处理 prefabs_info 事件，包含 {len(event.data.get('prefabs', []))} 个预制件")
+        
         # 刷新缓冲区以确保之前的消息都已发送
         await self._flush_buffer()
 
         # 直接发送预制件信息事件
         await self._write_sse_event(event)
+        logger.info(f"✅ [SSE Handler] prefabs_info 事件已发送到前端")
 
         # 如果启用了元数据，发送额外的状态信息
         if self.include_metadata:

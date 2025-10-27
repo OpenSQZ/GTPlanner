@@ -145,18 +145,25 @@ class DesignNode(AsyncNode):
             
             # 发送预制件信息事件到前端（轻量级，只包含 id 和 version）
             recommended_prefabs = shared.get("recommended_prefabs", [])
+            print(f"🔍 [Design Node] recommended_prefabs 类型: {type(recommended_prefabs)}, 长度: {len(recommended_prefabs) if isinstance(recommended_prefabs, list) else 'N/A'}")
+            
             if recommended_prefabs:
                 prefabs_info = []
                 for prefab in recommended_prefabs:
                     if isinstance(prefab, dict) and "id" in prefab:
-                        prefabs_info.append({
+                        prefab_data = {
                             "id": prefab.get("id"),
                             "version": prefab.get("version", "latest")
-                        })
+                        }
+                        prefabs_info.append(prefab_data)
+                        print(f"  - 提取预制件: {prefab_data}")
                 
                 if prefabs_info:
+                    print(f"📤 [Design Node] 准备发送 {len(prefabs_info)} 个预制件信息")
                     await emit_prefabs_info(shared, prefabs_info)
-                    print(f"📦 已发送 {len(prefabs_info)} 个预制件信息到前端")
+                    print(f"✅ [Design Node] 已调用 emit_prefabs_info")
+                else:
+                    print(f"⚠️ [Design Node] prefabs_info 为空，没有有效的预制件数据")
             
             # 更新系统消息
             if "system_messages" not in shared:

@@ -269,9 +269,16 @@ async def emit_prefabs_info(
         获取完整的 prefab-manifest.json
     """
     streaming_session = shared.get("streaming_session")
+    print(f"🔍 [emit_prefabs_info] streaming_session 存在: {streaming_session is not None}")
+    print(f"🔍 [emit_prefabs_info] prefabs 数据: {prefabs}")
+    
     if streaming_session:
         event = StreamEventBuilder.prefabs_info(
             streaming_session.session_id,
             prefabs
         )
+        print(f"📨 [emit_prefabs_info] 创建事件: type={event.event_type}, session_id={event.session_id}")
         await streaming_session.emit_event(event)
+        print(f"✅ [emit_prefabs_info] 事件已发送到 streaming_session")
+    else:
+        print(f"⚠️ [emit_prefabs_info] streaming_session 为 None，无法发送事件")

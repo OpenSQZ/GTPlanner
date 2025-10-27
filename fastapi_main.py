@@ -126,19 +126,22 @@ async def chat_agent_stream(request: AgentContextRequest):
         async def generate_sse_stream():
             """生成 SSE 数据流"""
             try:
-                # 发送连接建立事件
-                connection_event = {
-                    "status": "connected",
+                # 发送对话开始事件（使用标准的 conversation_start 事件类型）
+                conversation_start_event = {
+                    "event_type": "conversation_start",
                     "timestamp": datetime.now().isoformat(),
                     "session_id": request.session_id,
-                    "dialogue_history_length": len(request.dialogue_history),
-                    "config": {
-                        "include_metadata": request.include_metadata,
-                        "buffer_events": request.buffer_events,
-                        "heartbeat_interval": request.heartbeat_interval
+                    "data": {
+                        "user_input": request.dialogue_history[-1].get("content", "") if request.dialogue_history else "",
+                        "dialogue_history_length": len(request.dialogue_history),
+                        "config": {
+                            "include_metadata": request.include_metadata,
+                            "buffer_events": request.buffer_events,
+                            "heartbeat_interval": request.heartbeat_interval
+                        }
                     }
                 }
-                yield f"event: connection\ndata: {json.dumps(connection_event, ensure_ascii=False)}\n\n"
+                yield f"event: conversation_start\ndata: {json.dumps(conversation_start_event, ensure_ascii=False)}\n\n"
 
                 # 创建一个队列来收集 SSE 数据
                 import asyncio
