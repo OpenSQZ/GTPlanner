@@ -174,20 +174,14 @@ async def chat_agent_stream(request: AgentContextRequest):
                             heartbeat_interval=request.heartbeat_interval
                         )
 
-                        # 发送完成事件
-                        completion_event = {
-                            "result": result,
-                            "timestamp": datetime.now().isoformat()
+                        # 发送对话结束事件（使用标准的 conversation_end 事件类型）
+                        conversation_end_event = {
+                            "event_type": "conversation_end",
+                            "timestamp": datetime.now().isoformat(),
+                            "session_id": result.get('session_id'),
+                            "data": result
                         }
-                        await sse_queue.put(f"event: complete\ndata: {json.dumps(completion_event, ensure_ascii=False)}\n\n")
-
-                        # 发送连接关闭事件
-                        close_event = {
-                            "status": "closing",
-                            "message": "Stream completed successfully",
-                            "timestamp": datetime.now().isoformat()
-                        }
-                        await sse_queue.put(f"event: close\ndata: {json.dumps(close_event, ensure_ascii=False)}\n\n")
+                        await sse_queue.put(f"event: conversation_end\ndata: {json.dumps(conversation_end_event, ensure_ascii=False)}\n\n")
 
                         logger.info(f"SSE stream completed successfully for session: {result.get('session_id', 'unknown')}")
 
