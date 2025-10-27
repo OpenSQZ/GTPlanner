@@ -250,3 +250,28 @@ async def emit_design_document(
             document
         )
         await streaming_session.emit_event(event)
+
+
+async def emit_prefabs_info(
+    shared: Dict[str, Any],
+    prefabs: list
+) -> None:
+    """
+    发送预制件信息事件（轻量级）
+    
+    Args:
+        shared: 共享状态字典（包含 streaming_session）
+        prefabs: 预制件列表，每个元素包含 id 和 version
+            例如: [{"id": "video-processing-prefab", "version": "0.3.1"}]
+    
+    Note:
+        前端收到此事件后，会使用 id 和 version 调用 prefab-gateway 接口
+        获取完整的 prefab-manifest.json
+    """
+    streaming_session = shared.get("streaming_session")
+    if streaming_session:
+        event = StreamEventBuilder.prefabs_info(
+            streaming_session.session_id,
+            prefabs
+        )
+        await streaming_session.emit_event(event)

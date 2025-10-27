@@ -26,6 +26,7 @@ class StreamEventType(Enum):
 
     # 设计文档相关事件
     DESIGN_DOCUMENT_GENERATED = "design_document_generated"
+    PREFABS_INFO = "prefabs_info"
 
     # 状态相关事件
     PROCESSING_STATUS = "processing_status"
@@ -288,6 +289,30 @@ class StreamEventBuilder:
             event_type=StreamEventType.DESIGN_DOCUMENT_GENERATED,
             session_id=session_id,
             data=document.to_dict()
+        )
+    
+    @staticmethod
+    def prefabs_info(
+        session_id: str,
+        prefabs: List[Dict[str, str]]
+    ) -> StreamEvent:
+        """
+        创建预制件信息事件（轻量级）
+        
+        Args:
+            session_id: 会话ID
+            prefabs: 预制件列表，每个预制件包含：
+                - id: 预制件ID（必需）
+                - version: 版本号（必需）
+        
+        Note:
+            前端收到此事件后，使用 id 和 version 调用 prefab-gateway 接口
+            获取完整的 prefab-manifest.json
+        """
+        return StreamEvent(
+            event_type=StreamEventType.PREFABS_INFO,
+            session_id=session_id,
+            data={"prefabs": prefabs}
         )
 
 

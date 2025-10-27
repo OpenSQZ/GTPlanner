@@ -14,7 +14,8 @@ from gtplanner.utils.openai_client import get_openai_client
 from gtplanner.agent.streaming import (
     emit_processing_status,
     emit_error,
-    emit_design_document
+    emit_design_document,
+    emit_prefabs_info
 )
 
 # 导入多语言提示词系统
@@ -141,6 +142,21 @@ class DesignNode(AsyncNode):
             
             # 发送设计文档事件到前端
             await emit_design_document(shared, "design.md", design_document)
+            
+            # 发送预制件信息事件到前端（轻量级，只包含 id 和 version）
+            recommended_prefabs = shared.get("recommended_prefabs", [])
+            if recommended_prefabs:
+                prefabs_info = []
+                for prefab in recommended_prefabs:
+                    if isinstance(prefab, dict) and "id" in prefab:
+                        prefabs_info.append({
+                            "id": prefab.get("id"),
+                            "version": prefab.get("version", "latest")
+                        })
+                
+                if prefabs_info:
+                    await emit_prefabs_info(shared, prefabs_info)
+                    print(f"📦 已发送 {len(prefabs_info)} 个预制件信息到前端")
             
             # 更新系统消息
             if "system_messages" not in shared:
