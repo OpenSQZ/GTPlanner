@@ -126,6 +126,9 @@ class SSEStreamHandler(StreamHandler):
             elif event.event_type == StreamEventType.DESIGN_DOCUMENT_GENERATED:
                 await self._handle_design_document(event)
 
+            elif event.event_type == StreamEventType.PREFABS_INFO:
+                await self._handle_prefabs_info(event)
+
             elif event.event_type == StreamEventType.CONVERSATION_END:
                 await self._handle_conversation_end(event)
 
@@ -243,6 +246,26 @@ class SSEStreamHandler(StreamHandler):
                 {
                     "filename": filename,
                     "content_length": content_length,
+                    "timestamp": event.timestamp
+                }
+            )
+
+    async def _handle_prefabs_info(self, event: StreamEvent) -> None:
+        """处理预制件信息事件"""
+        # 刷新缓冲区以确保之前的消息都已发送
+        await self._flush_buffer()
+
+        # 直接发送预制件信息事件
+        await self._write_sse_event(event)
+
+        # 如果启用了元数据，发送额外的状态信息
+        if self.include_metadata:
+            prefabs_count = len(event.data.get("prefabs", []))
+
+            await self._send_status_update(
+                "prefabs_info_sent",
+                {
+                    "prefabs_count": prefabs_count,
                     "timestamp": event.timestamp
                 }
             )
