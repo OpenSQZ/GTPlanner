@@ -100,16 +100,20 @@ flowchart TD
 
 > 给 AI 的提示：
 > 1. **预制件优先**：优先使用上面推荐的预制件提供的功能。
-> 2. **辅助性功能**：只列出预制件无法覆盖的辅助性工具函数（如数据验证、格式转换、简单计算等）。
-> 3. **避免重复**：不要创建与预制件功能重复的工具函数。
-> 4. 如果预制件已经能满足所有需求，可以省略此部分。
+> 2. **严格基于需求**：**只列出用户需求中明确提到的**、且预制件无法覆盖的简单工具函数。
+> 3. **不要主动发散**：❌ **禁止**主动添加用户需求中没有提到的功能（如元数据提取、数据验证等）。
+> 4. **预制件能力说明**：预制件通常已包含以下功能，**不需要**创建工具函数：
+>    - ❌ 文件处理（上传/下载/验证/元数据提取）
+>    - ❌ 数据转换（格式转换、编码转换）
+>    - ❌ 内容处理（文本分析、图像处理、视频处理）
+> 5. **大多数情况下可以省略此部分** - 如果预制件能满足需求，直接省略。
 
-[如果需要辅助性工具函数，按以下格式列出]
+[**仅当用户需求中明确提到**预制件无法提供的简单功能时，才列出]
 
 1. **[工具函数名]** (`utils/xxx.py`)
    - *Input*: [输入参数]
    - *Output*: [输出内容]
-   - *Necessity*: [为什么需要这个函数，为什么预制件无法覆盖]
+   - *Necessity*: [用户需求中的哪部分要求此功能]
 
 ## Node Design
 
@@ -165,12 +169,19 @@ shared = {{
    - ❌ 错误：`FFmpegProcessingNode`
    - ✅ 正确：`VideoParseNode`
 
-3. **Flow 描述清晰**：
+3. **文件处理原则**：
+   - API **只接收 S3 URL 字符串**，不处理文件上传/下载
+   - ❌ 错误：设计"文件上传节点"、"文件验证节点"、"临时文件清理节点"
+   - ✅ 正确：直接使用预制件处理 S3 URL
+   - Shared Store 中的文件相关字段应该是 S3 URL 字符串（如 `video_s3_url`）
+   - 不要在 Utility Functions 中列出文件处理相关的工具函数
+
+4. **Flow 描述清晰**：
    - 说明节点之间的依赖关系
    - 说明分支和循环逻辑
    - 使用 mermaid 图准确表达流程
 
-4. **完整性**：
+5. **完整性**：
    - 必须包含所有章节
    - 每个节点都要在 Flow Diagram 中体现
    - Shared Store 要覆盖所有节点的输入输出
@@ -226,10 +237,7 @@ flowchart TD
 
 ## Utility Functions
 
-1. **数据库连接管理** (`utils/db_connection.py`)
-   - *Input*: `db_path` (数据库路径)
-   - *Output*: `connection` (数据库连接对象)
-   - *Necessity*: 管理数据库连接的生命周期，预制件无法提供此功能
+**本示例无需额外工具函数** - 所有功能由预制件提供
 
 ## Node Design
 
@@ -407,16 +415,20 @@ flowchart TD
 
 > Notes for AI:
 > 1. **Prefabs First**: Prioritize using the prefabs recommended above.
-> 2. **Auxiliary Functions Only**: Only list auxiliary utility functions that prefabs cannot cover (e.g., data validation, format conversion, simple calculations).
-> 3. **Avoid Duplication**: Do not create utility functions that duplicate prefab functionality.
-> 4. If prefabs can meet all requirements, you may omit this section.
+> 2. **Strictly Based on Requirements**: **Only list simple utility functions explicitly mentioned in user requirements** that prefabs cannot cover.
+> 3. **Do Not Add Unrequested Features**: ❌ **Prohibited** to proactively add functions not mentioned in requirements (e.g., metadata extraction, data validation).
+> 4. **Prefab Capabilities**: Prefabs typically already include the following, **DO NOT** create utility functions for:
+>    - ❌ File handling (upload/download/validation/metadata extraction)
+>    - ❌ Data conversion (format conversion, encoding conversion)
+>    - ❌ Content processing (text analysis, image processing, video processing)
+> 5. **Usually omit this section** - If prefabs meet all requirements, omit directly.
 
-[If auxiliary utility functions are needed, list them in the following format]
+[**Only list when user requirements explicitly mention** simple features that prefabs cannot provide]
 
 1. **[Function Name]** (`utils/xxx.py`)
    - *Input*: [Input parameters]
    - *Output*: [Output content]
-   - *Necessity*: [Why this function is needed and why prefabs cannot cover it]
+   - *Necessity*: [Which part of user requirements requires this function]
 
 ## Node Design
 
@@ -472,12 +484,19 @@ shared = {{
    - ❌ Wrong: `FFmpegProcessingNode`
    - ✅ Correct: `VideoParseNode`
 
-3. **Clear Flow Description**:
+3. **File Handling Principles**:
+   - The API **only receives S3 URL strings**, does not handle file uploads/downloads
+   - ❌ Wrong: Design "File Upload Node", "File Validation Node", "Temp File Cleanup Node"
+   - ✅ Correct: Directly use prefabs to process S3 URLs
+   - File-related fields in Shared Store should be S3 URL strings (e.g., `video_s3_url`)
+   - Do not list file handling related utility functions in Utility Functions
+
+4. **Clear Flow Description**:
    - Explain dependencies between nodes
    - Explain branching and looping logic
    - Use mermaid diagrams to accurately express the flow
 
-4. **Completeness**:
+5. **Completeness**:
    - Must include all sections
    - Every node must be reflected in the Flow Diagram
    - Shared Store must cover inputs and outputs of all nodes
