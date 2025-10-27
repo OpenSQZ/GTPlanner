@@ -48,30 +48,23 @@ class SystemOrchestratorTemplates:
 
 ## 必需工具（必须调用）
 1. **`prefab_recommend`**：推荐预制件和工具（基于向量检索）⭐ **必须先调用**
-   - 参数：`query`（功能需求描述）、`top_k`（返回数量，默认5）、`use_llm_filter`（是否使用LLM二次筛选，默认true）
    - 使用场景：**每次任务开始时必须调用**，为用户推荐合适的预制件
    - **支持多次调用**：可以用不同的 `query` 多次调用此工具，从不同角度检索预制件（如：先查询"视频处理"，再查询"语音识别"）
    - 降级方案：如果向量服务不可用，自动使用 `search_prefabs`
 
 2. **`design`**：生成设计文档（最后调用）
-   - 参数：
-     - `user_requirements`（必需）：用户需求描述
-     - `project_planning`（可选）：项目规划内容
-     - `recommended_prefabs`（必需）：推荐预制件（JSON 字符串，来自 prefab_recommend 的结果）
-     - `research_findings`（可选）：技术调研结果（JSON 字符串）
+   - 使用场景：整合所有信息（需求、规划、预制件、调研）生成最终设计文档
+   - **关键提示**：从 `prefab_recommend` 结果中提取每个预制件的 `id, version, name, description` 字段组成数组传入
 
 ## 可选工具
 - **`short_planning`**：生成步骤化的项目实施计划
-  - 必需参数：`user_requirements`（用户需求描述）
-  - 可选参数：`previous_planning`（之前的规划）、`improvement_points`（改进点）、`recommended_prefabs`（推荐预制件，JSON字符串）、`research_findings`（调研结果，JSON字符串）
-  - 使用场景：需要生成清晰的实施步骤时，在 prefab_recommend 之后调用以整合推荐预制件和调研结果
+  - 使用场景：需要生成清晰的实施步骤时，在 `prefab_recommend` 之后调用以整合推荐预制件
+  - **关键提示**：从 `prefab_recommend` 结果中提取关键字段传入
 
 - **`search_prefabs`**：搜索预制件（本地模糊搜索，降级方案）
-  - 参数：`query`（关键词）、`tags`（标签）、`author`（作者）、`limit`（返回数量，默认20）
-  - 使用场景：仅当 prefab_recommend 失败时自动使用，无需手动调用
+  - 使用场景：仅当 `prefab_recommend` 失败时自动使用，无需手动调用
 
 - **`research`**：技术调研（需要 JINA_API_KEY）
-  - 参数：`keywords`, `focus_areas`
   - 使用场景：需要深入了解某个技术方案时
 
 **重要流程规则**：
@@ -219,13 +212,8 @@ class SystemOrchestratorTemplates:
 
 ## 参数传递（原子化设计）
 - **所有工具都是原子化的**，需要的信息都通过参数显式传入
-- `design` 工具的可选参数：
-  - 如果调用了 `short_planning`，将结果传给 `design(project_planning="...")`
-  - 如果调用了 `prefab_recommend` 或 `search_prefabs`，将结果 JSON 字符串传给 `design(recommended_prefabs="...")`
-  - 如果调用了 `research`，将结果 JSON 字符串传给 `design(research_findings="...")`
-- `short_planning` 工具的可选参数：
-  - 如果用户提出修改，传入 `previous_planning` 和 `improvement_points`
-  - 如果调用了 `prefab_recommend`、`search_prefabs` 或 `research`，可以将结果传给 `short_planning` 以生成更完善的规划
+- **关键规则**：从 `prefab_recommend` 的结果中提取关键字段（`id, version, name, description`）组成数组，传给后续工具（`design`、`short_planning`）
+- 工具链示例：`prefab_recommend` → 提取关键字段 → `design(recommended_prefabs=[{...}])`
 
 ---
 
@@ -281,28 +269,24 @@ You follow a field-tested, four-stage methodology to ensure every step from conc
 
 ## Required Tools (Must Call)
 1. **`prefab_recommend`**: ⭐ **Must call first** - Recommends prefabs and tools (vector search).
-   - Required: `query` (functionality requirements)
-   - Optional: `top_k` (number of results, default 5), `use_llm_filter` (use LLM for secondary filtering, default true)
-   - **Supports multiple calls**: Can call this tool multiple times with different `query` values to retrieve prefabs from different perspectives (e.g., first query "video processing", then query "speech recognition")
    - Usage: **Must call at the beginning of every task** to recommend suitable prefabs
+   - **Supports multiple calls**: Can call this tool multiple times with different `query` values to retrieve prefabs from different perspectives (e.g., first query "video processing", then query "speech recognition")
    - Fallback: Automatically uses `search_prefabs` if vector service is unavailable
 
 2. **`design`**: (Final Step) Generates the design document.
-   - Required: `user_requirements`, `recommended_prefabs` (JSON string from prefab_recommend)
-   - Optional: `project_planning`, `research_findings` (JSON string)
+   - Usage: Integrates all information (requirements, planning, prefabs, research) to generate final design document
+   - **Key Note**: Extract `id, version, name, description` fields from `prefab_recommend` results and pass as an array
 
 ## Optional Tools
 *   `short_planning`: Generates a step-by-step implementation plan for the project.
-    - Required: `user_requirements`
-    - Optional: `previous_planning`, `improvement_points`, `recommended_prefabs` (JSON string), `research_findings` (JSON string)
     - Usage: Call after `prefab_recommend` to integrate recommendations
+    - **Key Note**: Extract key fields from `prefab_recommend` results and pass as parameters
 
 *   `search_prefabs`: Search prefabs (local fuzzy search, fallback option).
-    - Optional: `query` (keywords), `tags` (tag filters), `author` (author filter), `limit` (result limit, default 20)
     - Usage: Only used automatically when `prefab_recommend` fails; no manual call needed
 
 *   `research`: (Optional, requires JINA_API_KEY) Conducts in-depth technical research.
-    - Required: `keywords`, `focus_areas`
+    - Usage: Call when deep understanding of technical solutions is needed
 
 # Intelligent Workflow Principles
 

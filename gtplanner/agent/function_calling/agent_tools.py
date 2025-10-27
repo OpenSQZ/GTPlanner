@@ -53,8 +53,30 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                             "description": "用户提出的改进点或补充需求（可选）"
                         },
                         "recommended_prefabs": {
-                            "type": "string",
-                            "description": "推荐预制件信息（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，可以将其结果的 JSON 字符串传入"
+                            "type": "array",
+                            "description": "推荐预制件列表（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，请从结果中提取每个预制件的关键信息（id, version, name, description）",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "预制件唯一标识符"
+                                    },
+                                    "version": {
+                                        "type": "string",
+                                        "description": "预制件版本号"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "description": "预制件名称"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "description": "预制件功能描述"
+                                    }
+                                },
+                                "required": ["id", "version", "name", "description"]
+                            }
                         },
                         "research_findings": {
                             "type": "string",
@@ -116,8 +138,30 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                         "description": "项目规划内容（可选）。如果之前调用了 short_planning，可以将其结果传入"
                     },
                     "recommended_prefabs": {
-                        "type": "string",
-                        "description": "推荐预制件信息（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，可以将其结果的 JSON 字符串传入"
+                        "type": "array",
+                        "description": "推荐预制件列表（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，请从结果中提取每个预制件的关键信息（id, version, name, description）",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "预制件唯一标识符"
+                                },
+                                "version": {
+                                    "type": "string",
+                                    "description": "预制件版本号"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "预制件名称"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "预制件功能描述"
+                                }
+                            },
+                            "required": ["id", "version", "name", "description"]
+                        }
                     },
                     "research_findings": {
                         "type": "string",
@@ -241,12 +285,25 @@ async def execute_agent_tool(tool_name: str, arguments: Dict[str, Any], shared: 
 
 
 async def _execute_short_planning(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
-    """执行短期规划 - 原子化工具，所有参数显式传入"""
+    """
+    执行短期规划 - 原子化工具，所有参数显式传入
+    
+    参数：
+    - user_requirements: 必需，用户需求描述
+    - previous_planning: 可选，之前的规划内容
+    - improvement_points: 可选，用户提出的改进点列表
+    - recommended_prefabs: 可选，推荐预制件列表（数组格式）
+    - research_findings: 可选，技术调研结果（JSON 字符串）
+    """
     user_requirements = arguments.get("user_requirements", "")
     previous_planning = arguments.get("previous_planning", "")
     improvement_points = arguments.get("improvement_points", [])
-    recommended_prefabs = arguments.get("recommended_prefabs", "")
+    recommended_prefabs = arguments.get("recommended_prefabs", [])
     research_findings = arguments.get("research_findings", "")
+    
+    # 确保 recommended_prefabs 是列表类型
+    if not isinstance(recommended_prefabs, list):
+        recommended_prefabs = []
 
     # 验证必需参数
     if not user_requirements:
@@ -399,16 +456,12 @@ async def _execute_design(arguments: Dict[str, Any], shared: Dict[str, Any] = No
     
     # 获取可选参数（显式传入，不从 shared 读取）
     project_planning = arguments.get("project_planning", "")
-    recommended_prefabs_str = arguments.get("recommended_prefabs", "")
+    recommended_prefabs = arguments.get("recommended_prefabs", [])
     research_findings_str = arguments.get("research_findings", "")
     
-    # 解析 JSON 字符串
-    recommended_prefabs = []
-    if recommended_prefabs_str:
-        try:
-            recommended_prefabs = json.loads(recommended_prefabs_str)
-        except:
-            pass
+    # 确保 recommended_prefabs 是列表类型
+    if not isinstance(recommended_prefabs, list):
+        recommended_prefabs = []
     
     research_findings = {}
     if research_findings_str:
