@@ -458,9 +458,23 @@
             addEvent(`发送请求: ${userInput}`, 'info', 'REQUEST_START');
             
             try {
-                // 准备请求数据
+                // 生成会话 ID
+                const sessionId = `session-${Date.now()}`;
+                
+                // 准备请求数据（符合后端 API 要求）
                 const requestData = {
-                    user_input: userInput,
+                    session_id: sessionId,
+                    dialogue_history: [
+                        {
+                            role: "user",
+                            content: userInput,
+                            timestamp: new Date().toISOString()
+                        }
+                    ],
+                    tool_execution_results: {},
+                    session_metadata: {
+                        language: "zh"
+                    },
                     include_metadata: includeMetadata,
                     buffer_events: bufferEvents,
                     heartbeat_interval: 30

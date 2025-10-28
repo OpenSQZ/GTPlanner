@@ -11,6 +11,7 @@
 """
 
 import asyncio
+import os
 import logging
 from typing import Dict, Any, Optional
 
@@ -46,12 +47,23 @@ async def initialize_application(
     logger.info("🚀 开始应用初始化...")
     
     try:
+        # 0. 检查 LLM 配置（优先检查）
+        llm_config_result = await _check_llm_config(shared)
+        init_result["components"]["llm_config"] = llm_config_result
+        
+        if not llm_config_result["available"]:
+            init_result["errors"].append("LLM API Key 未配置")
+            logger.warning("⚠️ LLM API Key 未配置，应用将无法生成内容")
+            logger.warning("   请设置环境变量: LLM_API_KEY, LLM_BASE_URL, LLM_MODEL")
+            logger.warning("   参考文档: 配置LLM_API_KEY指南.md")
+        
         # 1. 检查向量服务配置
         vector_config_result = await _check_vector_service_config(shared)
         init_result["components"]["vector_service"] = vector_config_result
         
         if not vector_config_result["available"]:
             init_result["errors"].append("向量服务不可用")
+            logger.warning("⚠️ 向量服务不可用，工具推荐功能将受限")
         
         # 2. 预加载工具索引（如果启用）
         if preload_index and vector_config_result["available"]:
@@ -63,17 +75,24 @@ async def initialize_application(
         
         # 3. 其他初始化任务可以在这里添加
         
-        # 判断整体初始化是否成功
-        init_result["success"] = len(init_result["errors"]) == 0
+        # 判断整体初始化是否成功（允许 LLM 配置缺失作为警告而非错误）
+        # 只有非 LLM 相关的错误才标记为失败
+        critical_errors = [e for e in init_result["errors"] if "LLM" not in e and "向量服务" not in e]
+        init_result["success"] = len(critical_errors) == 0
         
         if init_result["success"]:
-            logger.info("✅ 应用初始化完成")
-            if shared:
-                await emit_processing_status(shared, "✅ 应用初始化完成")
+            if len(init_result["errors"]) == 0:
+                logger.info("✅ 应用初始化完成")
+                if shared:
+                    await emit_processing_status(shared, "✅ 应用初始化完成")
+            else:
+                logger.info(f"✅ 应用初始化完成（有 {len(init_result['errors'])} 个警告）")
+                if shared:
+                    await emit_processing_status(shared, f"✅ 应用初始化完成（有 {len(init_result['errors'])} 个警告）")
         else:
-            logger.warning(f"⚠️ 应用初始化完成，但有 {len(init_result['errors'])} 个问题")
+            logger.warning(f"⚠️ 应用初始化完成，但有 {len(critical_errors)} 个错误")
             if shared:
-                await emit_processing_status(shared, f"⚠️ 应用初始化完成，但有 {len(init_result['errors'])} 个问题")
+                await emit_processing_status(shared, f"⚠️ 应用初始化完成，但有 {len(critical_errors)} 个错误")
         
         return init_result
         
@@ -83,6 +102,61 @@ async def initialize_application(
         init_result["success"] = False
         init_result["errors"].append(error_msg)
         return init_result
+
+
+async def _check_llm_config(shared: Dict[str, Any] = None) -> Dict[str, Any]:
+    """检查 LLM 配置"""
+    try:
+        if shared:
+            await emit_processing_status(shared, "🔍 检查 LLM 配置...")
+        
+        # 检查环境变量
+        api_key = os.getenv("LLM_API_KEY")
+        base_url = os.getenv("LLM_BASE_URL")
+        model = os.getenv("LLM_MODEL")
+        
+        llm_config = {
+            "api_key": api_key,
+            "base_url": base_url,
+            "model": model
+        }
+        
+        # 判断配置是否完整
+        is_available = all([api_key, base_url, model])
+        
+        result = {
+            "available": is_available,
+            "config": {
+                "api_key_set": bool(api_key),
+                "base_url_set": bool(base_url),
+                "model_set": bool(model)
+            }
+        }
+        
+        if not is_available:
+            missing = []
+            if not api_key:
+                missing.append("LLM_API_KEY")
+            if not base_url:
+                missing.append("LLM_BASE_URL")
+            if not model:
+                missing.append("LLM_MODEL")
+            result["missing"] = missing
+            result["error"] = f"缺少配置: {', '.join(missing)}"
+        
+        if shared:
+            status = "✅ LLM 配置可用" if is_available else "❌ LLM 配置不完整"
+            await emit_processing_status(shared, status)
+        
+        logger.info(f"{'✅' if is_available else '❌'} LLM 配置检查: {result}")
+        
+        return result
+        
+    except Exception as e:
+        return {
+            "available": False,
+            "error": f"LLM 配置检查失败: {str(e)}"
+        }
 
 
 async def _check_vector_service_config(shared: Dict[str, Any] = None) -> Dict[str, Any]:
