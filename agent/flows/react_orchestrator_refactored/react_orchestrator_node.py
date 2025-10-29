@@ -28,7 +28,42 @@ from agent.prompts import get_prompt, PromptTypes
 
 from .tool_executor import ToolExecutor
 
-
+class IntentAnalyzer:
+    """用户意图分析器 - 用于自适应提问逻辑"""
+    
+    def __init__(self):
+        # 技术相关关键词
+        self.tech_keywords = [
+            "AI", "人工智能", "机器学习", "深度学习", "算法", "模型", 
+            "TensorFlow", "PyTorch", "神经网络", "自然语言处理", 
+            "计算机视觉", "图像识别", "语音识别", "大数据", "数据挖掘"
+        ]
+        
+        # 业务相关关键词  
+        self.business_keywords = [
+            "SaaS", "电商", "医疗", "金融", "商业", "市场", "用户", 
+            "收入", "营销", "销售", "客户", "产品", "服务", "平台",
+            "商业模式", "盈利", "投资", "成本", "预算"
+        ]
+    
+    def analyze_intent(self, user_input: str) -> str:
+        """分析用户意图，返回分支类型"""
+        if not user_input:
+            return "general"
+        
+        input_lower = user_input.lower()
+        
+        # 计算关键词匹配分数
+        tech_score = sum(1 for keyword in self.tech_keywords if keyword.lower() in input_lower)
+        business_score = sum(1 for keyword in self.business_keywords if keyword.lower() in input_lower)
+        
+        # 根据分数决定分支
+        if tech_score > business_score and tech_score > 0:
+            return "technical"
+        elif business_score > tech_score and business_score > 0:
+            return "business"
+        else:
+            return "general"
 
 
 class ReActOrchestratorNode(AsyncNode):
@@ -47,6 +82,28 @@ class ReActOrchestratorNode(AsyncNode):
 
         # 初始化组件
         self.tool_executor = ToolExecutor()
+
+        # 🔥 新增：初始化意图分析器
+        self.intent_analyzer = IntentAnalyzer()
+
+     # 🔥 在这里添加辅助方法（在__init__之后，其他方法之前）
+    def _extract_latest_user_message(self, messages: List[Dict[str, Any]]) -> str:
+        """从消息历史中提取最新的用户消息"""
+        for msg in reversed(messages):
+            if msg.get("role") == "user":
+                content = msg.get("content", "")
+                if isinstance(content, str):
+                    return content
+                elif isinstance(content, list):
+                    for item in content:
+                        if item.get("type") == "text":
+                            return item.get("text", "")
+        return ""
+
+    def _select_prompt_by_branch(self, branch_type: str):
+        """根据分支类型选择提示词"""
+        from agent.prompts import PromptTypes
+        return PromptTypes.System.ORCHESTRATOR_FUNCTION_CALLING
 
     async def prep_async(self, shared: Dict[str, Any]) -> Dict[str, Any]:
         """异步准备ReAct执行环境（无状态版本）"""
@@ -368,6 +425,20 @@ class ReActOrchestratorNode(AsyncNode):
             (assistant_message_content, assistant_tool_calls)
         """
         try:
+            # 🔥 新增：自适应提问逻辑
+            # 1. 提取最新用户消息
+            user_input = self._extract_latest_user_message(messages)
+        
+            # 2. 分析用户意图
+            branch_type = self.intent_analyzer.analyze_intent(user_input)
+        
+            # 3. 根据分支选择提示词
+            prompt_type = self._select_prompt_by_branch(branch_type)
+        
+            # 4. 记录分支信息（用于调试和后续分析）
+            shared["detected_branch"] = branch_type
+            shared["user_input_analyzed"] = user_input[:100]  # 只记录前100字符避免过大
+
             # 触发LLM开始回调
             if StreamCallbackType.ON_LLM_START in streaming_callbacks:
                 await streaming_callbacks[StreamCallbackType.ON_LLM_START](streaming_session)
