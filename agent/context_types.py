@@ -67,7 +67,7 @@ class Message:
         return cls(
             role=MessageRole(data["role"]),
             content=data["content"],
-            timestamp=data["timestamp"],
+            timestamp=data.get("timestamp",datetime.now().isoformat()),
             metadata=data.get("metadata"),
             tool_calls=data.get("tool_calls"),
             tool_call_id=data.get("tool_call_id")
