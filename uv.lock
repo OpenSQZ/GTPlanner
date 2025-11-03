@@ -487,7 +487,7 @@ requires-dist = [
     { name = "openai", specifier = ">=1.0.0" },
     { name = "pocketflow", specifier = "==0.0.3" },
     { name = "pocketflow-agui", specifier = "==0.1.0" },
-    { name = "pocketflow-tracing", specifier = ">=0.1.4" },
+    { name = "pocketflow-tracing", specifier = ">=0.1.5" },
     { name = "pydantic", specifier = ">=2.5.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "pyyaml", specifier = ">=6.0" },
@@ -870,7 +870,7 @@ wheels = [
 
 [[package]]
 name = "pocketflow-tracing"
-version = "0.1.4"
+version = "0.1.5"
 source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
 dependencies = [
     { name = "langfuse" },
@@ -878,9 +878,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "python-dotenv" },
 ]
-sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/a9/e7/a543a9da4caabad21f6d7f38768d70730cfe6df837bf8ca0e6d9096cff12/pocketflow_tracing-0.1.4.tar.gz", hash = "sha256:5ebb5fa280818e59adc92308ffb0d64bee9e4516e2b321871aa155519d967be7", size = 57015, upload-time = "2025-08-08T15:03:45.703Z" }
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/dc/3c/6b934f475a6eba3c63918f346ebbf808ccf13aa06f70588ad9e041e53ee3/pocketflow_tracing-0.1.5.tar.gz", hash = "sha256:26ddf6cd637248285f034a359c33649496108f17e1f25b3f56b6d1234c5068df", size = 58623, upload-time = "2025-09-05T03:38:37.862Z" }
 wheels = [
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/79/d0/1d9c457af822c164e97a75c1911248bb3c1c87ea2c04596aa6066daef87d/pocketflow_tracing-0.1.4-py3-none-any.whl", hash = "sha256:942f8f13a64a0a683f79c9c060fe8cee5d10d14a795fa4f3f75c58e3c57f00d5", size = 30381, upload-time = "2025-08-08T15:03:43.93Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/c7/fd/1f3a3b590ad029fe329e0215d86992f0666c9feb93142242a2cbcce556ea/pocketflow_tracing-0.1.5-py3-none-any.whl", hash = "sha256:82877e486fa5b307c4fcd005b3bb0d407cb8f90cca5fc7d67298e81c5bd53f66", size = 30391, upload-time = "2025-09-05T03:38:36.169Z" },
 ]
 
 [[package]]

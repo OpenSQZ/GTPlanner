@@ -55,6 +55,7 @@ Thumbs.db
 
 # Testing
 coverage/
+.coverage
 .nyc_output/
 
 # Temporary files
