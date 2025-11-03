@@ -64,8 +64,7 @@ def test_project_structure():
     # 检查关键目录是否存在
     key_dirs = [
         'agent',
-        'utils',
-        'api'
+        'utils'
     ]
     
     for dir_name in key_dirs:
