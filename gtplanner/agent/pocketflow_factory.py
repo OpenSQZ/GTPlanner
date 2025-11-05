@@ -86,6 +86,15 @@ class PocketFlowSharedFactory:
             value = context.tool_execution_results.get(key)
             if value is not None:
                 shared[key] = value
+        
+        # 🆕 提取生成的文档信息（用于文档编辑工具）
+        designs = context.tool_execution_results.get("designs", {})
+        generated_documents = designs.get("generated_documents")
+        if generated_documents:
+            shared["generated_documents"] = generated_documents
+        
+        # 同时保存完整的 tool_execution_results 以便工具访问
+        shared["tool_execution_results"] = context.tool_execution_results
 
         # 继续添加其他字段
         shared.update({

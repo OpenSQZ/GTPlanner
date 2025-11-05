@@ -61,6 +61,24 @@
     "name": "邮件服务预制件",
     "description": "基于 SMTP 协议的邮件发送服务，支持 HTML 内容、抄送、密送和附件",
     "tags": ["email", "smtp", "mail", "notification"]
+  },
+  {
+    "id": "web-scraper-mcp-prefab",
+    "version": "1.0.0",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/web-scraper-mcp-prefab",
+    "name": "智能网页爬取预制件",
+    "description": "基于 Claude Code Playwright MCP 的智能网页爬取工具，支持使用自然语言描述完成复杂的浏览器自动化操作，包括页面导航、元素交互、数据提取、表单填写等场景。无需编写代码，通过 AI 理解即可执行浏览器操作",
+    "tags": ["web-scraping", "playwright", "mcp", "browser-automation", "ai-driven", "crawler", "网页爬取", "浏览器自动化"]
+  },
+  {
+    "id": "mysql-database-client",
+    "version": "1.0.0",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/mysql-database-client",
+    "name": "MySQL 数据库操作预制件",
+    "description": "MySQL 数据库客户端工具，支持连接管理、查询执行、批量插入、事务处理、数据导入导出等数据库操作。提供简洁的 API 接口，适用于需要数据持久化的各类应用场景",
+    "tags": ["mysql", "database", "sql", "data-persistence", "数据库", "数据持久化"]
   }
 ]
 

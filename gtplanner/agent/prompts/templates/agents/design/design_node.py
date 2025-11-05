@@ -191,53 +191,65 @@ shared = {{
 以下是一个优秀的设计文档示例：
 
 ```markdown
-# Design Doc: 文本转SQL Agent
+# Design Doc: 新闻内容爬取与存储 Agent
 
 ## Requirements
 
-系统应该接收自然语言查询和 SQLite 数据库路径作为输入，然后：
-1. 从数据库中提取 schema（表结构）
-2. 基于自然语言查询和 schema 生成 SQL 查询
-3. 对数据库执行 SQL 查询
-4. 如果 SQL 执行失败，尝试调试并重试 SQL 生成和执行，最多重试指定次数
-5. 返回 SQL 查询的最终结果或失败时的错误消息
+系统应该接收新闻网站URL列表作为输入，然后：
+1. 批量爬取指定网站的新闻文章内容
+2. 解析提取文章标题、正文、作者、发布时间等结构化信息
+3. 使用 AI 对文章内容进行分类和标签提取
+4. 将处理后的结构化数据存储到 MySQL 数据库
+5. 返回爬取和存储的统计结果
 
 ## Flow Design
 
 ### Applicable Design Pattern:
 
-主要设计模式是带有嵌入式 **Agent** 调试行为的 **Workflow**（工作流）。
-- **Workflow**：流程遵循序列：获取Schema → 生成SQL → 执行SQL
-- **Agent（用于调试）**：如果 `ExecuteSQL` 失败，`DebugSQL` 节点像 agent 一样工作，将错误和之前的 SQL 作为上下文生成修正后的 SQL 查询
+主要设计模式是 **Map-Reduce** + **Workflow** + **数据持久化**。
+- **Map-Reduce**：并发爬取多个URL，批量处理文章数据
+- **Workflow**：流程遵循序列：爬取 → 解析 → AI处理 → 入库
+- **数据持久化**：使用 MySQL 数据库存储文章数据
 
 ### Flow High-level Design:
 
-1. **`GetSchema`**：获取数据库 schema
-2. **`GenerateSQL`**：基于自然语言问题和 schema 生成 SQL 查询
-3. **`ExecuteSQL`**：执行生成的 SQL。如果成功，流程结束。如果发生错误，转到 `DebugSQL`
-4. **`DebugSQL`**：基于错误消息尝试修正失败的 SQL 查询。然后转回 `ExecuteSQL` 重试修正后的查询
+1. **`FetchWebContent`**：批量爬取网页内容
+2. **`ParseArticles`**：解析提取文章结构化信息
+3. **`AIAnalysis`**：使用 AI 进行内容分类和标签提取
+4. **`SaveToDatabase`**：将处理后的数据存储到 MySQL 数据库
+5. **`GenerateReport`**：生成爬取统计报告
 
 ### Flow Diagram
 
 \```mermaid
 flowchart TD
-    A[GetSchema] --> B[GenerateSQL]
-    B --> C{{ExecuteSQL}}
-    C -- Success --> D[End]
-    C -- Error --> E[DebugSQL]
-    E --> C
+    A[FetchWebContent - Batch] --> B[ParseArticles - Batch]
+    B --> C[AIAnalysis - Batch]
+    C --> D[SaveToDatabase]
+    D --> E[GenerateReport]
+    E --> F[End]
 \```
 
 ## Prefabs
 
-### 1. 大模型客户端预制件
+### 1. 网页爬取预制件
+- **ID**: `web-scraper`
+- **描述**: 网页内容爬取工具，支持批量URL抓取、反爬虫处理、内容提取等功能
+- **用途**: 在 `FetchWebContent` 节点中调用，用于批量获取新闻网页的HTML内容
+
+### 2. AI 内容分析预制件
 - **ID**: `llm-client`
-- **描述**: 智能内容分析与生成工具，支持文本理解、SQL生成等 AI 能力
-- **用途**: 在 `GenerateSQL` 和 `DebugSQL` 节点中调用，用于生成和修正 SQL 查询语句
+- **描述**: 智能内容分析与生成工具，支持文本分类、关键词提取、摘要生成等 AI 能力
+- **用途**: 在 `AIAnalysis` 节点中调用，用于文章分类和标签提取
+
+### 3. MySQL 数据库操作预制件
+- **ID**: `mysql-database-client`
+- **描述**: MySQL 数据库客户端工具，支持连接管理、批量插入、事务处理等数据库操作
+- **用途**: 在 `SaveToDatabase` 节点中调用，用于批量存储文章数据到数据库
 
 ## Utility Functions
 
-**本示例无需额外工具函数** - 所有功能由预制件提供
+**本系统无需额外工具函数** - 所有功能由预制件提供
 
 ## Node Design
 
@@ -245,54 +257,66 @@ flowchart TD
 
 \```python
 shared = {{
-    "db_path": "path/to/database.db",
-    "natural_query": "User's question",
-    "max_debug_attempts": 3,
-    "schema": None,
-    "generated_sql": None,
-    "execution_error": None,
-    "debug_attempts": 0,
-    "final_result": None,
-    "result_columns": None,
-    "final_error": None
+    # 输入参数
+    "target_urls": ["https://...", "https://..."],  # Input: 目标URL列表
+    "max_articles": 100,                             # Input: 最大爬取文章数
+    
+    # 中间数据
+    "fetched_content": [],      # Output of FetchWebContent: 爬取的HTML内容列表
+    "parsed_articles": [],      # Output of ParseArticles: 解析后的文章列表
+    "analyzed_articles": [],    # Output of AIAnalysis: AI分析后的文章列表
+    
+    # 输出结果
+    "saved_count": 0,           # Output of SaveToDatabase: 成功保存的文章数
+    "crawl_report": None,       # Output of GenerateReport: 爬取统计报告
+    "errors": []                # Errors: 错误信息列表
 }}
 \```
 
 ### Node Steps
 
-1. **`GetSchema`**
-   - *Purpose*: 提取并存储目标 SQLite 数据库的 schema
-   - *Type*: Regular
+1. **`FetchWebContent`**
+   - *Purpose*: 并发爬取多个URL的网页内容
+   - *Type*: Batch (并发处理多个URL)
    - *Steps*:
-     - *`prep`*: 从 shared store 读取 `db_path`
-     - *`exec`*: 连接到 SQLite 数据库，检查 `sqlite_master` 和 `PRAGMA table_info` 以构建所有表及其列的字符串表示
-     - *`post`*: 将提取的 `schema` 字符串写入 shared store
+     - *`prep`*: 从 shared store 读取 `target_urls`
+     - *`exec`*: 调用 `web-scraper` 预制件，批量爬取网页HTML内容。处理反爬虫机制，设置合理的请求间隔
+     - *`post`*: 将爬取成功的HTML内容列表写入 `fetched_content`。记录失败的URL到 `errors`
 
-2. **`GenerateSQL`**
-   - *Purpose*: 基于用户的自然语言查询和数据库 schema 生成 SQL 查询
-   - *Type*: Regular
+2. **`ParseArticles`**
+   - *Purpose*: 从HTML中提取文章结构化信息
+   - *Type*: Batch (批量处理多篇文章)
    - *Steps*:
-     - *`prep`*: 从 shared store 读取 `natural_query` 和 `schema`
-     - *`exec`*: 构建 LLM prompt，包含 schema 和自然语言查询。调用 `call_llm` 工具。解析响应以提取 SQL 查询
-     - *`post`*: 将 `generated_sql` 写入 shared store。重置 `debug_attempts` 为 0
+     - *`prep`*: 从 shared store 读取 `fetched_content`
+     - *`exec`*: 使用 HTML 解析提取文章标题、正文、作者、发布时间等信息。过滤掉无效或不完整的文章
+     - *`post`*: 将解析后的文章列表（包含title、content、author、publish_date、source_url等字段）写入 `parsed_articles`
 
-3. **`ExecuteSQL`**
-   - *Purpose*: 对数据库执行生成的 SQL 查询并处理结果或错误
-   - *Type*: Regular
+3. **`AIAnalysis`**
+   - *Purpose*: 使用 AI 对文章进行分类和标签提取
+   - *Type*: Batch (批量处理多篇文章)
    - *Steps*:
-     - *`prep`*: 从 shared store 读取 `db_path` 和 `generated_sql`
-     - *`exec`*: 连接到 SQLite 数据库并执行 `generated_sql`。判断查询是 SELECT 还是 DML/DDL 语句
-     - *`post`*:
-       - 如果成功：在 shared store 中存储 `final_result` 和 `result_columns`。不返回 action（结束流程路径）
-       - 如果失败：在 shared store 中存储 `execution_error`。增加 `debug_attempts`。如果 `debug_attempts` 小于 `max_debug_attempts`，返回 `"error_retry"` action。否则，设置 `final_error` 并不返回 action
+     - *`prep`*: 从 shared store 读取 `parsed_articles`
+     - *`exec`*: 调用 `llm-client` 预制件，对每篇文章进行内容分析。提取文章分类（如：科技、财经、娱乐等）和关键词标签
+     - *`post`*: 将AI分析结果（category、tags）添加到文章数据中，写入 `analyzed_articles`
 
-4. **`DebugSQL`**
-   - *Purpose*: 基于错误消息使用 LLM 尝试修正失败的 SQL 查询
+4. **`SaveToDatabase`**
+   - *Purpose*: 将处理后的文章数据批量存储到 MySQL 数据库
    - *Type*: Regular
    - *Steps*:
-     - *`prep`*: 从 shared store 读取 `natural_query`、`schema`、`generated_sql` 和 `execution_error`
-     - *`exec`*: 构建 LLM prompt，提供失败的 SQL、原始查询、schema 和错误消息。调用 `call_llm` 工具。解析响应以提取修正后的 SQL 查询
-     - *`post`*: 用修正后的 SQL 覆盖 shared store 中的 `generated_sql`。从 shared store 移除 `execution_error`。返回默认 action 以回到 `ExecuteSQL`
+     - *`prep`*: 从 shared store 读取 `analyzed_articles`
+     - *`exec`*: 调用 `mysql-database-client` 预制件，开启事务批量插入数据：
+       - 向 `articles` 表插入文章记录
+       - 向 `article_tags` 表插入文章-标签关联
+       - 向 `crawl_logs` 表插入爬取日志
+     - *`post`*: 将成功保存的文章数量写入 `saved_count`。如果发生数据库错误，回滚事务并记录到 `errors`
+
+5. **`GenerateReport`**
+   - *Purpose*: 生成爬取任务统计报告
+   - *Type*: Regular
+   - *Steps*:
+     - *`prep`*: 从 shared store 读取 `saved_count`、`errors` 和其他统计信息
+     - *`exec`*: 汇总本次爬取任务的统计数据（成功数、失败数、处理时间、错误详情等）
+     - *`post`*: 将统计报告写入 `crawl_report`
 \```
 
 ---

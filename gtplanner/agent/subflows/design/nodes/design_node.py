@@ -140,6 +140,9 @@ class DesignNode(AsyncNode):
             shared["agent_design_document"] = design_document
             shared["documentation"] = design_document
             
+            # ⭐ 重要：保存为 system_design，供后续 database_design 节点使用
+            shared["system_design"] = design_document
+            
             # 发送设计文档事件到前端
             await emit_design_document(shared, "design.md", design_document)
             

@@ -129,6 +129,9 @@ class SSEStreamHandler(StreamHandler):
             elif event.event_type == StreamEventType.PREFABS_INFO:
                 await self._handle_prefabs_info(event)
 
+            elif event.event_type == StreamEventType.DOCUMENT_EDIT_PROPOSAL:
+                await self._handle_document_edit_proposal(event)
+
             elif event.event_type == StreamEventType.CONVERSATION_END:
                 await self._handle_conversation_end(event)
 
@@ -269,6 +272,31 @@ class SSEStreamHandler(StreamHandler):
                 "prefabs_info_sent",
                 {
                     "prefabs_count": prefabs_count,
+                    "timestamp": event.timestamp
+                }
+            )
+
+    async def _handle_document_edit_proposal(self, event: StreamEvent) -> None:
+        """处理文档编辑提案事件"""
+        proposal_id = event.data.get("proposal_id", "unknown")
+        edits_count = len(event.data.get("edits", []))
+        logger.info(f"📝 [SSE Handler] 处理 document_edit_proposal 事件 (ID: {proposal_id}, {edits_count} 个编辑)")
+        
+        # 刷新缓冲区以确保之前的消息都已发送
+        await self._flush_buffer()
+
+        # 直接发送文档编辑提案事件
+        await self._write_sse_event(event)
+        logger.info(f"✅ [SSE Handler] document_edit_proposal 事件已发送到前端 (ID: {proposal_id})")
+
+        # 如果启用了元数据，发送额外的状态信息
+        if self.include_metadata:
+            await self._send_status_update(
+                "document_edit_proposal_sent",
+                {
+                    "proposal_id": proposal_id,
+                    "edits_count": edits_count,
+                    "document_type": event.data.get("document_type"),
                     "timestamp": event.timestamp
                 }
             )

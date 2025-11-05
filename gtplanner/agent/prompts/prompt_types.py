@@ -36,6 +36,12 @@ class AgentPromptType(Enum):
 
     # 设计Agent（统一）
     DESIGN = "design"
+    
+    # 数据库设计Agent
+    DATABASE_DESIGN = "database_design"
+    
+    # 文档编辑Agent
+    DOCUMENT_EDIT = "document_edit"
 
 
 class CommonPromptType(Enum):
@@ -119,6 +125,10 @@ class PromptTypeRegistry:
                 return "agents.prefab_recommend.node_prefab_recommend"
             elif prompt_type.value == "design":
                 return "agents.design.design_node"
+            elif prompt_type.value == "database_design":
+                return "agents.database_design.database_design_node"
+            elif prompt_type.value == "document_edit":
+                return "agents.document_edit.document_edit_node"
         
         elif category == PromptCategory.COMMON:
             if prompt_type.value.endswith("_analysis"):

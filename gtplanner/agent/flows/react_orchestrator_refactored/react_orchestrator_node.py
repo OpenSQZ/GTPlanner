@@ -202,6 +202,36 @@ class ReActOrchestratorNode(AsyncNode):
             # short_planning工具的result直接就是规划内容
             if result_data:
                 shared["short_planning"] = result_data
+        
+        elif tool_name == "design" and tool_result.get("success"):
+            # 提取设计文档信息（用于后续编辑）
+            document_content = tool_result.get("document")
+            if document_content:
+                # 初始化 generated_documents 列表（如果不存在）
+                if "generated_documents" not in shared:
+                    shared["generated_documents"] = []
+                
+                # 添加文档信息
+                shared["generated_documents"].append({
+                    "type": "design",
+                    "filename": "design.md",
+                    "content": document_content,
+                    "tool_name": tool_name
+                })
+        
+        elif tool_name == "database_design" and tool_result.get("success"):
+            # 提取数据库设计文档信息
+            db_design_content = tool_result.get("result")
+            if db_design_content:
+                if "generated_documents" not in shared:
+                    shared["generated_documents"] = []
+                
+                shared["generated_documents"].append({
+                    "type": "database_design",
+                    "filename": "database_design.md",
+                    "content": db_design_content,
+                    "tool_name": tool_name
+                })
 
     def _increment_react_cycle(self, shared: Dict[str, Any]) -> int:
         """增加ReAct循环计数"""

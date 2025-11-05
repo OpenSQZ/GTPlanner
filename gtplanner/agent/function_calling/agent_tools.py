@@ -125,7 +125,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
         "type": "function",
         "function": {
             "name": "design",
-            "description": "生成系统设计文档（design.md）。这是一个原子化的工具，所有需要的信息都通过参数显式传入。如果之前调用了 short_planning、prefab_recommend 或 research，可以将它们的结果作为可选参数传入，以生成更完善的设计文档。",
+            "description": "生成系统设计文档（design.md），包含节点设计、Shared Store 等。这是一个原子化的工具，所有需要的信息都通过参数显式传入。如果之前调用了 short_planning、prefab_recommend、research，可以将它们的结果作为可选参数传入。**如果需要数据库持久化，应该在调用 design 之后再调用 database_design**。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -173,6 +173,60 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
         }
     }
     tools.append(design_tool)
+    
+    # 添加 database_design 工具
+    database_design_tool = {
+        "type": "function",
+        "function": {
+            "name": "database_design",
+            "description": "⭐ （design 的后置工具）生成 MySQL 数据库表结构设计文档。**重要**：必须在 design 之后调用，因为需要基于系统设计中的 Shared Store 和节点定义来设计表结构。建议流程：先调用 design 生成系统设计，再调用 database_design 基于系统设计生成数据库表结构。这是一个原子化的工具，所有需要的信息都通过参数显式传入。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "user_requirements": {
+                        "type": "string",
+                        "description": "用户的项目需求描述（必需）"
+                    },
+                    "system_design": {
+                        "type": "string",
+                        "description": "⭐ 系统设计文档（必需）。**必须**从 design 工具的返回结果中获取完整的设计文档内容，包含 Shared Store 和节点定义"
+                    },
+                    "project_planning": {
+                        "type": "string",
+                        "description": "项目规划内容（可选）。如果之前调用了 short_planning，可以将其结果传入"
+                    },
+                    "recommended_prefabs": {
+                        "type": "array",
+                        "description": "推荐预制件列表（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，可以传入相关的数据库预制件信息",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "预制件唯一标识符"
+                                },
+                                "version": {
+                                    "type": "string",
+                                    "description": "预制件版本号"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "预制件名称"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "预制件功能描述"
+                                }
+                            },
+                            "required": ["id", "version", "name", "description"]
+                        }
+                    }
+                },
+                "required": ["user_requirements", "system_design"]
+            }
+        }
+    }
+    tools.append(database_design_tool)
     
     # 添加 search_prefabs 工具（降级方案，无需向量服务）
     search_prefabs_tool = {
@@ -241,6 +295,52 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
         }
     }
     tools.append(prefab_recommend_tool)
+    
+    # 添加 edit_document 工具（subagent 模式）
+    edit_document_tool = {
+        "type": "function",
+        "function": {
+            "name": "edit_document",
+            "description": "编辑当前会话中已生成的设计文档。**这是一个智能子Agent**：你只需要用自然语言描述修改需求，子Agent会自动分析文档、生成精确的修改方案，并通过 diff 视图发送给前端供用户确认。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "document_type": {
+                        "type": "string",
+                        "enum": ["design", "database_design"],
+                        "description": "要编辑的文档类型"
+                    },
+                    "edit_instructions": {
+                        "type": "string",
+                        "description": "用自然语言描述的修改需求。例如：'在数据存储章节增加Redis缓存层的说明'、'优化性能部分，补充索引设计'、'修正用户认证流程中的安全问题'"
+                    }
+                },
+                "required": ["document_type", "edit_instructions"]
+            }
+        }
+    }
+    tools.append(edit_document_tool)
+    
+    # 添加 view_document 工具
+    view_document_tool = {
+        "type": "function",
+        "function": {
+            "name": "view_document",
+            "description": "查看当前会话中已生成的文档内容。每次调用都会返回最新的文档内容（包括用户确认的编辑）。**建议使用场景**：需要查看或引用文档内容时调用此工具。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "document_type": {
+                        "type": "string",
+                        "enum": ["design", "database_design"],
+                        "description": "要查看的文档类型"
+                    }
+                },
+                "required": ["document_type"]
+            }
+        }
+    }
+    tools.append(view_document_tool)
 
     return tools
 
@@ -271,6 +371,12 @@ async def execute_agent_tool(tool_name: str, arguments: Dict[str, Any], shared: 
             return await _execute_research(arguments, shared)
         elif tool_name == "design":
             return await _execute_design(arguments, shared)
+        elif tool_name == "database_design":
+            return await _execute_database_design(arguments, shared)
+        elif tool_name == "edit_document":
+            return await _execute_edit_document(arguments, shared)
+        elif tool_name == "view_document":
+            return await _execute_view_document(arguments, shared)
         else:
             return {
                 "success": False,
@@ -441,7 +547,7 @@ async def _execute_design(arguments: Dict[str, Any], shared: Dict[str, Any] = No
     参数：
     - user_requirements: 必需，用户需求描述
     - project_planning: 可选，项目规划内容（如果之前调用了 short_planning）
-    - recommended_prefabs: 可选，推荐预制件信息（JSON 字符串）
+    - recommended_prefabs: 可选，推荐预制件信息（数组）
     - research_findings: 可选，技术调研结果（JSON 字符串）
     """
     import json
@@ -497,13 +603,28 @@ async def _execute_design(arguments: Dict[str, Any], shared: Dict[str, Any] = No
         if shared:
             shared["agent_design_document"] = agent_design_document
             shared["documentation"] = agent_design_document
+            
+            # 🔥 关键修复：将子 agent 的 generated_documents 同步回主 agent
+            if "generated_documents" in flow_shared:
+                if "generated_documents" not in shared:
+                    shared["generated_documents"] = []
+                # 合并文档（避免重复）
+                existing_filenames = {doc.get("filename") for doc in shared["generated_documents"]}
+                for doc in flow_shared["generated_documents"]:
+                    if doc.get("filename") not in existing_filenames:
+                        shared["generated_documents"].append(doc)
         
         # 判断成功
         if result and agent_design_document:
             return {
                 "success": True,
-                "message": "✅ 设计文档生成成功",
-                "document": agent_design_document,
+                "message": "✅ 设计文档已生成并保存",
+                "document_reference": {
+                    "type": "design",
+                    "filename": "design.md",
+                    "location": "使用 view_document 工具查看完整内容"
+                },
+                "content_length": len(agent_design_document),
                 "tool_name": "design"
             }
         else:
@@ -516,6 +637,246 @@ async def _execute_design(arguments: Dict[str, Any], shared: Dict[str, Any] = No
         return {
             "success": False,
             "error": f"设计执行异常: {str(e)}"
+        }
+
+
+async def _execute_database_design(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
+    """
+    执行数据库表结构设计 - 原子化工具，所有参数显式传入
+    
+    参数：
+    - user_requirements: 必需，用户需求描述
+    - system_design: 必需，系统设计文档（必须从 design 工具的返回结果中获取）
+    - project_planning: 可选，项目规划内容（如果之前调用了 short_planning）
+    - recommended_prefabs: 可选，推荐预制件列表
+    """
+    # 验证必需参数
+    user_requirements = arguments.get("user_requirements")
+    if not user_requirements:
+        return {
+            "success": False,
+            "error": "user_requirements is required"
+        }
+    
+    # ⭐ 验证 system_design 参数（必需）
+    system_design = arguments.get("system_design", "")
+    if not system_design:
+        return {
+            "success": False,
+            "error": "system_design is required. Please call 'design' first and pass its result to this tool.",
+            "tool_name": "database_design"
+        }
+    
+    # 获取可选参数（显式传入，不从 shared 读取）
+    project_planning = arguments.get("project_planning", "")
+    recommended_prefabs = arguments.get("recommended_prefabs", [])
+    
+    # 确保 recommended_prefabs 是列表类型
+    if not isinstance(recommended_prefabs, list):
+        recommended_prefabs = []
+    
+    try:
+        # 创建独立的流程 shared 字典（不污染全局 shared）
+        flow_shared = {
+            "user_requirements": user_requirements,
+            "system_design": system_design,  # ⭐ 传入系统设计文档
+            "short_planning": project_planning,
+            "recommended_prefabs": recommended_prefabs,
+            "language": shared.get("language") if shared else None,  # 保留全局配置
+            "streaming_session": shared.get("streaming_session") if shared else None  # 支持 SSE 流式输出
+        }
+        
+        # 使用数据库设计流程
+        from gtplanner.agent.subflows.database_design.flows.database_design_flow import DatabaseDesignFlow
+        flow = DatabaseDesignFlow()
+        
+        print("🗄️  生成数据库表结构设计...")
+        
+        # 执行流程
+        result = await flow.run_async(flow_shared)
+        
+        # 从流程 shared 中获取结果
+        database_design = flow_shared.get("database_design", "")
+        
+        # 如果全局 shared 存在，将结果同步回去（供后续使用）
+        if shared:
+            shared["database_design"] = database_design
+            
+            # 🔥 关键修复：将子 agent 的 generated_documents 同步回主 agent
+            if "generated_documents" in flow_shared:
+                if "generated_documents" not in shared:
+                    shared["generated_documents"] = []
+                # 合并文档（避免重复）
+                existing_filenames = {doc.get("filename") for doc in shared["generated_documents"]}
+                for doc in flow_shared["generated_documents"]:
+                    if doc.get("filename") not in existing_filenames:
+                        shared["generated_documents"].append(doc)
+        
+        # 判断成功
+        if result and database_design:
+            return {
+                "success": True,
+                "message": "✅ 数据库表结构设计生成成功",
+                "result": database_design,
+                "tool_name": "database_design"
+            }
+        else:
+            error_msg = flow_shared.get('database_design_error') or "数据库设计生成失败：未生成设计文档"
+            return {
+                "success": False,
+                "error": error_msg,
+                "tool_name": "database_design"
+            }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"数据库设计执行异常: {str(e)}",
+            "tool_name": "database_design"
+        }
+
+
+async def _execute_edit_document(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
+    """
+    执行文档编辑 - 使用 DocumentEditFlow subagent（智能模式）
+    
+    参数：
+    - document_type: 必需，文档类型 ("design" 或 "database_design")
+    - edit_instructions: 必需，自然语言描述的修改需求
+    
+    工作流程：
+    1. DocumentEditFlow subagent 读取当前文档
+    2. 使用 LLM 理解 edit_instructions
+    3. LLM 自动生成精确的 search/replace 操作
+    4. 验证并生成修改提案
+    5. 通过 SSE 发送 diff 视图给前端
+    """
+    # 验证必需参数
+    document_type = arguments.get("document_type")
+    if not document_type:
+        return {
+            "success": False,
+            "error": "document_type is required"
+        }
+    
+    edit_instructions = arguments.get("edit_instructions")
+    if not edit_instructions:
+        return {
+            "success": False,
+            "error": "edit_instructions is required"
+        }
+    
+    try:
+        # 创建独立的流程 shared 字典
+        flow_shared = {
+            "document_type": document_type,
+            "edit_instructions": edit_instructions,  # 自然语言描述
+            # 从 shared 中传递已生成的文档
+            "generated_documents": shared.get("generated_documents", []),
+            "language": shared.get("language") if shared else None,
+            "streaming_session": shared.get("streaming_session") if shared else None
+        }
+        
+        # 使用 DocumentEditFlow
+        from gtplanner.agent.subflows.document_edit.flows.document_edit_flow import DocumentEditFlow
+        flow = DocumentEditFlow()
+        
+        print(f"📝 开始编辑文档: {document_type}")
+        print(f"📋 修改需求: {edit_instructions}")
+        
+        # 执行流程（subagent 内部会调用 LLM 生成具体的编辑操作）
+        result = await flow.run_async(flow_shared)
+        
+        # 从流程 shared 中获取结果
+        proposal_id = flow_shared.get("edit_proposal_id")
+        pending_edits = flow_shared.get("pending_document_edits", {})
+        
+        # 注意：不再将 pending_edits 保存到 shared/tool_execution_results
+        # 提案详情已通过 SSE 事件发送给前端，前端在本地状态管理
+        
+        # 判断成功
+        if result == "edit_proposal_generated" and proposal_id:
+            # 获取提案详情（仅用于返回摘要）
+            proposal_details = pending_edits.get(proposal_id, {})
+            
+            # 只返回引用和摘要，不返回完整的 edits 列表
+            return {
+                "success": True,
+                "message": "✅ 文档编辑提案已生成，等待用户确认",
+                "proposal_id": proposal_id,
+                "document_type": proposal_details.get("document_type"),
+                "document_filename": proposal_details.get("document_filename"),
+                "summary": proposal_details.get("summary", ""),
+                "edits_count": len(proposal_details.get("edits", [])),
+                "note": "详细编辑内容已发送给用户，等待确认后会自动应用到文档",
+                "tool_name": "edit_document"
+            }
+        else:
+            error_msg = flow_shared.get('document_edit_error') or "文档编辑提案生成失败"
+            return {
+                "success": False,
+                "error": error_msg,
+                "tool_name": "edit_document"
+            }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"文档编辑执行异常: {str(e)}",
+            "tool_name": "edit_document"
+        }
+
+
+async def _execute_view_document(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
+    """
+    查看已生成的文档内容
+    
+    参数：
+    - document_type: 必需，文档类型（"design" 或 "database_design"）
+    """
+    document_type = arguments.get("document_type")
+    
+    if not document_type:
+        return {
+            "success": False,
+            "error": "document_type is required"
+        }
+    
+    try:
+        # 确保 shared 字典存在
+        if shared is None:
+            shared = {}
+        
+        # 准备 Node 所需的 shared 数据
+        node_shared = {
+            "document_type": document_type,
+            "generated_documents": shared.get("generated_documents", []),
+            "streaming_session": shared.get("streaming_session") if shared else None
+        }
+        
+        # 使用 NodeViewDocument 执行
+        from gtplanner.agent.nodes import NodeViewDocument
+        node = NodeViewDocument()
+        
+        print(f"📖 查看文档: {document_type}")
+        
+        # 执行节点
+        result = await node.run_async(node_shared)
+        
+        # 返回结果，添加 tool_name
+        if result and result.get("success"):
+            result["tool_name"] = "view_document"
+            return result
+        else:
+            error_msg = result.get("error") if result else "查看文档失败"
+            return {
+                "success": False,
+                "error": error_msg,
+                "tool_name": "view_document"
+            }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"查看文档执行异常: {str(e)}",
+            "tool_name": "view_document"
         }
 
 
@@ -800,7 +1161,7 @@ async def call_search_prefabs(
 async def call_design(
     user_requirements: str,
     project_planning: str = None,
-    recommended_prefabs: str = None,
+    recommended_prefabs: List[Dict[str, Any]] = None,
     research_findings: str = None
 ) -> Dict[str, Any]:
     """便捷的设计文档生成调用 - 原子化工具
@@ -808,7 +1169,7 @@ async def call_design(
     Args:
         user_requirements: 用户需求描述（必需）
         project_planning: 项目规划内容（可选）
-        recommended_prefabs: 推荐预制件信息 JSON 字符串（可选）
+        recommended_prefabs: 推荐预制件列表（可选）
         research_findings: 技术调研结果 JSON 字符串（可选）
     """
     arguments = {"user_requirements": user_requirements}
@@ -819,3 +1180,28 @@ async def call_design(
     if research_findings:
         arguments["research_findings"] = research_findings
     return await execute_agent_tool("design", arguments)
+
+
+async def call_database_design(
+    user_requirements: str,
+    system_design: str,
+    project_planning: str = None,
+    recommended_prefabs: List[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """便捷的数据库表结构设计调用 - 原子化工具
+
+    Args:
+        user_requirements: 用户需求描述（必需）
+        system_design: 系统设计文档（必需）- 必须从 call_design 的返回结果中获取
+        project_planning: 项目规划内容（可选）
+        recommended_prefabs: 推荐预制件列表（可选）
+    """
+    arguments = {
+        "user_requirements": user_requirements,
+        "system_design": system_design
+    }
+    if project_planning:
+        arguments["project_planning"] = project_planning
+    if recommended_prefabs:
+        arguments["recommended_prefabs"] = recommended_prefabs
+    return await execute_agent_tool("database_design", arguments)

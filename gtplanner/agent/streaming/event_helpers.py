@@ -4,7 +4,7 @@
 提供简洁的API来发送各种类型的流式事件，避免重复代码。
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from .stream_types import StreamEventBuilder, ToolCallStatus, DesignDocument
 
 
@@ -231,7 +231,7 @@ async def emit_design_document(
     content: str
 ) -> None:
     """
-    发送设计文档生成事件
+    发送设计文档生成事件，并同时将文档存储到 shared 中供同一轮对话的其他工具使用
 
     Args:
         shared: 共享状态字典（包含 streaming_session）
@@ -250,6 +250,66 @@ async def emit_design_document(
             document
         )
         await streaming_session.emit_event(event)
+    
+    # 🆕 将文档信息存储到 shared["generated_documents"] 中
+    # 这样同一轮对话中的其他工具（如 edit_document）可以立即访问
+    
+    # 🔥 从 tool_execution_results 恢复历史文档（跨工具调用）
+    if "generated_documents" not in shared:
+        historical_docs = shared.get("tool_execution_results", {}).get("designs", {}).get("generated_documents", [])
+        shared["generated_documents"] = list(historical_docs) if historical_docs else []
+    
+    # 判断文档类型
+    document_type = "database_design" if "database" in filename.lower() else "design"
+    
+    shared["generated_documents"].append({
+        "type": document_type,
+        "filename": filename,
+        "content": content,
+        "timestamp": __import__('time').time()
+    })
+
+
+async def emit_database_design(
+    shared: Dict[str, Any],
+    filename: str,
+    content: str
+) -> None:
+    """
+    发送数据库设计文档生成事件，并同时将文档存储到 shared 中供同一轮对话的其他工具使用
+
+    Args:
+        shared: 共享状态字典（包含 streaming_session）
+        filename: 文件名（如 "database_design.md"）
+        content: 数据库设计文档内容
+    """
+    streaming_session = shared.get("streaming_session")
+    if streaming_session:
+        document = DesignDocument(
+            filename=filename,
+            content=content
+        )
+
+        event = StreamEventBuilder.design_document_generated(
+            streaming_session.session_id,
+            document
+        )
+        await streaming_session.emit_event(event)
+    
+    # 🆕 将文档信息存储到 shared["generated_documents"] 中
+    # 这样同一轮对话中的其他工具（如 edit_document）可以立即访问
+    
+    # 🔥 从 tool_execution_results 恢复历史文档（跨工具调用）
+    if "generated_documents" not in shared:
+        historical_docs = shared.get("tool_execution_results", {}).get("designs", {}).get("generated_documents", [])
+        shared["generated_documents"] = list(historical_docs) if historical_docs else []
+    
+    shared["generated_documents"].append({
+        "type": "database_design",
+        "filename": filename,
+        "content": content,
+        "timestamp": __import__('time').time()
+    })
 
 
 async def emit_prefabs_info(
@@ -282,3 +342,76 @@ async def emit_prefabs_info(
         print(f"✅ [emit_prefabs_info] 事件已发送到 streaming_session")
     else:
         print(f"⚠️ [emit_prefabs_info] streaming_session 为 None，无法发送事件")
+
+
+async def emit_document_edit_proposal(
+    shared: Dict[str, Any],
+    proposal_id: str,
+    document_type: str,
+    document_filename: str,
+    edits: List[Dict[str, str]],
+    summary: str,
+    preview_content: Optional[str] = None
+) -> None:
+    """
+    发送文档编辑提案事件
+    
+    Args:
+        shared: 共享状态字典（包含 streaming_session）
+        proposal_id: 提案唯一ID
+        document_type: 文档类型（"design" 或 "database_design"）
+        document_filename: 文档文件名
+        edits: 编辑操作列表，每个元素包含 search, replace, reason
+        summary: 编辑摘要
+        preview_content: 应用所有编辑后的预览内容（可选）
+    """
+    streaming_session = shared.get("streaming_session")
+    
+    print(f"🔍 [emit_document_edit_proposal] 开始发送文档编辑提案")
+    print(f"🔍 [emit_document_edit_proposal] streaming_session 存在: {streaming_session is not None}")
+    print(f"🔍 [emit_document_edit_proposal] proposal_id: {proposal_id}")
+    print(f"🔍 [emit_document_edit_proposal] document_type: {document_type}")
+    print(f"🔍 [emit_document_edit_proposal] edits 数量: {len(edits)}")
+    print(f"🔍 [emit_document_edit_proposal] summary: {summary}")
+    
+    if streaming_session:
+        from .stream_types import DocumentEditProposal, DocumentEdit
+        
+        # 转换edits为DocumentEdit对象列表
+        edit_objects = [
+            DocumentEdit(
+                search=edit["search"],
+                replace=edit["replace"],
+                reason=edit["reason"]
+            )
+            for edit in edits
+        ]
+        
+        print(f"✅ [emit_document_edit_proposal] 已创建 {len(edit_objects)} 个 DocumentEdit 对象")
+        
+        # 创建提案对象
+        proposal = DocumentEditProposal(
+            proposal_id=proposal_id,
+            document_type=document_type,
+            document_filename=document_filename,
+            edits=edit_objects,
+            summary=summary,
+            preview_content=preview_content
+        )
+        
+        print(f"✅ [emit_document_edit_proposal] 已创建 DocumentEditProposal 对象")
+        
+        # 发送事件
+        event = StreamEventBuilder.document_edit_proposal(
+            streaming_session.session_id,
+            proposal
+        )
+        
+        print(f"📨 [emit_document_edit_proposal] 准备发送事件: type={event.event_type}, session_id={event.session_id}")
+        print(f"📨 [emit_document_edit_proposal] 事件数据预览: {str(event.data)[:200]}...")
+        
+        await streaming_session.emit_event(event)
+        
+        print(f"✅ [emit_document_edit_proposal] document_edit_proposal 事件已发送!")
+    else:
+        print(f"⚠️ [emit_document_edit_proposal] streaming_session 为 None，无法发送事件")
