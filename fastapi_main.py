@@ -54,7 +54,23 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="GTPlanner API",
-    description="智能规划助手 API，支持流式响应和实时工具调用",
+    description="""
+智能规划助手 API，支持流式响应和实时工具调用
+
+## 核心功能
+- ✅ 流式 SSE 响应
+- ✅ 实时工具调用
+- ✅ 多模态输入（文本 + 图片）
+- ✅ 多语言支持（中文、英文、日文、西班牙语、法语）
+
+## 多模态支持 🖼️
+支持用户发送图片（架构图、截图、设计稿、流程图等）：
+- 图片格式：HTTP URL 或 Base64 Data URL
+- 图片类型：JPEG、PNG、GIF、WebP 等
+- 细节级别：auto（默认）、low（快速）、high（高精度）
+
+详见 /api/chat/agent 接口文档。
+    """,
     version="1.0.0",
     lifespan=lifespan
 )
@@ -75,7 +91,33 @@ sse_api = SSEGTPlanner(verbose=True)
 
 # 请求模型
 class AgentContextRequest(BaseModel):
-    """AgentContext 请求模型（直接对应后端 AgentContext）"""
+    """
+    AgentContext 请求模型（直接对应后端 AgentContext）
+    
+    支持多模态消息（文本+图片）：
+    dialogue_history 中的每条消息的 content 字段可以是：
+    1. 纯文本字符串：
+       {"role": "user", "content": "设计一个系统", "timestamp": "..."}
+    
+    2. 多模态列表（文本+图片）：
+       {
+           "role": "user",
+           "content": [
+               {"type": "text", "text": "分析这个架构图"},
+               {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,...", "detail": "high"}}
+           ],
+           "timestamp": "..."
+       }
+    
+    图片格式支持：
+    - HTTP/HTTPS URL: "https://example.com/image.jpg"
+    - Base64 Data URL: "data:image/jpeg;base64,/9j/4AAQ..."
+    
+    图片细节级别（detail）：
+    - "auto": 自动选择（默认，平衡速度和准确性）
+    - "low": 低细节模式（更快、更便宜，适合简单图片）
+    - "high": 高细节模式（更慢、更贵，适合复杂图片如架构图、设计稿）
+    """
     session_id: str
     dialogue_history: List[Dict[str, Any]]
     tool_execution_results: Dict[str, Any] = {}
@@ -122,6 +164,25 @@ async def chat_agent_stream(request: AgentContextRequest):
             raise HTTPException(status_code=400, detail="dialogue_history cannot be empty")
 
         logger.info(f"Starting SSE stream for session: {request.session_id}, messages: {len(request.dialogue_history)}")
+
+        # 解析多模态消息内容（如果 content 是 JSON 字符串，解析成数组）
+        def parse_message_content(message: Dict[str, Any]) -> Dict[str, Any]:
+            """解析消息内容，支持多模态格式"""
+            content = message.get("content")
+            if isinstance(content, str) and content.strip().startswith('['):
+                try:
+                    parsed = json.loads(content)
+                    if isinstance(parsed, list):
+                        message["content"] = parsed
+                        logger.debug(f"Parsed multimodal content: {len(parsed)} parts")
+                except json.JSONDecodeError:
+                    # 解析失败，保持原字符串
+                    pass
+            return message
+        
+        # 处理 dialogue_history 中的所有消息
+        parsed_history = [parse_message_content(msg.copy()) for msg in request.dialogue_history]
+        request.dialogue_history = parsed_history
 
         async def generate_sse_stream():
             """生成 SSE 数据流"""

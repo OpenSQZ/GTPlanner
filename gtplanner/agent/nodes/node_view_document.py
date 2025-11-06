@@ -43,20 +43,16 @@ class NodeViewDocument(AsyncNode):
             准备结果字典
         """
         try:
-            # 获取流式会话（用于发送状态）
-            streaming_session = shared.get("streaming_session")
-            
             # 获取文档类型
             document_type = shared.get("document_type")
             
             if not document_type:
                 error_msg = "document_type is required"
-                if streaming_session:
-                    await emit_error(
-                        streaming_session=streaming_session,
-                        error_message=error_msg,
-                        error_code="MISSING_PARAMETER"
-                    )
+                await emit_error(
+                    shared=shared,
+                    error_message=error_msg,
+                    error_details={"error_code": "MISSING_PARAMETER"}
+                )
                 return {
                     "success": False,
                     "error": error_msg
@@ -65,52 +61,47 @@ class NodeViewDocument(AsyncNode):
             # 验证文档类型
             if document_type not in ["design", "database_design"]:
                 error_msg = f"Invalid document_type: {document_type}. Must be 'design' or 'database_design'"
-                if streaming_session:
-                    await emit_error(
-                        streaming_session=streaming_session,
-                        error_message=error_msg,
-                        error_code="INVALID_PARAMETER"
-                    )
+                await emit_error(
+                    shared=shared,
+                    error_message=error_msg,
+                    error_details={"error_code": "INVALID_PARAMETER"}
+                )
                 return {
                     "success": False,
                     "error": error_msg
                 }
             
             # 发送处理状态
-            if streaming_session:
-                await emit_processing_status(
-                    streaming_session=streaming_session,
-                    tool_name="view_document",
-                    status="processing",
-                    message=f"正在查看 {document_type} 文档..."
-                )
+            await emit_processing_status(
+                shared=shared,
+                message=f"正在查看 {document_type} 文档..."
+            )
             
+            # 将 generated_documents 传递给 exec_async
             return {
                 "success": True,
-                "document_type": document_type
+                "document_type": document_type,
+                "generated_documents": shared.get("generated_documents", [])
             }
             
         except Exception as e:
             error_msg = f"Preparation failed: {str(e)}"
-            streaming_session = shared.get("streaming_session")
-            if streaming_session:
-                await emit_error(
-                    streaming_session=streaming_session,
-                    error_message=error_msg,
-                    error_code="PREP_ERROR"
-                )
+            await emit_error(
+                shared=shared,
+                error_message=error_msg,
+                error_details={"error_code": "PREP_ERROR"}
+            )
             return {
                 "success": False,
                 "error": error_msg
             }
     
-    async def exec_async(self, prep_result: Dict[str, Any], shared) -> Dict[str, Any]:
+    async def exec_async(self, prep_result: Dict[str, Any]) -> Dict[str, Any]:
         """
         执行阶段：从 generated_documents 中获取文档内容
         
         Args:
-            prep_result: 准备阶段的结果
-            shared: pocketflow 字典共享变量
+            prep_result: 准备阶段的结果（包含 document_type 和 generated_documents）
             
         Returns:
             执行结果字典
@@ -122,8 +113,8 @@ class NodeViewDocument(AsyncNode):
             
             document_type = prep_result["document_type"]
             
-            # 从 shared 中获取已生成的文档
-            generated_documents = shared.get("generated_documents", [])
+            # 从 prep_result 中获取已生成的文档（在 prep 阶段传递过来）
+            generated_documents = prep_result.get("generated_documents", [])
             
             if not generated_documents:
                 return {
@@ -161,49 +152,42 @@ class NodeViewDocument(AsyncNode):
                 "error": f"Execution failed: {str(e)}"
             }
     
-    async def post_async(self, exec_result: Dict[str, Any], shared) -> Dict[str, Any]:
+    async def post_async(self, shared, prep_res: Dict[str, Any], exec_res: Dict[str, Any]) -> Dict[str, Any]:
         """
         后处理阶段：发送完成状态
         
         Args:
-            exec_result: 执行阶段的结果
             shared: pocketflow 字典共享变量
+            prep_res: 准备阶段的结果
+            exec_res: 执行阶段的结果
             
         Returns:
             最终结果字典
         """
         try:
-            streaming_session = shared.get("streaming_session")
-            
-            if exec_result.get("success"):
+            if exec_res.get("success"):
                 # 发送成功状态
-                if streaming_session:
-                    await emit_processing_status(
-                        streaming_session=streaming_session,
-                        tool_name="view_document",
-                        status="completed",
-                        message=f"✅ 已获取 {exec_result.get('filename')} 的最新内容"
-                    )
+                await emit_processing_status(
+                    shared=shared,
+                    message=f"✅ 已获取 {exec_res.get('filename')} 的最新内容"
+                )
             else:
                 # 发送错误状态
-                if streaming_session:
-                    await emit_error(
-                        streaming_session=streaming_session,
-                        error_message=exec_result.get("error", "Unknown error"),
-                        error_code="VIEW_DOCUMENT_ERROR"
-                    )
+                await emit_error(
+                    shared=shared,
+                    error_message=exec_res.get("error", "Unknown error"),
+                    error_details={"error_code": "VIEW_DOCUMENT_ERROR"}
+                )
             
-            return exec_result
+            return exec_res
             
         except Exception as e:
             error_msg = f"Post-processing failed: {str(e)}"
-            streaming_session = shared.get("streaming_session")
-            if streaming_session:
-                await emit_error(
-                    streaming_session=streaming_session,
-                    error_message=error_msg,
-                    error_code="POST_ERROR"
-                )
+            await emit_error(
+                shared=shared,
+                error_message=error_msg,
+                error_details={"error_code": "POST_ERROR"}
+            )
             return {
                 "success": False,
                 "error": error_msg

@@ -845,10 +845,22 @@ async def _execute_view_document(arguments: Dict[str, Any], shared: Dict[str, An
         if shared is None:
             shared = {}
         
+        # 获取已生成的文档列表
+        generated_documents = shared.get("generated_documents", [])
+        
+        # 调试日志：打印当前的文档列表
+        print(f"📖 查看文档: {document_type}")
+        print(f"📋 当前 generated_documents: {len(generated_documents)} 个文档")
+        if generated_documents:
+            doc_types = [doc.get("type") for doc in generated_documents]
+            print(f"📄 可用文档类型: {doc_types}")
+        else:
+            print("⚠️  没有找到任何已生成的文档")
+        
         # 准备 Node 所需的 shared 数据
         node_shared = {
             "document_type": document_type,
-            "generated_documents": shared.get("generated_documents", []),
+            "generated_documents": generated_documents,
             "streaming_session": shared.get("streaming_session") if shared else None
         }
         
@@ -856,23 +868,24 @@ async def _execute_view_document(arguments: Dict[str, Any], shared: Dict[str, An
         from gtplanner.agent.nodes import NodeViewDocument
         node = NodeViewDocument()
         
-        print(f"📖 查看文档: {document_type}")
-        
         # 执行节点
         result = await node.run_async(node_shared)
         
         # 返回结果，添加 tool_name
         if result and result.get("success"):
             result["tool_name"] = "view_document"
+            print(f"✅ 查看文档成功: {result.get('filename')}")
             return result
         else:
             error_msg = result.get("error") if result else "查看文档失败"
+            print(f"❌ 查看文档失败: {error_msg}")
             return {
                 "success": False,
                 "error": error_msg,
                 "tool_name": "view_document"
             }
     except Exception as e:
+        print(f"❌ 查看文档执行异常: {str(e)}")
         return {
             "success": False,
             "error": f"查看文档执行异常: {str(e)}",

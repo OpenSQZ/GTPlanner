@@ -18,7 +18,7 @@ GTPlanner Agent层无状态化数据结构定义
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 from enum import Enum
 
@@ -36,9 +36,18 @@ class MessageRole(Enum):
 
 @dataclass
 class Message:
-    """标准化的对话消息数据结构（完全符合OpenAI API标准格式）"""
+    """
+    标准化的对话消息数据结构（完全符合OpenAI API标准格式）
+    
+    支持多模态内容：
+    - 纯文本：content = "text string"
+    - 多模态（文本+图片）：content = [
+        {"type": "text", "text": "描述"},
+        {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,..."}}
+      ]
+    """
     role: MessageRole
-    content: str
+    content: Union[str, List[Dict[str, Any]]]  # 支持文本和多模态格式
     timestamp: str
     metadata: Optional[Dict[str, Any]] = None
     tool_calls: Optional[List[Dict[str, Any]]] = None  # assistant消息专用
@@ -66,12 +75,45 @@ class Message:
         """从字典创建Message实例"""
         return cls(
             role=MessageRole(data["role"]),
-            content=data["content"],
+            content=data["content"],  # 自动支持字符串和列表格式
             timestamp=data["timestamp"],
             metadata=data.get("metadata"),
             tool_calls=data.get("tool_calls"),
             tool_call_id=data.get("tool_call_id")
         )
+    
+    def is_multimodal(self) -> bool:
+        """判断消息是否包含多模态内容（图片）"""
+        if isinstance(self.content, list):
+            return any(
+                item.get("type") == "image_url" 
+                for item in self.content 
+                if isinstance(item, dict)
+            )
+        return False
+    
+    def get_text_content(self) -> str:
+        """提取消息的纯文本内容（兼容多模态格式）"""
+        if isinstance(self.content, str):
+            return self.content
+        elif isinstance(self.content, list):
+            # 从多模态内容中提取文本部分
+            text_parts = [
+                item.get("text", "") 
+                for item in self.content 
+                if isinstance(item, dict) and item.get("type") == "text"
+            ]
+            return " ".join(text_parts).strip()
+        return ""
+    
+    def get_image_count(self) -> int:
+        """获取消息中包含的图片数量"""
+        if isinstance(self.content, list):
+            return sum(
+                1 for item in self.content 
+                if isinstance(item, dict) and item.get("type") == "image_url"
+            )
+        return 0
 
 
 # ToolExecution类已删除 - 过度设计，工具执行信息现在通过OpenAI标准格式的tool消息保存
@@ -200,12 +242,30 @@ class AgentResult:
 
 
 
-def create_user_message(content: str) -> Message:
-    """创建用户消息的便捷函数"""
+def create_user_message(
+    content: Union[str, List[Dict[str, Any]]],
+    metadata: Optional[Dict[str, Any]] = None
+) -> Message:
+    """
+    创建用户消息的便捷函数
+    
+    Args:
+        content: 消息内容（支持纯文本或多模态格式）
+            - 纯文本：字符串
+            - 多模态：列表格式，如 [
+                {"type": "text", "text": "描述"},
+                {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,..."}}
+              ]
+        metadata: 可选的元数据
+    
+    Returns:
+        Message 对象
+    """
     return Message(
         role=MessageRole.USER,
         content=content,
-        timestamp=datetime.now().isoformat()
+        timestamp=datetime.now().isoformat(),
+        metadata=metadata
     )
 
 
