@@ -174,59 +174,60 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
     }
     tools.append(design_tool)
     
+    # TODO: 数据库设计工具暂时禁用，后续再开放
     # 添加 database_design 工具
-    database_design_tool = {
-        "type": "function",
-        "function": {
-            "name": "database_design",
-            "description": "⭐ （design 的后置工具）生成 MySQL 数据库表结构设计文档。**重要**：必须在 design 之后调用，因为需要基于系统设计中的 Shared Store 和节点定义来设计表结构。建议流程：先调用 design 生成系统设计，再调用 database_design 基于系统设计生成数据库表结构。这是一个原子化的工具，所有需要的信息都通过参数显式传入。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "user_requirements": {
-                        "type": "string",
-                        "description": "用户的项目需求描述（必需）"
-                    },
-                    "system_design": {
-                        "type": "string",
-                        "description": "⭐ 系统设计文档（必需）。**必须**从 design 工具的返回结果中获取完整的设计文档内容，包含 Shared Store 和节点定义"
-                    },
-                    "project_planning": {
-                        "type": "string",
-                        "description": "项目规划内容（可选）。如果之前调用了 short_planning，可以将其结果传入"
-                    },
-                    "recommended_prefabs": {
-                        "type": "array",
-                        "description": "推荐预制件列表（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，可以传入相关的数据库预制件信息",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "id": {
-                                    "type": "string",
-                                    "description": "预制件唯一标识符"
-                                },
-                                "version": {
-                                    "type": "string",
-                                    "description": "预制件版本号"
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "预制件名称"
-                                },
-                                "description": {
-                                    "type": "string",
-                                    "description": "预制件功能描述"
-                                }
-                            },
-                            "required": ["id", "version", "name", "description"]
-                        }
-                    }
-                },
-                "required": ["user_requirements", "system_design"]
-            }
-        }
-    }
-    tools.append(database_design_tool)
+    # database_design_tool = {
+    #     "type": "function",
+    #     "function": {
+    #         "name": "database_design",
+    #         "description": "⭐ （design 的后置工具）生成 MySQL 数据库表结构设计文档。**重要**：必须在 design 之后调用，因为需要基于系统设计中的 Shared Store 和节点定义来设计表结构。建议流程：先调用 design 生成系统设计，再调用 database_design 基于系统设计生成数据库表结构。这是一个原子化的工具，所有需要的信息都通过参数显式传入。",
+    #         "parameters": {
+    #             "type": "object",
+    #             "properties": {
+    #                 "user_requirements": {
+    #                     "type": "string",
+    #                     "description": "用户的项目需求描述（必需）"
+    #                 },
+    #                 "system_design": {
+    #                     "type": "string",
+    #                     "description": "⭐ 系统设计文档（必需）。**必须**从 design 工具的返回结果中获取完整的设计文档内容，包含 Shared Store 和节点定义"
+    #                 },
+    #                 "project_planning": {
+    #                     "type": "string",
+    #                     "description": "项目规划内容（可选）。如果之前调用了 short_planning，可以将其结果传入"
+    #                 },
+    #                 "recommended_prefabs": {
+    #                     "type": "array",
+    #                     "description": "推荐预制件列表（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，可以传入相关的数据库预制件信息",
+    #                     "items": {
+    #                         "type": "object",
+    #                         "properties": {
+    #                             "id": {
+    #                                 "type": "string",
+    #                                 "description": "预制件唯一标识符"
+    #                             },
+    #                             "version": {
+    #                                 "type": "string",
+    #                                 "description": "预制件版本号"
+    #                             },
+    #                             "name": {
+    #                                 "type": "string",
+    #                                 "description": "预制件名称"
+    #                             },
+    #                             "description": {
+    #                                 "type": "string",
+    #                                 "description": "预制件功能描述"
+    #                             }
+    #                         },
+    #                         "required": ["id", "version", "name", "description"]
+    #                     }
+    #                 }
+    #             },
+    #             "required": ["user_requirements", "system_design"]
+    #         }
+    #     }
+    # }
+    # tools.append(database_design_tool)
     
     # 添加 search_prefabs 工具（降级方案，无需向量服务）
     search_prefabs_tool = {
@@ -371,8 +372,9 @@ async def execute_agent_tool(tool_name: str, arguments: Dict[str, Any], shared: 
             return await _execute_research(arguments, shared)
         elif tool_name == "design":
             return await _execute_design(arguments, shared)
-        elif tool_name == "database_design":
-            return await _execute_database_design(arguments, shared)
+        # TODO: 数据库设计工具暂时禁用，后续再开放
+        # elif tool_name == "database_design":
+        #     return await _execute_database_design(arguments, shared)
         elif tool_name == "edit_document":
             return await _execute_edit_document(arguments, shared)
         elif tool_name == "view_document":
@@ -640,6 +642,8 @@ async def _execute_design(arguments: Dict[str, Any], shared: Dict[str, Any] = No
         }
 
 
+# TODO: 数据库设计工具暂时禁用，后续再开放
+# 保留函数实现，暂时不提供给 LLM 调用
 async def _execute_database_design(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
     """
     执行数据库表结构设计 - 原子化工具，所有参数显式传入
