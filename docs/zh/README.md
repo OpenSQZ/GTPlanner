@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>一款智能产品需求文档（PRD）生成工具，能将自然语言描述转化为结构化的、适用于 Vibe coding 的技术文档。</strong>
+  <strong>一款智能体需求描述文档（Agent PRD）生成工具，能将自然语言描述转化为结构化的、适用于 Vibe coding 的技术文档。</strong>
 </p>
 
 <p align="center">
@@ -29,21 +29,25 @@
 
 ---
 
-## 概览
+## 引言——如何让Agent自动帮你干活？
 
-GTPlanner 是一款专为 "vibe coding" 设计的先进 AI 工具，旨在将高层次的想法和需求，高效转化为结构清晰、内容详尽的技术文档。
+- 首先，你得定义活是什么：输入有哪些，具体操作步骤是什么，输出什么内容？如何定义任务成功了？。这些内容一般称为SOP，**能被SOP化的工作，就能被AI自动化。**
+- 其次，你得给Agent合适的工具，人能用OFFICE全家桶, 能上网冲浪，能管理文件存数据等等。如果要Agent干活，这些工具也得给他。
+- 最后，你得告诉Agent按照什么形式来组织成果。
 
-### 核心特性
+这些定义在Agent语境下，有个更合适的词语，叫做上下文工程。具体来说，在Code Agent(Claude Code/Cursor/Augment/Devin/...)开始编码Agent前，我们希望用文档明确：
+- design.md：定义活儿是什么。
+- prefab.md：定义有哪些工具，如何使用。我们称为**预制件**。
+- starter-kit：定义开发框架，可用环境等（这一部分不同项目间基本不变）。
 
-- **智能推理**：分析需求，生成专业的技术规划方案
-- **Prefab 生态**：可复用的 AI 组件，扩展规划能力
-- **多接口支持**：CLI、REST API、MCP 多种集成方式
+这就是GTPlanner想做的事情，简化搭建Agent的流程。
 
-### 三大核心部分
+## 为什么选择GTPlanner
 
-- **[GTPlanner-frontend](https://the-agent-builder.com/)**：现代化 Web UI，提供流畅的在线规划体验（推荐）
-- **GTPlanner Backend**：基于 Agent 架构的强大后端引擎
-- **Prefab 生态系统**：标准化、可复用的 AI 组件系统 [了解更多](../../prefabs/README_zh.md)
+GTPlanner的目标是帮您轻松生成一份Agent PRD，也即AI能够读懂的标准操作程序（standard operating procedure , SOP）。快速自动化你手边的任务。GTPlanner的设计哲学是：
+- 追求**确定性**：通过清晰的SOP（Agent PRD）消除AI的歧义，确保其执行路径和结果高度可控且可预测。
+- 追求**可组合**: 将SOP分解为可复用的“预制件”（Prefab）和任务模块，像搭积木一样组合它们，以构建更复杂的工作流。
+- 追求**自由度**：我们不绑定执行平台（如n8n），而是直接使用最简的AI框架和原生python代码进行构建，从而保证最大限度的灵活和自由。
 
 ---
 
@@ -340,6 +344,11 @@ uv sync --dev
 
 提交案例 → 在 `docs/examples/community-cases/` 创建 PR
 
+
+如有疑问欢迎扫码进群：
+![b5b01fffde3fcad1d4d0b8bc556f716](https://github.com/user-attachments/assets/5fc4f146-9558-4444-b360-2217eb646162)
+
+
 ---
 
 ## 许可证
@@ -357,5 +366,5 @@ uv sync --dev
 ---
 
 <p align="center">
-  <strong>GTPlanner</strong> - 用 AI 的力量将您的想法转换为结构化的技术文档
+  <strong>GTPlanner</strong> - 用 AI 的力量将您的想法转换为结构化的施工图。
 </p>
