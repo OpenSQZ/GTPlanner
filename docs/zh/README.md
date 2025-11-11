@@ -346,7 +346,7 @@ uv sync --dev
 
 
 如有疑问欢迎扫码进群：
-![b5b01fffde3fcad1d4d0b8bc556f716|400](https://github.com/user-attachments/assets/5fc4f146-9558-4444-b360-2217eb646162)
+<img src="https://github.com/user-attachments/assets/5fc4f146-9558-4444-b360-2217eb646162" width="400" alt="联系二维码">
 
 
 ---
