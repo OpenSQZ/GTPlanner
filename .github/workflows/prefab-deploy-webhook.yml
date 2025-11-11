@@ -245,18 +245,33 @@ jobs:
                           headers['X-Hub-Signature-256'] = signature
 
                       request = Request(deploy_url, data=body, headers=headers, method='POST')
-                      with urlopen(request, timeout=60, context=ssl_context) as response:
-                          response_data = response.read().decode('utf-8')
-                          status_code = response.status
+                      try:
+                          with urlopen(request, timeout=60, context=ssl_context) as response:
+                              response_data = response.read().decode('utf-8')
+                              status_code = response.status
 
-                          if status_code in (200, 202):
-                              print(f"✅ Deployment triggered for {prefab_id}@{version}")
-                              print(f"   Response: {response_data}")
+                              if status_code in (200, 202):
+                                  print(f"✅ Deployment triggered for {prefab_id}@{version}")
+                                  print(f"   Response: {response_data}")
+                              else:
+                                  print(f"::error::Failed to deploy {prefab_id}@{version}")
+                                  print(f"   Status: {status_code}")
+                                  print(f"   Response: {response_data}")
+                                  sys.exit(1)
+                      except Exception as upload_error:
+                          # 捕获 HTTP 错误并显示详细信息
+                          error_msg = str(upload_error)
+                          if hasattr(upload_error, 'read'):
+                              try:
+                                  error_body = upload_error.read().decode('utf-8')
+                                  print(f"::error::Failed to upload {prefab_id}@{version}")
+                                  print(f"   Error: {error_msg}")
+                                  print(f"   Server response: {error_body}")
+                              except:
+                                  print(f"::error::Failed to upload {prefab_id}@{version}: {error_msg}")
                           else:
-                              print(f"::error::Failed to deploy {prefab_id}@{version}")
-                              print(f"   Status: {status_code}")
-                              print(f"   Response: {response_data}")
-                              sys.exit(1)
+                              print(f"::error::Failed to upload {prefab_id}@{version}: {error_msg}")
+                          raise
 
               except Exception as e:
                   print(f"::error::Failed to process {prefab_id}@{version}: {e}")
