@@ -9,12 +9,14 @@
 import asyncio
 import sys
 from pathlib import Path
+import pytest
 
 # 添加项目根目录到 Python 路径
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 
+@pytest.mark.asyncio
 async def test_local_search():
     """测试本地模糊搜索功能"""
     print("=" * 60)
@@ -46,6 +48,7 @@ async def test_local_search():
     print("\n" + "=" * 60)
 
 
+@pytest.mark.asyncio
 async def test_search_prefabs_tool():
     """测试 search_prefabs agent 工具"""
     print("=" * 60)
@@ -78,6 +81,7 @@ async def test_search_prefabs_tool():
     print("\n" + "=" * 60)
 
 
+@pytest.mark.asyncio
 async def test_prefab_recommend_tool():
     """测试 prefab_recommend agent 工具（需要向量服务）"""
     print("=" * 60)
@@ -148,6 +152,7 @@ async def test_prefab_recommend_tool():
     print("\n" + "=" * 60)
 
 
+@pytest.mark.asyncio
 async def test_prefab_indexer():
     """测试预制件索引构建"""
     print("=" * 60)

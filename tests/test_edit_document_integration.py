@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from gtplanner.agent.function_calling.agent_tools import _execute_edit_document
 from gtplanner.agent.streaming.stream_types import StreamEventType
+import pytest
 
 
 class MockStreamingSession:
@@ -50,6 +51,7 @@ def create_mock_llm_response():
     return mock_response
 
 
+@pytest.mark.asyncio
 async def test_complete_integration():
     """完整的集成测试"""
     print("\n" + "="*80)

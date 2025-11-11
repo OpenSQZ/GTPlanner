@@ -2,7 +2,6 @@
 name = "prefab-releases-validators"
 version = "1.0.0"
 description = "Validation scripts for prefab-releases repository"
-readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 

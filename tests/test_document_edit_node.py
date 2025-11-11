@@ -7,6 +7,7 @@ import json
 from unittest.mock import Mock, AsyncMock, patch
 import sys
 import os
+import pytest
 
 # 添加项目根目录到路径
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -25,6 +26,7 @@ def create_mock_response(content: str):
     return mock_response
 
 
+@pytest.mark.asyncio
 async def test_normal_json():
     """测试场景1: 正常的 JSON 响应"""
     print("\n" + "="*80)
@@ -73,6 +75,7 @@ async def test_normal_json():
         print("\n✅ 测试场景 1 通过！")
 
 
+@pytest.mark.asyncio
 async def test_markdown_wrapped_json():
     """测试场景2: Markdown 代码块包裹的 JSON"""
     print("\n" + "="*80)
@@ -120,6 +123,7 @@ async def test_markdown_wrapped_json():
         print("\n✅ 测试场景 2 通过！")
 
 
+@pytest.mark.asyncio
 async def test_plain_markdown_wrapped():
     """测试场景3: 普通 Markdown 代码块包裹 (```)"""
     print("\n" + "="*80)
@@ -166,6 +170,7 @@ async def test_plain_markdown_wrapped():
         print("\n✅ 测试场景 3 通过！")
 
 
+@pytest.mark.asyncio
 async def test_empty_edits():
     """测试场景4: 空的编辑列表"""
     print("\n" + "="*80)
@@ -204,6 +209,7 @@ async def test_empty_edits():
         print("\n✅ 测试场景 4 通过（正确处理空结果）！")
 
 
+@pytest.mark.asyncio
 async def test_invalid_json():
     """测试场景5: 无效的 JSON"""
     print("\n" + "="*80)
@@ -241,6 +247,7 @@ async def test_invalid_json():
         print("\n✅ 测试场景 5 通过（正确处理解析错误）！")
 
 
+@pytest.mark.asyncio
 async def test_validation_failure():
     """测试场景6: 编辑验证失败（search 文本不存在）"""
     print("\n" + "="*80)

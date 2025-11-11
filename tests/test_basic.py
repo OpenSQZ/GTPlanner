@@ -63,9 +63,9 @@ def test_project_structure():
     
     # 检查关键目录是否存在
     key_dirs = [
-        'agent',
-        'utils',
-        'api'
+        'gtplanner',
+        'gtplanner/agent',
+        'gtplanner/utils'
     ]
     
     for dir_name in key_dirs:

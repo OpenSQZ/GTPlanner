@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from gtplanner.agent.subflows.document_edit.nodes.document_edit_node import DocumentEditNode
 from gtplanner.agent.streaming.event_helpers import emit_document_edit_proposal
 from gtplanner.agent.streaming.stream_types import StreamEventType
+import pytest
 
 
 class MockStreamingSession:
@@ -57,6 +58,7 @@ def create_mock_response_with_edits():
     return mock_response
 
 
+@pytest.mark.asyncio
 async def test_emit_document_edit_proposal_direct():
     """测试场景1: 直接测试 emit_document_edit_proposal 函数"""
     print("\n" + "="*80)
@@ -137,6 +139,7 @@ async def test_emit_document_edit_proposal_direct():
     print("\n✅ 测试场景 1 通过！emit_document_edit_proposal 函数工作正常")
 
 
+@pytest.mark.asyncio
 async def test_emit_document_edit_proposal_without_session():
     """测试场景2: streaming_session 为 None 的情况"""
     print("\n" + "="*80)
@@ -167,6 +170,7 @@ async def test_emit_document_edit_proposal_without_session():
     print("✅ 测试场景 2 通过！正确处理了 streaming_session 为 None 的情况")
 
 
+@pytest.mark.asyncio
 async def test_document_edit_node_full_flow():
     """测试场景3: DocumentEditNode 完整流程（包括事件发送）"""
     print("\n" + "="*80)
@@ -284,6 +288,7 @@ async def test_document_edit_node_full_flow():
     print("\n✅ 测试场景 3 通过！DocumentEditNode 完整流程（包括事件发送）正常工作")
 
 
+@pytest.mark.asyncio
 async def test_event_serialization():
     """测试场景4: 验证事件可以正确序列化为 SSE 格式"""
     print("\n" + "="*80)

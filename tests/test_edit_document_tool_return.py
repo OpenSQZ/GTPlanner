@@ -12,6 +12,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from gtplanner.agent.function_calling.agent_tools import _execute_edit_document
+import pytest
 
 
 class MockStreamingSession:
@@ -26,6 +27,7 @@ class MockStreamingSession:
         self.emitted_events.append(event)
 
 
+@pytest.mark.asyncio
 async def test_tool_return_value():
     """测试 edit_document 工具的返回值格式"""
     print("\n" + "="*80)
@@ -149,6 +151,7 @@ CREATE TABLE `overdue_acceptors` (
     return result
 
 
+@pytest.mark.asyncio
 async def test_tool_return_value_comparison():
     """对比修改前后的返回值"""
     print("\n" + "="*80)
