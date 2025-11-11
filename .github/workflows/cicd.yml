@@ -145,7 +145,7 @@ jobs:
         echo "latest-image-name=${LATEST_IMAGE_NAME}" >> $GITHUB_OUTPUT
         
     - name: 构建并推送Docker镜像
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./Dockerfile
@@ -201,7 +201,7 @@ jobs:
         echo "full-image-name=${FULL_IMAGE_NAME}" >> $GITHUB_OUTPUT
 
     - name: 构建并推送测试Docker镜像
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./Dockerfile
