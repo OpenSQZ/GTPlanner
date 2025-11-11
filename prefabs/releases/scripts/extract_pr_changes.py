@@ -23,14 +23,18 @@ def main():
     """主函数"""
     try:
         # 获取 base 和 head 的文件内容
-        base_content = run_command([
-            'git', 'show', 'origin/main:community-prefabs.json'
-        ])
+        try:
+            base_content = run_command([
+                'git', 'show', 'origin/main:prefabs/releases/community-prefabs.json'
+            ])
+            base_data = json.loads(base_content) if base_content else []
+        except subprocess.CalledProcessError:
+            # 文件在 main 分支不存在，视为空数组
+            base_data = []
+        
         head_content = run_command([
-            'git', 'show', 'HEAD:community-prefabs.json'
+            'git', 'show', 'HEAD:prefabs/releases/community-prefabs.json'
         ])
-
-        base_data = json.loads(base_content) if base_content else []
         head_data = json.loads(head_content)
 
         # 创建字典方便查找
