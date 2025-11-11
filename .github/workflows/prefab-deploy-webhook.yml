@@ -209,30 +209,29 @@ jobs:
 
                       # 构建 multipart form data（手动构建，避免依赖 requests 库）
                       boundary = '----WebKitFormBoundary' + os.urandom(16).hex()
-                      parts = []
+                      body_parts = []
 
                       # 添加文本字段
                       for field_name, field_value in [
                           ('prefab_id', prefab_id),
                           ('version', version)
                       ]:
-                          parts.append(f'--{boundary}'.encode())
-                          parts.append(f'Content-Disposition: form-data; name="{field_name}"'.encode())
-                          parts.append(b'')
-                          parts.append(str(field_value).encode())
+                          body_parts.append(f'--{boundary}\r\n'.encode())
+                          body_parts.append(f'Content-Disposition: form-data; name="{field_name}"\r\n\r\n'.encode())
+                          body_parts.append(f'{field_value}\r\n'.encode())
 
                       # 添加文件字段
-                      parts.append(f'--{boundary}'.encode())
-                      parts.append(
-                          f'Content-Disposition: form-data; name="whl_file"; filename="{whl_filename}"'.encode()
+                      body_parts.append(f'--{boundary}\r\n'.encode())
+                      body_parts.append(
+                          f'Content-Disposition: form-data; name="whl_file"; filename="{whl_filename}"\r\n'.encode()
                       )
-                      parts.append(b'Content-Type: application/octet-stream')
-                      parts.append(b'')
-                      parts.append(file_content)  # 使用已读取的内容
-                      parts.append(f'--{boundary}--'.encode())
+                      body_parts.append(b'Content-Type: application/octet-stream\r\n\r\n')
+                      body_parts.append(file_content)
+                      body_parts.append(b'\r\n')
+                      body_parts.append(f'--{boundary}--\r\n'.encode())
 
                       # 组装请求体
-                      body = b'\r\n'.join(parts)
+                      body = b''.join(body_parts)
 
                       # 发送请求
                       headers = {
