@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Community Prefabs Index",
+  "description": "Schema for the community-prefabs.json index file",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "version",
+      "author",
+      "repo_url",
+      "name",
+      "description"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Unique identifier for the prefab (kebab-case)",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+        "minLength": 3,
+        "maxLength": 64
+      },
+      "version": {
+        "type": "string",
+        "description": "Semantic version string",
+        "pattern": "^\\d+\\.\\d+\\.\\d+$"
+      },
+      "author": {
+        "type": "string",
+        "description": "GitHub username of the author",
+        "minLength": 1,
+        "maxLength": 39
+      },
+      "repo_url": {
+        "type": "string",
+        "description": "URL to the source code repository (artifact will be auto-constructed: {repo_url}/releases/download/v{version}/{id}-{version}.whl)",
+        "format": "uri",
+        "pattern": "^https://github\\.com/[^/]+/[^/]+/?$"
+      },
+      "name": {
+        "type": "string",
+        "description": "Human-readable name of the prefab",
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "description": {
+        "type": "string",
+        "description": "Detailed description of the prefab's functionality",
+        "minLength": 10,
+        "maxLength": 500
+      },
+      "tags": {
+        "type": "array",
+        "description": "Tags for categorization and discovery",
+        "items": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "uniqueItems": true,
+        "maxItems": 10
+      }
+    },
+    "additionalProperties": false
+  }
+}

@@ -21,14 +21,13 @@ def main():
     """主函数"""
     # 获取脚本所在目录
     script_dir = Path(__file__).parent
-    cli_path = script_dir / "agent" / "cli" / "gtplanner_cli.py"
     
-    # 构建命令
-    cmd = [sys.executable, str(cli_path)] + sys.argv[1:]
+    # 使用模块方式运行，避免相对导入问题
+    cmd = [sys.executable, "-m", "gtplanner.agent.cli.gtplanner_cli"] + sys.argv[1:]
     
     # 执行CLI
     try:
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True, cwd=str(script_dir))
     except subprocess.CalledProcessError as e:
         sys.exit(e.returncode)
     except KeyboardInterrupt:

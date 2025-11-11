@@ -3,49 +3,41 @@ import json
 import logging
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-
-
 # 导入 SSE GTPlanner API
-from agent.api.agent_api import SSEGTPlanner
+from gtplanner.agent.api.agent_api import SSEGTPlanner
 
 # 导入索引管理器
-from agent.utils.startup_init import initialize_application
+from gtplanner.agent.utils.startup_init import initialize_application
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title="GTPlanner API",
-    description="智能规划助手 API，支持流式响应和实时工具调用",
-    version="1.0.0"
-)
-
-# 应用启动事件 - 预加载工具索引
-@app.on_event("startup")
-async def startup_event():
-    """应用启动时预加载工具索引"""
+# 应用生命周期管理
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期管理：启动和关闭事件"""
+    # 启动时执行
     logger.info("🚀 GTPlanner API 启动中...")
-
+    
     try:
-        # 初始化应用，包括预加载工具索引
+        # 初始化应用，包括预加载预制件索引
         result = await initialize_application(
-            tools_dir="tools",
             preload_index=True
         )
 
         if result["success"]:
             logger.info("✅ 应用初始化成功")
-            if "tool_index" in result["components"]:
-                index_info = result["components"]["tool_index"]
-                logger.info(f"📋 工具索引已就绪: {index_info.get('index_name', 'N/A')}")
+            if "prefab_index" in result["components"]:
+                index_info = result["components"]["prefab_index"]
+                logger.info(f"📦 预制件索引已就绪: {index_info.get('index_name', 'N/A')}")
         else:
             logger.error("❌ 应用初始化失败")
             for error in result["errors"]:
@@ -54,6 +46,34 @@ async def startup_event():
     except Exception as e:
         logger.error(f"❌ 启动时初始化失败: {str(e)}")
         # 不阻止应用启动，但记录错误
+    
+    yield  # 应用运行期间
+    
+    # 关闭时执行（如果需要清理资源）
+    logger.info("👋 GTPlanner API 正在关闭...")
+
+app = FastAPI(
+    title="GTPlanner API",
+    description="""
+智能规划助手 API，支持流式响应和实时工具调用
+
+## 核心功能
+- ✅ 流式 SSE 响应
+- ✅ 实时工具调用
+- ✅ 多模态输入（文本 + 图片）
+- ✅ 多语言支持（中文、英文、日文、西班牙语、法语）
+
+## 多模态支持 🖼️
+支持用户发送图片（架构图、截图、设计稿、流程图等）：
+- 图片格式：HTTP URL 或 Base64 Data URL
+- 图片类型：JPEG、PNG、GIF、WebP 等
+- 细节级别：auto（默认）、low（快速）、high（高精度）
+
+详见 /api/chat/agent 接口文档。
+    """,
+    version="1.0.0",
+    lifespan=lifespan
+)
 
 # CORS 配置
 app.add_middleware(
@@ -64,9 +84,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 挂载静态文件
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 # 现有路由已移除，只保留 SSE Agent 路由
 
 # 创建全局 SSE API 实例
@@ -74,7 +91,33 @@ sse_api = SSEGTPlanner(verbose=True)
 
 # 请求模型
 class AgentContextRequest(BaseModel):
-    """AgentContext 请求模型（直接对应后端 AgentContext）"""
+    """
+    AgentContext 请求模型（直接对应后端 AgentContext）
+    
+    支持多模态消息（文本+图片）：
+    dialogue_history 中的每条消息的 content 字段可以是：
+    1. 纯文本字符串：
+       {"role": "user", "content": "设计一个系统", "timestamp": "..."}
+    
+    2. 多模态列表（文本+图片）：
+       {
+           "role": "user",
+           "content": [
+               {"type": "text", "text": "分析这个架构图"},
+               {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,...", "detail": "high"}}
+           ],
+           "timestamp": "..."
+       }
+    
+    图片格式支持：
+    - HTTP/HTTPS URL: "https://example.com/image.jpg"
+    - Base64 Data URL: "data:image/jpeg;base64,/9j/4AAQ..."
+    
+    图片细节级别（detail）：
+    - "auto": 自动选择（默认，平衡速度和准确性）
+    - "low": 低细节模式（更快、更便宜，适合简单图片）
+    - "high": 高细节模式（更慢、更贵，适合复杂图片如架构图、设计稿）
+    """
     session_id: str
     dialogue_history: List[Dict[str, Any]]
     tool_execution_results: Dict[str, Any] = {}
@@ -122,22 +165,44 @@ async def chat_agent_stream(request: AgentContextRequest):
 
         logger.info(f"Starting SSE stream for session: {request.session_id}, messages: {len(request.dialogue_history)}")
 
+        # 解析多模态消息内容（如果 content 是 JSON 字符串，解析成数组）
+        def parse_message_content(message: Dict[str, Any]) -> Dict[str, Any]:
+            """解析消息内容，支持多模态格式"""
+            content = message.get("content")
+            if isinstance(content, str) and content.strip().startswith('['):
+                try:
+                    parsed = json.loads(content)
+                    if isinstance(parsed, list):
+                        message["content"] = parsed
+                        logger.debug(f"Parsed multimodal content: {len(parsed)} parts")
+                except json.JSONDecodeError:
+                    # 解析失败，保持原字符串
+                    pass
+            return message
+        
+        # 处理 dialogue_history 中的所有消息
+        parsed_history = [parse_message_content(msg.copy()) for msg in request.dialogue_history]
+        request.dialogue_history = parsed_history
+
         async def generate_sse_stream():
             """生成 SSE 数据流"""
             try:
-                # 发送连接建立事件
-                connection_event = {
-                    "status": "connected",
+                # 发送对话开始事件（使用标准的 conversation_start 事件类型）
+                conversation_start_event = {
+                    "event_type": "conversation_start",
                     "timestamp": datetime.now().isoformat(),
                     "session_id": request.session_id,
-                    "dialogue_history_length": len(request.dialogue_history),
-                    "config": {
-                        "include_metadata": request.include_metadata,
-                        "buffer_events": request.buffer_events,
-                        "heartbeat_interval": request.heartbeat_interval
+                    "data": {
+                        "user_input": request.dialogue_history[-1].get("content", "") if request.dialogue_history else "",
+                        "dialogue_history_length": len(request.dialogue_history),
+                        "config": {
+                            "include_metadata": request.include_metadata,
+                            "buffer_events": request.buffer_events,
+                            "heartbeat_interval": request.heartbeat_interval
+                        }
                     }
                 }
-                yield f"event: connection\ndata: {json.dumps(connection_event, ensure_ascii=False)}\n\n"
+                yield f"event: conversation_start\ndata: {json.dumps(conversation_start_event, ensure_ascii=False)}\n\n"
 
                 # 创建一个队列来收集 SSE 数据
                 import asyncio
@@ -173,20 +238,14 @@ async def chat_agent_stream(request: AgentContextRequest):
                             heartbeat_interval=request.heartbeat_interval
                         )
 
-                        # 发送完成事件
-                        completion_event = {
-                            "result": result,
-                            "timestamp": datetime.now().isoformat()
+                        # 发送对话结束事件（使用标准的 conversation_end 事件类型）
+                        conversation_end_event = {
+                            "event_type": "conversation_end",
+                            "timestamp": datetime.now().isoformat(),
+                            "session_id": result.get('session_id'),
+                            "data": result
                         }
-                        await sse_queue.put(f"event: complete\ndata: {json.dumps(completion_event, ensure_ascii=False)}\n\n")
-
-                        # 发送连接关闭事件
-                        close_event = {
-                            "status": "closing",
-                            "message": "Stream completed successfully",
-                            "timestamp": datetime.now().isoformat()
-                        }
-                        await sse_queue.put(f"event: close\ndata: {json.dumps(close_event, ensure_ascii=False)}\n\n")
+                        await sse_queue.put(f"event: conversation_end\ndata: {json.dumps(conversation_end_event, ensure_ascii=False)}\n\n")
 
                         logger.info(f"SSE stream completed successfully for session: {result.get('session_id', 'unknown')}")
 

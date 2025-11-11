@@ -1,0 +1,60 @@
+version: 2
+updates:
+  # GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(deps)"
+    open-pull-requests-limit: 5
+
+  # Python dependencies for main project
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps)"
+    open-pull-requests-limit: 5
+    ignore:
+      # Ignore major version updates for stable dependencies
+      - dependency-name: "pocketflow"
+        update-types: ["version-update:semver-major"]
+
+  # Python dependencies for MCP service
+  - package-ecosystem: "pip"
+    directory: "/mcp"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "python"
+      - "mcp"
+    commit-message:
+      prefix: "chore(deps)"
+    open-pull-requests-limit: 3
+
+  # Python dependencies for Prefab releases
+  - package-ecosystem: "pip"
+    directory: "/prefabs/releases"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "python"
+      - "prefabs"
+    commit-message:
+      prefix: "chore(deps)"
+    open-pull-requests-limit: 3
+

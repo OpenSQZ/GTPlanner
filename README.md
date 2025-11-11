@@ -1,466 +1,179 @@
-# GTPlanner: AI-Powered PRD Generation Tool
+# GTPlanner: AI-Powered PRD Generator
 
 <p align="center">
   <img src="./assets/banner.png" width="800" alt="GTPlanner Banner"/>
 </p>
 
 <p align="center">
-  <strong>An intelligent Product Requirement Document (PRD) generation tool that transforms natural language descriptions into structured technical documents suitable for Vibe coding.</strong>
+  <strong>An intelligent Agent PRD generation tool that transforms natural language descriptions into structured technical documentation optimized for Vibe coding.</strong>
 </p>
 
 <p align="center">
-  <a href="#-overview">Overview</a> •
-  <a href="#-web-ui-recommended">Web UI</a> •
+  <a href="#overview">Overview</a> •
+  <a href="#web-ui-recommended">Web UI</a> •
   <a href="#mcp-integration">MCP Integration</a> •
-  <a href="#-quickstart">Quickstart</a> •
-  <a href="#-features">Features</a> •
-  <a href="#-environment-requirements-backend-and-cli">Environment Requirements</a> •
-  <a href="#-installation-backend-and-cli">Installation</a> •
-  <a href="#️-usage">Usage</a> •
-  <a href="#️-system-architecture">System Architecture</a> •
-  <a href="#-project-structure">Project Structure</a> •
-  <a href="#-dependencies">Dependencies</a> •
-  <a href="#-multilingual-support">Multilingual Support</a> •
-  <a href="#-contributing">Contributing</a> •
-  <a href="#-license">License</a> •
-  <a href="#-acknowledgements">Acknowledgements</a>
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#configuration">Configuration</a> •
+  <a href="#project-structure">Project Structure</a> •
+  <a href="#prefab-ecosystem">Prefab Ecosystem</a> •
+  <a href="#contributing">Contributing</a> •
+  <a href="#license">License</a>
 </p>
 
 <p align="center">
   <strong>Languages:</strong>
-  <a href="README.md">🇺🇸 English</a> •
-  <a href="README_zh.md">🇨🇳 简体中文</a> •
-  <a href="README_ja.md">🇯🇵 日本語</a>
+  <a href="README.md">English</a> •
+  <a href="docs/zh/README.md">简体中文</a> •
+  <a href="docs/ja/README.md">日本語</a>
 </p>
 
 ---
 
-## 🎯 Overview
+## Overview—How to Make Agents Work for You?
 
-GTPlanner is an advanced AI tool designed for "vibe coding," aimed at efficiently transforming high-level ideas and requirements into clearly structured and detailed technical documents. We recommend experiencing the full capabilities of GTPlanner through our modern **Web Interface**.
+- First, define the task: What are the inputs? What are the specific steps? What are the outputs? How do you define success? These are typically called SOPs. **Work that can be SOPed can be automated by AI.**
+- Second, provide the right tools for your agent. Humans use Office suites, browse the web, manage files and data, etc. If you want agents to work, they need these tools too.
+- Finally, specify how the agent should organize its outputs.
 
-For developers looking for deep integration and custom development, we also provide a powerful backend engine. It features an asynchronous, node-based architecture and supports various usage methods, including an interactive CLI, REST API, and MCP service.
+In the Agent context, there's a more appropriate term for this: **context engineering**. Specifically, before starting Code Agents (Claude Code/Cursor/Augment/Devin/...), we want to clearly define through documentation:
+- design.md: Define what the work is.
+- prefab.md: Define available tools and how to use them. We call these **Prefabs**.
+- starter-kit: Define development frameworks and available environments (this part is mostly consistent across projects).
 
-### 🚀 Core Features
+This is what GTPlanner does—simplifying the process of building Agents.
 
-- **🧠 Intelligent Reasoning**: Provides intelligent task analysis and planning capabilities.
-- **🔄 Streaming Response Experience**: Natively supports Server-Sent Events (SSE) for a real-time user interaction experience.
-- **⚡ Stateless Architecture**: Supports high concurrency and horizontal scaling with a stateless design, suitable for production environments.
-- **🛠️ Function Calling**: Integrates with OpenAI Function Calling for intelligent tool invocation and task execution.
-- **🌐 Multi-Interface Support**: Offers multiple integration methods, including CLI, FastAPI REST API, and MCP services.
+## Why Choose GTPlanner
 
-This project consists of two core parts:
-- **💻 GTPlanner-frontend (Web UI)**: Provides a feature-rich and interactive online planning experience. (Recommended) [🚀 Try the Live Demo!](https://the-agent-builder.com/)
-- **⚙️ GTPlanner (Backend)**: A powerful backend engine based on an Agent architecture, offering various integration methods like CLI and API.
+GTPlanner helps you easily generate an Agent PRD—a standard operating procedure (SOP) that AI can understand—to quickly automate your tasks. GTPlanner's design philosophy:
+- **Determinism**: Eliminate AI ambiguity through clear SOPs (Agent PRDs), ensuring highly controllable and predictable execution paths and results.
+- **Composability**: Break SOPs into reusable "Prefabs" and task modules, combining them like building blocks to create more complex workflows.
+- **Freedom**: We don't lock you into execution platforms (like n8n), but instead use minimal AI frameworks and native Python code for maximum flexibility and freedom.
 
-## 💻 Web UI (Recommended)
+---
 
-For the best and most convenient experience, we highly recommend using our Web UI. It provides a seamless AI planning workflow tailored for modern developers.
+## Web UI (Recommended)
 
-![GTPlanner Web UI](assets/web.gif)
+For the best experience, we strongly recommend using the Web UI. It provides a streamlined AI planning workflow tailored for modern developers.
 
-**Core Advantages:**
-- **Intelligent Planning Assistant**: Quickly generate complex system architectures and project plans with AI assistance.
-- **Instant Document Generation**: Automatically create comprehensive technical documentation from your planning sessions.
-- **Born for Vibe Coding**: Optimized output that perfectly adapts to modern AI development tools like Cursor, Windsurf, and GitHub Copilot.
-- **Team Collaboration**: Supports exporting in multiple formats for easy sharing and collaboration with your team.
+![GTPlanner Web UI](./assets/web.gif)
+
+**Key Advantages:**
+- **Intelligent Planning Assistant**: AI-assisted rapid generation of system architecture and project plans
+- **Instant Documentation**: Automatically create comprehensive technical documentation
+- **Perfectly Suited for Vibe Coding**: Optimized output for Cursor, Windsurf, GitHub Copilot
+- **Team Collaboration**: Multi-format export for easy sharing
+
+[Try the Live Demo](https://the-agent-builder.com/)
+
+---
 
 ## MCP Integration
-Plans generated by GTPlanner can be used directly in your favorite AI programming tools, seamlessly integrating into your development workflow:
 
-- In Cherry Studio:
-  - ![MCP usage in Cherry Studio](assets/Cherry_Studio_2025-06-24_01-05-49.png)
-- In Cursor:
-  - ![MCP usage in Cursor](assets/Cursor_2025-06-24_01-12-05.png)
+<details>
+<summary>Click to expand MCP integration instructions</summary>
 
+GTPlanner supports the Model Context Protocol (MCP) for direct use in AI programming tools.
+
+<table>
+<tr>
+<td width="50%">
+
+**Using in Cherry Studio**
+![MCP in Cherry Studio](./assets/Cherry_Studio_2025-06-24_01-05-49.png)
+
+</td>
+<td width="50%">
+
+**Using in Cursor**
+![MCP in Cursor](./assets/Cursor_2025-06-24_01-12-05.png)
+
+</td>
+</tr>
+</table>
+
+Detailed configuration guide → [MCP Documentation](./mcp/README.md)
+
+</details>
 
 ---
 
-## ⚡ Quickstart
+## Quick Start
 
-Here's the **smoothest** and **ready-to-use** GTPlanner experience path — from 0 to generating your first PRD, just a few commands to complete.
+### Online Quick Experience (No Installation)
 
-### 1) Online Experience (No Installation Required)
+[Try Web UI](https://the-agent-builder.com/) - WYSIWYG planning and documentation generation
 
-* Open Web UI Online Demo: [🚀 Try the Live Demo!](https://the-agent-builder.com/)
-  👉 Perfect for "getting a feel for the results" — a what-you-see-is-what-you-get planning and document generation experience.
+### Local Setup
 
-### 2) Local Setup (5 Minutes to Get Started)
+#### Prerequisites
 
-#### Environment Setup
+- **Python ≥ 3.10** (3.11+ recommended)
+- **Package Manager**: [uv](https://github.com/astral-sh/uv) (recommended)
+- **LLM API Key**: OpenAI / Anthropic / Azure OpenAI / Self-hosted compatible endpoint
 
-* **Python ≥ 3.10** (3.11+ recommended)
-* Package manager: **uv** (recommended) or **pip**
-* Prepare an OpenAI-compatible LLM API Key (e.g., `OpenAI` / `Anthropic` / `Azure OpenAI` / self-hosted endpoints)
-
-#### Clone and Install
+#### Installation
 
 ```bash
 git clone https://github.com/OpenSQZ/GTPlanner.git
 cd GTPlanner
 
-# Recommended: uv one-click install
+# Install dependencies with uv
 uv sync
-
-# Or use pip
-pip install -e .
 ```
 
-#### Configure API Key
+#### Configuration
 
-GTPlanner supports multiple configuration methods. **Required environment variables** include:
+Copy the configuration template and set your API Key:
 
 ```bash
-# Core Configuration (Required)
-LLM_API_KEY="your-api-key-here"        # API Key
-LLM_BASE_URL="https://api.openai.com/v1"  # API Base URL
-LLM_MODEL="gpt-4"                       # Model Name
-
-# Windows PowerShell users:
-# $env:LLM_API_KEY="your-api-key-here"
-# $env:LLM_BASE_URL="https://api.openai.com/v1"
-# $env:LLM_MODEL="gpt-4"
-
-# Optional Configuration
-JINA_API_KEY="your-jina-key"           # Jina AI search service key (for web search)
-
-# Langfuse Configuration (Optional, for PocketFlow Tracing)
-LANGFUSE_SECRET_KEY="your-secret-key"  # Langfuse Secret Key
-LANGFUSE_PUBLIC_KEY="your-public-key"  # Langfuse Public Key  
-LANGFUSE_HOST="https://cloud.langfuse.com"  # Langfuse Host
+cp .env.example .env
+# Edit .env file and set required environment variables
 ```
 
-##### Common Provider Configuration Examples
-
-**OpenAI Official:**
+**Required Configuration:**
 ```bash
-LLM_API_KEY="sk-your-openai-key"
+LLM_API_KEY="your-api-key-here"
 LLM_BASE_URL="https://api.openai.com/v1"
-LLM_MODEL="gpt-4"
+LLM_MODEL="gpt-5"
 ```
 
-**Azure OpenAI:**
-```bash
-LLM_API_KEY="your-azure-key"
-LLM_BASE_URL="https://your-resource.openai.azure.com/openai/deployments/your-deployment"
-LLM_MODEL="gpt-4"
-```
+Detailed configuration guide (including common providers, Langfuse, etc.) → [Configuration Documentation](./docs/configuration.md)
 
-**Proxy Services:**
-```bash
-LLM_API_KEY="your-proxy-key"
-LLM_BASE_URL="https://your-proxy-provider.com/v1"
-LLM_MODEL="gpt-4"
-```
-
-**Local Deployment:**
-```bash
-LLM_API_KEY="local-key"
-LLM_BASE_URL="http://localhost:8000/v1"
-LLM_MODEL="your-local-model"
-```
-
-##### Langfuse Tracing Configuration (Optional but Recommended)
-
-GTPlanner integrates PocketFlow Tracing for execution tracking. To enable:
-
-**Method 1: Use Configuration Script (Recommended)**
-```bash
-# Run configuration wizard
-bash configure_langfuse.sh
-```
-
-**Method 2: Manual Configuration**
-1. Visit [Langfuse Cloud](https://cloud.langfuse.com) to register an account
-2. Create a new project and get API keys
-3. Set environment variables:
-   ```bash
-   LANGFUSE_SECRET_KEY="sk-lf-..."
-   LANGFUSE_PUBLIC_KEY="pk-lf-..."
-   LANGFUSE_HOST="https://cloud.langfuse.com"
-   ```
-
-**Method 3: Temporarily Disable Tracing**
-If you don't need tracing functionality temporarily, you can ignore Langfuse configuration. The system will automatically skip tracing.
-
-> You can further configure other parameters in `settings.toml`. Default language is English, supports Chinese, Japanese, Spanish, French.
-
-### 3) Method A: CLI One-Click Generate Your First PRD (Recommended)
+### CLI Usage
 
 #### Interactive Mode
 
 ```bash
 python gtplanner.py
-# or
-python agent/cli/gtplanner_cli.py
 ```
 
-After entering, directly input your requirements, for example:
-
+After starting, simply input your requirements, for example:
 ```
-Generate a PRD for an online course platform: user registration/login, course search, preview, purchase, learning progress and assignment grading.
+Create a video analysis assistant that can automatically extract video subtitles, generate summaries and key points.
 ```
 
-> CLI comes with session management (/sessions, /load), streaming output, and multilingual interface.
-
-#### Direct Execution (Non-Interactive)
+#### Direct Execution
 
 ```bash
-python gtplanner.py "Design a project management platform with SaaS billing and team collaboration, and output PRD"
+python gtplanner.py "Design a document analysis assistant that supports PDF, Word document parsing and intelligent Q&A"
 ```
 
-### 4) Method B: Start REST API (For Integrating with Your Own Frontend/Automation)
+CLI detailed documentation (session management, parameter explanations, etc.) → [CLI Documentation](./gtplanner/agent/cli/README.md)
 
-#### Start Service
+### API Usage
+
+Start the FastAPI service:
 
 ```bash
 uv run fastapi_main.py
-# Default: http://0.0.0.0:11211
-# Docs: http://0.0.0.0:11211/docs
+# Runs on http://0.0.0.0:11211 by default
 ```
 
-#### One curl Command to Get Started (SSE/Streaming Agent API)
+Visit `http://0.0.0.0:11211/docs` to view API documentation
 
-```bash
-curl -X POST "http://127.0.0.1:11211/api/chat/agent" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "session_id": "quickstart-demo",
-    "dialogue_history": [
-      {"role":"user","content":"Generate PRD for an e-commerce agent: auto payment and risk control"}
-    ],
-    "language": "en"
-  }'
-```
+API detailed documentation (endpoint descriptions, usage examples, etc.) → [API Documentation](./gtplanner/agent/api/README.md)
 
-> This endpoint returns **SSE streaming** responses, using `StatelessGTPlanner` backend with tool execution status updates.
-
-### 5) Method C: MCP Integration (Connect to Your AI IDE / Assistant)
-
-#### Environment Configuration
-
-MCP service requires the same environment variables as the main service. 
-Rename .env.example -> .env and ensure you have set in .env file:
-
-```bash
-# Required environment variables (same as main service)
-LLM_API_KEY="your-api-key-here"
-LLM_BASE_URL="https://api.openai.com/v1"
-LLM_MODEL="gpt-4"
-
-# Optional configuration
-JINA_API_KEY="your-jina-key"  # For web search functionality
-```
-
-#### Start Service
-
-1. Start MCP service
-
-   ```bash
-   cd mcp
-   uv sync
-   uv run python mcp_service.py
-   ```
-
-   > **Note**: MCP service runs in an independent environment but inherits the main project's configuration. Ensure environment variables are correctly set before starting.
-
-2. Configure in MCP client:
-
-   ```json
-   {
-     "mcpServers": {
-       "GT-planner": { 
-         "command": "uv",
-         "args": ["run", "python", "mcp_service.py"],
-         "cwd": "/path/to/GTPlanner/mcp"
-       }
-     }
-   }
-   ```
-
-   Or connect to running service directly:
-
-   ```json
-   {
-     "mcpServers": {
-       "GT-planner": { "url": "http://127.0.0.1:8001/mcp" }
-     }
-   }
-   ```
-
-3. Available tools:
-   - `generate_flow` (Generate planning flow from requirements)
-   - `generate_design_doc` (Generate detailed PRD)
-   
-   Supports multiple languages: `en`, `zh`, `ja`, `es`, `fr`
-
-### 6) Success Validation (What You Should See)
-
-* **CLI**: Real-time streaming of "Analysis → Planning → Research/Architecture → Document Output" in terminal, with structured PRD fragments.
-* **API**: Open `/docs` for Swagger, or use `curl` to get streaming/segmented responses; response body contains final document content and step-by-step process.
-* **MCP**: Directly call corresponding tools in MCP-supporting editors (like Cursor / Cherry Studio) to generate planning/PRD.
-
-### 7) Common Issues
-
-* **Network/Dependency Issues**: Prioritize using `uv sync`, which significantly reduces environment pitfalls.
-* **Models and Costs**: Any OpenAI-compatible server works; start with minimal context and short inputs to test the pipeline, then expand requirements.
-* **Environment Variables**: Ensure `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` three core variables are correctly set.
-* **MCP Service Configuration**: MCP service requires the same environment variables as the main service, confirm environment configuration before starting.
-* **Tracing Configuration**: Langfuse is optional for execution tracking. Run `bash configure_langfuse.sh` for quick setup, or temporarily ignore.
-* **Language**: `language` can be set to `zh | en | ja | es | fr`, or let the system auto-detect.
-* **Compatibility**: Supports OpenAI, Azure OpenAI, Anthropic Claude (via proxy), and major domestic model service providers.
-
----
-
-## ✨ Features
-
-### 🧠 Intelligent Agent Capabilities
-- **🤖 Intelligent Reasoning**: Intelligently analyzes user requirements to provide professional planning suggestions.
-- **🔧 Function Calling**: Integrates with OpenAI Function Calling to support intelligent tool invocation.
-- **📊 Intelligent Planning**: Specialized planning capabilities for short-term plans, long-term designs, and architectural designs.
-- **🔍 Technical Research**: Intelligent technical research and information gathering based on Jina Search.
-- **🛠️ Tool Recommendation**: A vectorized tool recommendation system that intelligently matches the most suitable development tools.
-
-### 🚀 Modern Architecture
-- **⚡ Stateless Design**: A stateless architecture that supports high concurrency and horizontal scaling.
-- **🔄 Streaming Response**: Native support for Server-Sent Events (SSE) to provide a real-time user experience.
-- **💾 Smart Storage**: Session management based on SQLite, supporting smart compression and data persistence.
-- **📈 Execution Tracing**: Integrated with pocketflow-tracing and Langfuse for detailed execution tracing.
-
-### 🌐 Multi-Interface Support
-- **🖥️ Modern CLI**: A command-line tool that supports session management, streaming display, and a multilingual interface.
-- **🌐 REST API**: A high-performance REST API service based on FastAPI.
-- **🔌 MCP Integration**: Supports the Model Context Protocol for seamless integration with AI assistants.
-- **🖼️ Web UI**: Provides a complete web user interface when combined with the frontend.
-
-### 🌍 Globalization Support
-- **🌐 Multilingual Support**: Full support for Chinese, English, Japanese, Spanish, and French, with automatic language detection.
-- **🎯 Smart Language Detection**: Automatically identifies the user's language and provides corresponding localized responses.
-- **🔧 LLM Compatibility**: Supports various large language models (OpenAI, Anthropic, etc.).
-
----
-
-## 📋 Environment Requirements (Backend and CLI)
-
-- **Python**: 3.10 or higher
-- **Package Manager**: [uv](https://github.com/astral-sh/uv) (recommended) or pip
-- **LLM API Access**: Any OpenAI-compatible API endpoint (e.g., OpenAI, Anthropic, or a local model)
-
-## 🚀 Installation (Backend and CLI)
-
-1. Clone this repository
-
-```bash
-git clone https://github.com/OpenSQZ/GTPlanner.git
-cd GTPlanner
-```
-
-2. Install dependencies
-
-Using uv (recommended):
-```bash
-uv sync
-```
-
-Using pip:
-```bash
-pip install -r requirements.txt
-```
-
-3. Configuration
-
-GTPlanner supports any OpenAI-compatible API. You can configure your LLM, API key, environment variables, and language in the `settings.toml` file. The default language is English.
-
-```bash
-LLM_API_KEY="your-api-key-here"
-```
-
-## 🛠️ Usage
-
-### 🖥️ CLI Mode
-
-GTPlanner offers a modern CLI based on a new streaming response architecture, supporting real-time streaming display, session management, and a multilingual interface.
-
-![GTPlanner CLI](assets/cil.png)
-
-#### Interactive Mode
-
-Start the interactive CLI for a conversational experience:
-```bash
-python gtplanner.py
-# or
-python agent/cli/gtplanner_cli.py
-```
-
-**Core Features:**
-- 🔄 **Real-time Streaming Response**: See the AI's thought process and tool execution in real-time.
-- 💾 **Session Management**: Automatic persistence of conversation history, with support for loading and switching sessions.
-- 🤖 **Function Calling**: Native support for OpenAI Function Calling.
-- 📊 **Multiple Tools**: Professional tools for requirements analysis, technical research, architectural design, and more.
-- 🌍 **Multilingual Interface**: Supports interfaces in Chinese, English, Japanese, Spanish, and French.
-
-#### Direct Execution Mode
-
-Process requirements directly without entering interactive mode:
-```bash
-python gtplanner.py "Design a user management system"
-python agent/cli/gtplanner_cli.py "Analyze the requirements for an e-commerce platform"
-```
-
-#### Session Management
-
-**Load an existing session:**
-```bash
-python gtplanner.py --load <session_id>
-```
-
-**Available commands in interactive mode:**
-- `/help` - Show available commands
-- `/new` - Create a new session
-- `/sessions` - List all sessions
-- `/load <id>` - Load a specific session
-- `/delete <id>` - Delete a specific session
-- `/stats` - Show performance statistics
-- `/verbose` - Toggle verbose mode
-- `/quit` - Exit the CLI
-
-**Common Parameters:**
-- `--verbose, -v`: Display detailed processing information.
-- `--load <session_id>`: Load a specific conversation session.
-- `--language <zh|en|ja|es|fr>`: Set the interface language.
-
-### 🌐 FastAPI Backend
-
-Start the REST API service:
-
-```bash
-uv run fastapi_main.py
-```
-
-The service runs by default at `http://0.0.0.0:11211`. Access `http://0.0.0.0:11211/docs` to view the interactive API documentation.
-
-**Core Features:**
-- **🔄 SSE Streaming Response**: Real-time data transmission based on Server-Sent Events.
-- **🤖 Agent API**: Uses `StatelessGTPlanner` to provide stateless, high-concurrency processing.
-- **📊 Real-time Tool Invocation**: Real-time display of tool execution status and progress.
-- **🌍 Multilingual Support**: The API natively supports multilingual processing and responses.
-
-**Main Endpoints:**
-
-*   **Agent Streaming Chat Endpoint (Recommended)**
-    *   `POST /api/chat/agent`: A streaming Agent chat endpoint based on SSE that integrates intelligent reasoning, tool invocation, and real-time responses. This is the preferred interface for building interactive applications.
-
-*   **Health Check Endpoints**
-    *   `GET /health`: An enhanced health check endpoint that includes API status information.
-    *   `GET /api/status`: Get detailed API status information.
-
-
-
-### 🔌 MCP Service (Recommended for AI Integration)
-
-The MCP service can be seamlessly integrated with AI assistants and supports direct function calls.
-
-1. Start the MCP service.
+### MCP Integration
 
 ```bash
 cd mcp
@@ -468,259 +181,185 @@ uv sync
 uv run python mcp_service.py
 ```
 
-2. Configure your MCP client.
-
-```json
-{
-  "mcpServers": {
-    "GT-planner": {
-      "url": "http://127.0.0.1:8001/mcp"
-    }
-  }
-}
-```
-
-**Available MCP Tools:**
-- `generate_flow`: Generate a planning flow from requirements.
-- `generate_design_doc`: Create a detailed PRD.
+MCP detailed documentation (client configuration, available tools, etc.) → [MCP Documentation](./mcp/README.md)
 
 ---
 
-## 🏗️ System Architecture
+## Configuration
 
-GTPlanner adopts a modern Agent architecture built using the PocketFlow asynchronous workflow engine:
+GTPlanner supports multiple configuration methods:
 
-### 🧠 Core Agent Architecture
+- **Environment Variables** (.env file): API Key, Base URL, Model, etc.
+- **Configuration File** (settings.toml): Language, tracing, vector services, etc.
+- **Langfuse Tracing** (optional): Execution process tracing and performance analysis
 
-1.  **Main Controller Flow** (`agent/flows/react_orchestrator_refactored/`)
-    -   Intelligent task orchestration and flow control.
-    -   Supports execution tracing with `pocketflow_tracing`.
-    -   Coordinates node execution and context passing.
-
-2.  **StatelessGTPlanner** (`agent/stateless_planner.py`)
-    -   A completely stateless implementation of GTPlanner that supports high concurrency.
-    -   Native support for streaming responses.
-    -   Purely functional design, where each call is completely independent.
-
-3.  **Function Calling System** (`agent/function_calling/`)
-    -   Intelligent tool invocation integrated with OpenAI Function Calling.
-    -   Professional tools for short-term planning, technical research, architectural design, tool recommendation, and more.
-    -   Supports asynchronous tool execution and result handling.
-
-4.  **Streaming System** (`agent/streaming/`)
-    -   A streaming response system based on Server-Sent Events.
-    -   Supports real-time message transmission and tool invocation status updates.
-    -   Type-safe stream event handling.
-
-### 🔄 Intelligent Workflow
-
-```mermaid
-flowchart TD
-    A[User Input] --> B[Main Controller]
-    B --> C{Requirement Analysis}
-    C --> D[Understand Requirements]
-    D --> E{Task Planning}
-    E --> F[Invoke Tools]
-    F --> G[Short-Term Planning]
-    F --> H[Technical Research]
-    F --> I[Architecture Design]
-    F --> J[Tool Recommendation]
-    G --> K[Integrate Results]
-    H --> K
-    I --> K
-    J --> K
-    K --> L{Continue?}
-    L -->|Yes| C
-    L -->|No| M[Generate Final Result]
-```
-
-### 🛠️ Specialized Subflows
-
-- **Short-Term Planning** (`agent/subflows/short_planning/`): Generates high-level project plans and task breakdowns.
-- **Technical Research** (`agent/subflows/research/`): Intelligent technical research based on Jina Search.
-- **Architecture Design** (`agent/subflows/architecture/`): In-depth architecture design and technology selection.
-- **Tool Recommendation** (`tools/`): A vectorized tool recommendation system that supports API and Python package recommendations.
+Complete configuration guide → [Configuration Documentation](./docs/configuration.md)
 
 ---
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 GTPlanner/
-├── gtplanner.py               # Main CLI startup script
-├── fastapi_main.py           # FastAPI backend service
+├── README.md                  # Main documentation
+├── gtplanner.py              # CLI entry point
+├── fastapi_main.py           # API service entry
 ├── settings.toml             # Configuration file
-├── pyproject.toml            # Project metadata and dependencies
-├── agent/                     # Core Agent system
-│   ├── __init__.py           # Agent module entry point
-│   ├── gtplanner.py          # Stateful GTPlanner main controller
-│   ├── stateless_planner.py  # Stateless GTPlanner implementation
-│   ├── context_types.py      # Stateless data type definitions
-│   ├── pocketflow_factory.py # PocketFlow data conversion factory
-│   ├── flows/                # Main control flows
-│   │   └── react_orchestrator_refactored/ # Main controller flow
-│   ├── subflows/             # Specialized Agent subflows
-│   │   ├── short_planning/   # Short-term planning subflow
-│   │   ├── research/         # Technical research subflow
-│   │   └── architecture/     # Architecture design subflow
-│   ├── nodes/                # Atomic capability nodes
-│   │   ├── node_search.py    # Search engine node
-│   │   ├── node_url.py       # URL parsing node
-│   │   ├── node_compress.py  # Context compression node
-│   │   └── node_output.py    # Output document node
-│   ├── function_calling/     # Function Calling tools
-│   │   └── agent_tools.py    # Agent tool definitions
-│   ├── streaming/            # Streaming response system
-│   │   ├── stream_types.py   # Stream event type definitions
-│   │   ├── stream_interface.py # Streaming session interface
-│   │   └── sse_handler.py    # SSE handler
-│   ├── api/                  # Agent API implementation
-│   │   └── agent_api.py      # SSE GTPlanner API
-│   ├── cli/                  # Modern CLI implementation
-│   │   ├── gtplanner_cli.py  # Main CLI implementation
-│   │   └── cli_text_manager.py # CLI multilingual text manager
-│   └── persistence/          # Data persistence
-│       ├── sqlite_session_manager.py # SQLite session manager
-│       └── smart_compressor.py # Smart compressor
-├── mcp/                      # MCP service
-│   ├── mcp_service.py       # MCP server implementation
-│   └── pyproject.toml       # MCP-specific dependencies
-├── tools/                    # Tool recommendation system
-│   ├── apis/                # API-type tool definitions
-│   └── python_packages/     # Python package-type tool definitions
-├── utils/                    # Utility functions
-│   └── config_manager.py    # Configuration manager
-├── docs/                     # Design documents
-└── assets/                   # Project assets
+│
+├── gtplanner/                # Core code
+│   ├── agent/               # Agent system
+│   │   ├── cli/            # → [CLI Documentation](./gtplanner/agent/cli/README.md)
+│   │   ├── api/            # → [API Documentation](./gtplanner/agent/api/README.md)
+│   │   ├── flows/          # Control flows
+│   │   ├── subflows/       # Specialized subflows
+│   │   └── ...
+│   └── utils/              # Utilities
+│
+├── prefabs/                 # Prefab ecosystem
+│   ├── README.md           # → [Prefab Documentation](./prefabs/README.md)
+│   └── releases/           # Release management
+│       ├── community-prefabs.json  # Prefab registry
+│       └── CONTRIBUTING.md # → [Prefab Contributing Guide](./prefabs/releases/CONTRIBUTING.md)
+│
+├── mcp/                    # MCP service
+│   └── README.md          # → [MCP Documentation](./mcp/README.md)
+│
+├── docs/                   # Documentation
+│   ├── zh/                # Chinese documentation
+│   ├── ja/                # Japanese documentation
+│   ├── configuration.md   # Configuration guide
+│   └── architecture/      # Architecture documentation
+│
+├── workspace/             # Runtime directory
+│   ├── logs/             # Logs
+│   └── output/           # Output documents
+│
+└── tests/                # Tests
 ```
 
----
-
-## 📚 Dependencies
-
-### Core Dependencies
-- **Python** >= 3.11 - Runtime environment
-- **openai** >= 1.0.0 - LLM API communication
-- **pocketflow** == 0.0.3 - Asynchronous workflow engine
-- **pocketflow-tracing** >= 0.1.4 - Execution tracing system
-- **dynaconf** >= 3.1.12 - Configuration management
-- **aiohttp** >= 3.8.0 - Asynchronous HTTP client
-- **json-repair** >= 0.45.0 - JSON response repair
-- **python-dotenv** >= 1.0.0 - Environment variable loading
-
-### API Dependencies
-- **fastapi** == 0.115.9 - REST API framework
-- **uvicorn** == 0.23.1 - ASGI server
-- **pydantic** >= 2.5.0 - Data validation
-
-### CLI Dependencies
-- **rich** >= 13.0.0 - Terminal beautification and interaction
-
-### MCP Dependencies
-- **fastmcp** - Model Context Protocol (MCP) implementation
-
-### Development Dependencies
-- **pytest** >= 8.4.1 - Testing framework
-- **pytest-asyncio** >= 1.1.0 - Asynchronous test support
+System architecture documentation → [Architecture Documentation](./docs/architecture/README.md)
 
 ---
 
-## 🌍 Multilingual Support
+## Prefab Ecosystem
 
-GTPlanner offers comprehensive multilingual support, allowing developers worldwide to use their native language for project planning.
+GTPlanner extends capabilities through the Prefab ecosystem. Each Prefab is a standardized, reusable AI functional component.
 
-### Supported Languages
+### What is a Prefab?
 
-| Language | Code | Native Name |
-|----------|------|-------------|
-| English  | `en` | English     |
-| Chinese  | `zh` | 中文        |
-| Spanish  | `es` | Español     |
-| French   | `fr` | Français    |
-| Japanese | `ja` | 日本語      |
+Prefabs are ready-to-use AI functional modules that can be:
+- **Discovered**: GTPlanner automatically recognizes available Prefabs
+- **Deployed**: Automatically deployed to the platform after PR merge
+- **Integrated**: Called through standard APIs
+- **Version Managed**: Semantic versioning
 
-### Core Features
+### How Do Prefabs Enhance GTPlanner?
 
-- **🔍 Automatic Language Detection**: Intelligently identifies the language of the user's input.
-- **🎯 Language Priority System**: Automatically selects the most appropriate language based on user preference and the request.
-- **📝 Localized Prompt Templates**: Provides culturally adapted prompt templates for each language.
-- **🔄 Smart Fallback Mechanism**: Automatically falls back to the default language when the requested language is unavailable.
+When you contribute a Prefab to `community-prefabs.json`:
 
-### Usage
+1. **Expand Planning Capabilities**: GTPlanner learns about a new solution
+2. **Smart Recommendations**: GTPlanner recommends appropriate Prefabs when generating plans
+3. **Automatic Integration**: Planning documents include Prefab usage instructions
 
-#### CLI Mode
+**Example Prefabs:**
+- **Media Processing**: [Video Processing Prefab](./Video-processing/) - Video to audio, subtitle extraction
+- **Data Services**: [Amap Weather Prefab](./Amap-Weather/) - Weather queries
+- **Document Processing**: PDF parsing, Excel processing
+- **AI Services**: Speech recognition, image recognition
+
+### Getting Started
+
+**Using Prefabs:**
+
+Call any published Prefab through the Prefab Gateway:
+
 ```bash
-# Specify the language
-python gtplanner.py --language zh ""Summarize the WeChat group chat and create user profiles for members"
-
-# Automatic detection (inputting Chinese will be automatically recognized)
-python gtplanner.py ""Summarize the WeChat group chat and create user profiles for members"
+# 1. Create API Key on AgentBuilder platform
+# 2. Call Prefab through gateway
+curl -X POST "https://gateway.agentbuilder.com/v1/prefabs/{prefab-id}/execute" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"function": "function_name", "parameters": {...}}'
 ```
 
-#### API Mode
-```python
-# Explicitly specify the language
-response = requests.post("/api/chat/agent", json={
-    "session_id": "test-session",
-    "dialogue_history": [{"role": "user", "content": ""Summarize the WeChat group chat and create user profiles for members"}],
-    "language": "zh"
-})
-
-# Automatic detection
-response = requests.post("/api/chat/agent", json={
-    "session_id": "test-session",
-    "dialogue_history": [{"role": "user", "content": ""Summarize the WeChat group chat and create user profiles for members"}]
-})
+**Browse Available Prefabs:**
+```bash
+cat prefabs/releases/community-prefabs.json | jq '.'
 ```
 
-### Configuration
-
-Configure multilingual settings in `settings.toml`:
-
-```toml
-[default.multilingual]
-default_language = "en"
-auto_detect = true
-fallback_enabled = true
-supported_languages = ["en", "zh", "es", "fr", "ja"]
+**Create Your Own Prefab:**
+```bash
+git clone https://github.com/The-Agent-Builder/Prefab-Template.git my-prefab
+cd my-prefab
+uv sync --dev
+# Develop, test, publish
 ```
 
-For detailed multilingual feature descriptions and configuration guides, please refer to the [Multilingual Guide](docs/multilingual-guide.md).
+Complete Prefab documentation → [Prefab Guide](./prefabs/README.md)  
+Gateway calling details → [Prefab Usage Guide](./prefabs/README.md#for-users-using-prefabs)
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-We believe that an excellent tool is built on the wisdom and collaboration of the community. GTPlanner welcomes your participation to jointly shape a more powerful planning ecosystem:
+We believe that an excellent tool requires community wisdom and collaboration. GTPlanner welcomes your participation!
 
-### 🔧 Contribute Tools - Expand the Planner's Knowledge Base
-Help GTPlanner learn about more available solutions so it can make accurate recommendations during planning:
-- **🌐 API Tools** - Web APIs, REST services, platform integrations
-- **📦 Python Packages** - PyPI libraries, data analysis packages, utility tools
-- **🔌 MCP Services** - Private services that follow the MCP specification
+### Contributing Prefabs (Easiest Way to Contribute)
 
-### 💻 Contribute Core Code - Prove Optimizations with Data
-Improve planning quality and system performance through evaluation-driven development.
+**Why Contribute Prefabs?**
 
-### 📚 Share Case Studies - Inspire the Community
-Share your use cases, tutorials, and best practices to help the community unlock the full potential of GTPlanner.
+Each Prefab will:
+- Extend GTPlanner's planning capabilities
+- Help other developers solve problems
+- Be automatically included in the recommendation system
+- Gain community recognition
 
-### 📖 Detailed Guide
-2 types of contributions are accepted: tool spec or core code.
-For complete contribution methods, technical specifications, and submission processes, please see:
-**[Contribution Guide](contribute.md)** - Includes detailed contribution flows, templates, and examples.
+**How to Contribute?**
 
-## 📄 License
+1. Create a Prefab using the template → [Prefab-Template](https://github.com/The-Agent-Builder/Prefab-Template)
+2. Develop and test your functionality
+3. Publish a GitHub Release and upload the `.whl` file
+4. Submit a PR to `prefabs/releases/community-prefabs.json`
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details.
+**Prefab Impact:**
+- **Enter Recommendation System**: Prefabs in `community-prefabs.json` are recognized by GTPlanner
+- **Smart Matching**: Automatically recommended for appropriate scenarios during planning
+- **Auto Deployment**: Automatically deployed to Prefab platform after PR merge
 
-## 🙏 Acknowledgements
+Detailed contribution guide → [Prefab Contributing Documentation](./prefabs/releases/CONTRIBUTING.md)
 
-- Built on the [PocketFlow](https://github.com/The-Pocket/PocketFlow) asynchronous workflow engine
+### Contributing Core Code
+
+Improve GTPlanner's planning quality and system performance through evaluation-driven development.
+
+Core code contribution → [Contributing Guide](./docs/zh/CONTRIBUTING.md)
+
+### Sharing Case Studies
+
+Share your experience to help the community discover GTPlanner's full potential:
+
+- **Use Cases**: Applications in real projects
+- **GTPlanner-Generated PRDs**: Showcase planning quality
+- **Tutorials and Best Practices**: Help new users get started
+
+Submit cases → Create PR in `docs/examples/community-cases/`
+
+---
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](./LICENSE.md) for details.
+
+---
+
+## Acknowledgments
+
+- Built on [PocketFlow](https://github.com/The-Pocket/PocketFlow) async workflow engine
 - Configuration management powered by [Dynaconf](https://www.dynaconf.com/)
-- Designed for seamless integration with AI assistants via the MCP protocol
-
+- Designed for seamless integration with AI assistants through MCP protocol
 
 ---
 
-**GTPlanner** - Use the power of AI to transform your ideas into structured technical documents.
+<p align="center">
+  <strong>GTPlanner</strong> - Transform your ideas into structured blueprints with the power of AI.
+</p>

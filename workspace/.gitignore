@@ -1,0 +1,20 @@
+# Workspace directory - contains runtime files that should not be committed
+
+# Logs
+logs/
+*.log
+
+# Output files
+output/
+*.md
+*.json
+*.txt
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Keep the directory structure
+!.gitignore
+
