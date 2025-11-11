@@ -106,9 +106,14 @@ jobs:
                   for item in changed:
                       print(f"  - {item['id']}@{item['version']}")
           
-          # 输出到 GitHub Actions
+          # 输出到 GitHub Actions（使用多行输出格式避免 JSON 转义问题）
+          import uuid
+          delimiter = f"ghadelimiter_{uuid.uuid4()}"
+          
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write(f"changed_entries={json.dumps(changed)}\n")
+              f.write(f"changed_entries<<{delimiter}\n")
+              f.write(json.dumps(changed))
+              f.write(f"\n{delimiter}\n")
               f.write(f"has_changes={'true' if changed else 'false'}\n")
           PYTHON_SCRIPT
 
