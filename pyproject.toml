@@ -17,7 +17,7 @@ dependencies = [
     "aiohttp >= 3.12.14",
     "json-repair>=0.45.0",
     "fastapi == 0.115.9",
-    "uvicorn == 0.23.1",
+    "uvicorn == 0.38.0",
     "uvicorn[standard] == 0.23.1",
     "fastmcp",
     "aiohttp >= 3.8.0",
