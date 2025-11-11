@@ -63,13 +63,13 @@
     "tags": ["email", "smtp", "mail", "notification"]
   },
   {
-    "id": "web-scraper-mcp-prefab",
-    "version": "1.0.0",
+    "id": "browser-automation-agent",
+    "version": "0.1.0",
     "author": "ketd",
-    "repo_url": "https://github.com/ketd/web-scraper-mcp-prefab",
-    "name": "智能网页爬取预制件",
-    "description": "基于 Claude Code Playwright MCP 的智能网页爬取工具，支持使用自然语言描述完成复杂的浏览器自动化操作，包括页面导航、元素交互、数据提取、表单填写等场景。无需编写代码，通过 AI 理解即可执行浏览器操作",
-    "tags": ["web-scraping", "playwright", "mcp", "browser-automation", "ai-driven", "crawler", "网页爬取", "浏览器自动化"]
+    "repo_url": "https://github.com/ketd/browser-automation-agent",
+    "name": "浏览器操作员",
+    "description": "一个很聪明的浏览器操作员，用简单清晰的话语描述清楚你实现什么网页操作，他会帮你端到端的执行。支持的操作包括网页截图，文件下载，网页内容读取，将网页内容保存为PDF。 示例:'截图example.com','从http://xxx.com 下载最新文件’ ps:可以在一个请求中一次性完成多个操作,直接返回文件,或者完成调研任务.",
+    "tags": ["web-scraping", "playwright",  "browser-automation", "ai-driven", "crawler", "网页爬取", "浏览器自动化"]
   },
   {
     "id": "mysql-database-client",

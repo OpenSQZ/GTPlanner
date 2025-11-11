@@ -139,7 +139,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                     },
                     "recommended_prefabs": {
                         "type": "array",
-                        "description": "推荐预制件列表（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，请从结果中提取每个预制件的关键信息（id, version, name, description）",
+                        "description": "推荐预制件列表（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，请从结果中提取你觉得需要的预制件的关键信息（id, version, name, description）,不要全部都提取,推荐的不一定需要",
                         "items": {
                             "type": "object",
                             "properties": {

@@ -24,10 +24,12 @@ class AgentsDesignDesignNodeTemplates:
 基于以下输入生成一份完整的系统设计文档（Markdown 格式）：
 
 **输入信息**：
-- 用户需求：{user_requirements}
-- 项目规划（可选）：{project_planning}
-- 推荐预制件（可选）：{prefabs_info}
-- 技术调研（可选）：{research_summary}
+- 用户需求：
+   {user_requirements}
+- 项目规划（可选）：
+   {project_planning}
+- 推荐预制件（可选）：
+   {prefabs_info}
 
 **⚠️ 重要提示**：
 - 下面的模板中包含"给 AI 的提示"部分，这些提示**仅供你理解如何生成内容**
@@ -39,18 +41,26 @@ class AgentsDesignDesignNodeTemplates:
 ```markdown
 # Design Doc: [Agent 名称]
 
-## Requirements
+## Standard Operating Procedure
 
-> 给 AI 的提示：保持简单清晰。如果需求比较抽象，请写具体的用户故事
-> ⚠️ 注意：不要在最终文档中包含这些提示行
+> 给 AI 的提示：保持清晰的操作顺序。每个步骤都应以清晰的动词开始（例如：打开、检查、输入、确认）。
+> 如果流程包含重复步骤（循环），请明确指出循环的范围（哪些步骤被重复）以及其开始和停止的条件。 
+> 务必保持流程简洁，能用简单流程完成的不要过度复杂化。
+> 注意：不要在最终文档中包含这些提示行 详细描述完成此项任务的每一个操作步骤。
 
-[描述系统的核心需求，以清晰的功能点列表呈现]
+操作步骤(简单线性示例)
+- [步骤1: 告诉xxx Agent：请帮我完成xxx任务]
+- [步骤2: 另一个清晰的动作] 
 
-系统应该：
-1. [功能需求 1]
-2. [功能需求 2]
-3. [功能需求 3]
-...
+操作步骤(循环示例)
+- [步骤 1：清晰的动作]
+- [步骤 2：... ]
+- 对于 [某列表] 中的每一个 [项目]，重复执行以下步骤 4-6：
+   - [循环内的步骤 A]
+   - [循环内的步骤 B]
+   - [循环内的步骤 C]
+- [循环结束后的步骤，例如：确认所有项目均已处理]
+
 
 ## Flow Design
 
@@ -71,12 +81,14 @@ class AgentsDesignDesignNodeTemplates:
 
 ### Flow Diagram
 
+> 给 AI 的提示：mermaid 节点命名需要与上面的 Flow High-level Design 保持一致，以动词开头，清晰描述具体动作。节点应与 High-level Design 中的步骤一一对应。
+
 ```mermaid
 flowchart TD
-    A[节点1] --> B[节点2]
-    B --> C{{判断节点}}
-    C -- 条件1 --> D[节点3]
-    C -- 条件2 --> E[节点4]
+    A[步骤1: 执行某动作] --> B[步骤2: 处理某任务]
+    B --> C{{步骤3: 判断某条件}}
+    C -- 满足条件 --> D[步骤4: 执行动作A]
+    C -- 不满足条件 --> E[步骤5: 执行动作B]
 ```
 \```
 
@@ -186,140 +198,6 @@ shared = {{
    - 每个节点都要在 Flow Diagram 中体现
    - Shared Store 要覆盖所有节点的输入输出
 
-# 参考示例
-
-以下是一个优秀的设计文档示例：
-
-```markdown
-# Design Doc: 新闻内容爬取与存储 Agent
-
-## Requirements
-
-系统应该接收新闻网站URL列表作为输入，然后：
-1. 批量爬取指定网站的新闻文章内容
-2. 解析提取文章标题、正文、作者、发布时间等结构化信息
-3. 使用 AI 对文章内容进行分类和标签提取
-4. 将处理后的结构化数据存储到 MySQL 数据库
-5. 返回爬取和存储的统计结果
-
-## Flow Design
-
-### Applicable Design Pattern:
-
-主要设计模式是 **Map-Reduce** + **Workflow** + **数据持久化**。
-- **Map-Reduce**：并发爬取多个URL，批量处理文章数据
-- **Workflow**：流程遵循序列：爬取 → 解析 → AI处理 → 入库
-- **数据持久化**：使用 MySQL 数据库存储文章数据
-
-### Flow High-level Design:
-
-1. **`FetchWebContent`**：批量爬取网页内容
-2. **`ParseArticles`**：解析提取文章结构化信息
-3. **`AIAnalysis`**：使用 AI 进行内容分类和标签提取
-4. **`SaveToDatabase`**：将处理后的数据存储到 MySQL 数据库
-5. **`GenerateReport`**：生成爬取统计报告
-
-### Flow Diagram
-
-\```mermaid
-flowchart TD
-    A[FetchWebContent - Batch] --> B[ParseArticles - Batch]
-    B --> C[AIAnalysis - Batch]
-    C --> D[SaveToDatabase]
-    D --> E[GenerateReport]
-    E --> F[End]
-\```
-
-## Prefabs
-
-### 1. 网页爬取预制件
-- **ID**: `web-scraper`
-- **描述**: 网页内容爬取工具，支持批量URL抓取、反爬虫处理、内容提取等功能
-- **用途**: 在 `FetchWebContent` 节点中调用，用于批量获取新闻网页的HTML内容
-
-### 2. AI 内容分析预制件
-- **ID**: `llm-client`
-- **描述**: 智能内容分析与生成工具，支持文本分类、关键词提取、摘要生成等 AI 能力
-- **用途**: 在 `AIAnalysis` 节点中调用，用于文章分类和标签提取
-
-### 3. MySQL 数据库操作预制件
-- **ID**: `mysql-database-client`
-- **描述**: MySQL 数据库客户端工具，支持连接管理、批量插入、事务处理等数据库操作
-- **用途**: 在 `SaveToDatabase` 节点中调用，用于批量存储文章数据到数据库
-
-## Utility Functions
-
-**本系统无需额外工具函数** - 所有功能由预制件提供
-
-## Node Design
-
-### Shared Store
-
-\```python
-shared = {{
-    # 输入参数
-    "target_urls": ["https://...", "https://..."],  # Input: 目标URL列表
-    "max_articles": 100,                             # Input: 最大爬取文章数
-    
-    # 中间数据
-    "fetched_content": [],      # Output of FetchWebContent: 爬取的HTML内容列表
-    "parsed_articles": [],      # Output of ParseArticles: 解析后的文章列表
-    "analyzed_articles": [],    # Output of AIAnalysis: AI分析后的文章列表
-    
-    # 输出结果
-    "saved_count": 0,           # Output of SaveToDatabase: 成功保存的文章数
-    "crawl_report": None,       # Output of GenerateReport: 爬取统计报告
-    "errors": []                # Errors: 错误信息列表
-}}
-\```
-
-### Node Steps
-
-1. **`FetchWebContent`**
-   - *Purpose*: 并发爬取多个URL的网页内容
-   - *Type*: Batch (并发处理多个URL)
-   - *Steps*:
-     - *`prep`*: 从 shared store 读取 `target_urls`
-     - *`exec`*: 调用 `web-scraper` 预制件，批量爬取网页HTML内容。处理反爬虫机制，设置合理的请求间隔
-     - *`post`*: 将爬取成功的HTML内容列表写入 `fetched_content`。记录失败的URL到 `errors`
-
-2. **`ParseArticles`**
-   - *Purpose*: 从HTML中提取文章结构化信息
-   - *Type*: Batch (批量处理多篇文章)
-   - *Steps*:
-     - *`prep`*: 从 shared store 读取 `fetched_content`
-     - *`exec`*: 使用 HTML 解析提取文章标题、正文、作者、发布时间等信息。过滤掉无效或不完整的文章
-     - *`post`*: 将解析后的文章列表（包含title、content、author、publish_date、source_url等字段）写入 `parsed_articles`
-
-3. **`AIAnalysis`**
-   - *Purpose*: 使用 AI 对文章进行分类和标签提取
-   - *Type*: Batch (批量处理多篇文章)
-   - *Steps*:
-     - *`prep`*: 从 shared store 读取 `parsed_articles`
-     - *`exec`*: 调用 `llm-client` 预制件，对每篇文章进行内容分析。提取文章分类（如：科技、财经、娱乐等）和关键词标签
-     - *`post`*: 将AI分析结果（category、tags）添加到文章数据中，写入 `analyzed_articles`
-
-4. **`SaveToDatabase`**
-   - *Purpose*: 将处理后的文章数据批量存储到 MySQL 数据库
-   - *Type*: Regular
-   - *Steps*:
-     - *`prep`*: 从 shared store 读取 `analyzed_articles`
-     - *`exec`*: 调用 `mysql-database-client` 预制件，开启事务批量插入数据：
-       - 向 `articles` 表插入文章记录
-       - 向 `article_tags` 表插入文章-标签关联
-       - 向 `crawl_logs` 表插入爬取日志
-     - *`post`*: 将成功保存的文章数量写入 `saved_count`。如果发生数据库错误，回滚事务并记录到 `errors`
-
-5. **`GenerateReport`**
-   - *Purpose*: 生成爬取任务统计报告
-   - *Type*: Regular
-   - *Steps*:
-     - *`prep`*: 从 shared store 读取 `saved_count`、`errors` 和其他统计信息
-     - *`exec`*: 汇总本次爬取任务的统计数据（成功数、失败数、处理时间、错误详情等）
-     - *`post`*: 将统计报告写入 `crawl_report`
-\```
-
----
 
 # 开始生成
 
@@ -410,12 +288,14 @@ The system should:
 
 ### Flow Diagram
 
+> Notes for AI: Mermaid node naming should be consistent with the Flow High-level Design above, starting with verbs and clearly describing specific actions. Nodes should correspond one-to-one with steps in the High-level Design.
+
 ```mermaid
 flowchart TD
-    A[Node1] --> B[Node2]
-    B --> C{{Decision Node}}
-    C -- Condition1 --> D[Node3]
-    C -- Condition2 --> E[Node4]
+    A[Step 1: Execute Action] --> B[Step 2: Process Task]
+    B --> C{{Step 3: Check Condition}}
+    C -- Meets Condition --> D[Step 4: Execute Action A]
+    C -- Does Not Meet --> E[Step 5: Execute Action B]
 ```
 \```
 

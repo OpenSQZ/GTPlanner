@@ -140,7 +140,7 @@ class SystemOrchestratorTemplates:
 
 2. **`design`**：生成设计文档（最后调用）
    - 使用场景：**当判断用户需要设计 Agent/工作流时**，整合所有信息（需求、规划、预制件、调研、数据库设计）生成最终设计文档
-   - **关键提示**：从 `prefab_recommend` 结果中提取每个预制件的 `id, version, name, description` 字段组成数组传入
+   - **关键提示**：从 `prefab_recommend` 结果中提取你觉得需要的预制件的 `id, version, name, description` 字段组成数组传入
 
 ## 可选工具
 - **`short_planning`**：生成步骤化的项目实施计划
