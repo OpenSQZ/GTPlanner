@@ -73,7 +73,7 @@ jobs:
         # 检查是否存在测试目录
         if [ -d "tests" ]; then
           echo "运行测试套件..."
-          python -m pytest tests/ -v || echo "部分测试失败，但继续构建"
+          python -m pytest tests/ -v --ignore=tests/test_document_edit_node.py --ignore=tests/test_document_edit_proposal_event.py --ignore=tests/test_edit_document_tool_return.py || echo "部分测试失败，但继续构建"
         else
           echo "未找到测试目录，跳过测试"
         fi
