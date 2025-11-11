@@ -7,7 +7,7 @@ requires-python = ">=3.10"
 dependencies = [
     "fastmcp",
     "aiohttp >= 3.8.0",
-    "pocketflow==0.0.1",
+    "pocketflow==0.0.3",
     "pydantic",
     "openai>=1.0.0",
     "pyyaml>=6.0",
