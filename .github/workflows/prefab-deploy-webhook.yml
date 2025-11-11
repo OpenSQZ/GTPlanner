@@ -208,7 +208,8 @@ jobs:
                       print(f"⬆️  Uploading to factory: {deploy_url}")
 
                       # 构建 multipart form data（手动构建，避免依赖 requests 库）
-                      boundary = '----WebKitFormBoundary' + os.urandom(16).hex()
+                      # boundary 不应包含前导破折号，破折号只在使用时添加
+                      boundary = 'WebKitFormBoundary' + os.urandom(16).hex()
                       body_parts = []
 
                       # 添加文本字段
