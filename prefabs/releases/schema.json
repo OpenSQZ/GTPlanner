@@ -52,10 +52,11 @@
       },
       "tags": {
         "type": "array",
-        "description": "Tags for categorization and discovery",
+        "description": "Tags for categorization and discovery (supports Chinese and English)",
         "items": {
           "type": "string",
-          "pattern": "^[a-z0-9-]+$"
+          "minLength": 1,
+          "maxLength": 50
         },
         "uniqueItems": true,
         "maxItems": 10
