@@ -190,7 +190,7 @@ class CLIStreamHandler(StreamHandler):
 
         # 使用文件生成器保存文档
         try:
-            from utils.file_generator import write_file
+            from gtplanner.utils.file_generator import write_file
             file_info = write_file(filename, content)
 
             print(f"   📁 保存路径: {file_info['path']}")
@@ -224,7 +224,7 @@ class CLIStreamHandler(StreamHandler):
 
         # 使用文件生成器保存文档
         try:
-            from utils.file_generator import write_file
+            from gtplanner.utils.file_generator import write_file
             file_info = write_file(filename, content)
 
             print(f"   📁 保存路径: {file_info['path']}")

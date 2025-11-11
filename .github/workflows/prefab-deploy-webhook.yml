@@ -61,7 +61,7 @@ jobs:
               f.write(f"has_changes={'true' if changed else 'false'}\n")
           PYTHON_SCRIPT
 
-      - name: Trigger deployment
+      - name: Download and deploy prefabs
         if: steps.extract.outputs.has_changes == 'true'
         env:
           FACTORY_URL: ${{ secrets.PREFAB_FACTORY_DEPLOY_URL }}
@@ -70,15 +70,18 @@ jobs:
           # 读取变更的条目
           CHANGED_ENTRIES='${{ steps.extract.outputs.changed_entries }}'
 
-          # 遍历每个变更的条目并触发部署
+          # 遍历每个变更的条目，下载 .whl 并上传到 factory
           echo "$CHANGED_ENTRIES" | python3 << 'PYTHON_SCRIPT'
           import json
-          import hmac
-          import hashlib
           import os
           import sys
-          import http.client
-          from urllib.parse import urlparse
+          import tempfile
+          from pathlib import Path
+          from urllib.parse import urlparse, urlencode
+          from urllib.request import urlopen, Request, urlretrieve
+          import mimetypes
+          import hashlib
+          import hmac
 
           changed_entries = json.loads(sys.stdin.read())
           factory_url = os.environ.get('FACTORY_URL')
@@ -89,67 +92,115 @@ jobs:
               print("ℹ️  Skipping deployment trigger. Configure this secret to enable automatic deployment.")
               sys.exit(0)
 
-          # 解析 URL
+          # 解析 factory URL（确保是 /v1/deploy 端点）
           parsed = urlparse(factory_url)
-          host = parsed.netloc
-          path = parsed.path or '/v1/deploy'
+          if not parsed.path or parsed.path == '/':
+              deploy_url = factory_url.rstrip('/') + '/v1/deploy'
+          else:
+              deploy_url = factory_url
 
           for entry in changed_entries:
-              # 构造请求负载
-              # repo_url 必需：factory 用它构造 artifact 下载 URL
-              # author 等其他字段从 manifest 中提取
-              payload = {
-                  "event_source": "gtplanner-prefabs",
-                  "event_type": "prefab_merged",
-                  "prefab": {
-                      "id": entry['id'],
-                      "version": entry['version'],
-                      "repo_url": entry['repo_url']
-                  }
-              }
+              prefab_id = entry['id']
+              version = entry['version']
+              entry_repo_url = entry['repo_url'].rstrip('/')
 
-              payload_bytes = json.dumps(payload).encode('utf-8')
+              # 构造 .whl 下载 URL
+              # 注意：Python wheel 文件名会将连字符转换为下划线
+              wheel_name = prefab_id.replace('-', '_')
+              whl_url = f"{entry_repo_url}/releases/download/v{version}/{wheel_name}-{version}-py3-none-any.whl"
 
-              # 计算签名
-              headers = {
-                  'Content-Type': 'application/json',
-              }
+              print(f"📦 Processing {prefab_id}@{version}")
+              print(f"   Download URL: {whl_url}")
 
-              if webhook_secret:
-                  mac = hmac.new(
-                      webhook_secret.encode(),
-                      msg=payload_bytes,
-                      digestmod=hashlib.sha256
-                  )
-                  headers['X-Hub-Signature-256'] = f"sha256={mac.hexdigest()}"
-
-              # 发送请求
               try:
-                  if parsed.scheme == 'https':
-                      conn = http.client.HTTPSConnection(host, timeout=30)
-                  else:
-                      conn = http.client.HTTPConnection(host, timeout=30)
+                  # 下载 .whl 文件到临时目录
+                  with tempfile.TemporaryDirectory() as temp_dir:
+                      whl_filename = f"{wheel_name}-{version}-py3-none-any.whl"
+                      whl_path = Path(temp_dir) / whl_filename
 
-                  conn.request('POST', path, body=payload_bytes, headers=headers)
-                  response = conn.getresponse()
-                  response_data = response.read().decode('utf-8')
+                      print(f"⬇️  Downloading .whl file...")
+                      urlretrieve(whl_url, whl_path)
+                      file_size = whl_path.stat().st_size
+                      print(f"✓ Downloaded: {whl_filename} ({file_size:,} bytes)")
 
-                  if response.status in (200, 202):
-                      print(f"✅ Deployment triggered for {entry['id']}@{entry['version']}")
-                      print(f"Response: {response_data}")
-                  else:
-                      print(f"::error::Failed to deploy {entry['id']}@{entry['version']}")
-                      print(f"Status: {response.status}")
-                      print(f"Response: {response_data}")
-                      sys.exit(1)
+                      # 计算文件 hash 用于签名
+                      file_content = whl_path.read_bytes()
+                      file_hash = hashlib.sha256(file_content).hexdigest()
+                      
+                      # 计算签名（如果配置了 secret）
+                      signature = None
+                      if webhook_secret:
+                          # 签名负载格式：prefab_id|version|file_hash
+                          signature_payload = f"{prefab_id}|{version}|{file_hash}"
+                          mac = hmac.new(
+                              webhook_secret.encode(),
+                              msg=signature_payload.encode(),
+                              digestmod=hashlib.sha256
+                          )
+                          signature = f"sha256={mac.hexdigest()}"
+                          print(f"🔐 Signature generated for payload: {signature_payload}")
+
+                      # 准备 multipart/form-data 上传
+                      print(f"⬆️  Uploading to factory: {deploy_url}")
+
+                      # 构建 multipart form data（手动构建，避免依赖 requests 库）
+                      boundary = '----WebKitFormBoundary' + os.urandom(16).hex()
+                      parts = []
+
+                      # 添加文本字段
+                      for field_name, field_value in [
+                          ('prefab_id', prefab_id),
+                          ('version', version)
+                      ]:
+                          parts.append(f'--{boundary}'.encode())
+                          parts.append(f'Content-Disposition: form-data; name="{field_name}"'.encode())
+                          parts.append(b'')
+                          parts.append(str(field_value).encode())
+
+                      # 添加文件字段
+                      parts.append(f'--{boundary}'.encode())
+                      parts.append(
+                          f'Content-Disposition: form-data; name="whl_file"; filename="{whl_filename}"'.encode()
+                      )
+                      parts.append(b'Content-Type: application/octet-stream')
+                      parts.append(b'')
+                      parts.append(file_content)  # 使用已读取的内容
+                      parts.append(f'--{boundary}--'.encode())
+
+                      # 组装请求体
+                      body = b'\r\n'.join(parts)
+
+                      # 发送请求
+                      headers = {
+                          'Content-Type': f'multipart/form-data; boundary={boundary}',
+                          'Content-Length': str(len(body))
+                      }
+                      
+                      # 添加签名 header（如果有）
+                      if signature:
+                          headers['X-Hub-Signature-256'] = signature
+
+                      request = Request(deploy_url, data=body, headers=headers, method='POST')
+                      with urlopen(request, timeout=60) as response:
+                          response_data = response.read().decode('utf-8')
+                          status_code = response.status
+
+                          if status_code in (200, 202):
+                              print(f"✅ Deployment triggered for {prefab_id}@{version}")
+                              print(f"   Response: {response_data}")
+                          else:
+                              print(f"::error::Failed to deploy {prefab_id}@{version}")
+                              print(f"   Status: {status_code}")
+                              print(f"   Response: {response_data}")
+                              sys.exit(1)
 
               except Exception as e:
-                  print(f"::error::Exception deploying {entry['id']}@{entry['version']}: {e}")
+                  print(f"::error::Failed to process {prefab_id}@{version}: {e}")
+                  import traceback
+                  traceback.print_exc()
                   sys.exit(1)
-              finally:
-                  conn.close()
 
-          print(f"✅ All {len(changed_entries)} deployment(s) triggered successfully")
+          print(f"\n✅ All {len(changed_entries)} deployment(s) triggered successfully")
           PYTHON_SCRIPT
 
       - name: No changes detected

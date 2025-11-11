@@ -38,7 +38,10 @@ from .event_helpers import (
     emit_processing_status_from_prep,
     emit_error_from_prep,
     emit_event_auto,
-    emit_design_document
+    emit_design_document,
+    emit_database_design,
+    emit_prefabs_info,
+    emit_document_edit_proposal
 )
 
 __all__ = [
@@ -75,5 +78,8 @@ __all__ = [
     "emit_processing_status_from_prep",
     "emit_error_from_prep",
     "emit_event_auto",
-    "emit_design_document"
+    "emit_design_document",
+    "emit_database_design",
+    "emit_prefabs_info",
+    "emit_document_edit_proposal"
 ]

@@ -637,25 +637,24 @@ I want to build an online education platform
         ))
 
     async def _preload_tool_index(self):
-        """预加载工具索引"""
+        """预加载预制件索引"""
         try:
-            self.console.print("[yellow]🔄 正在初始化工具索引...[/yellow]")
+            self.console.print("[yellow]🔄 正在初始化预制件索引...[/yellow]")
 
-            # 初始化应用，包括预加载工具索引
+            # 初始化应用，包括预加载预制件索引
             result = await initialize_application(
-                tools_dir="tools",
                 preload_index=True
             )
 
             if result["success"]:
-                self.console.print("[green]✅ 工具索引初始化完成[/green]")
-                if "tool_index" in result["components"]:
-                    index_info = result["components"]["tool_index"]
+                self.console.print("[green]✅ 预制件索引初始化完成[/green]")
+                if "prefab_index" in result["components"]:
+                    index_info = result["components"]["prefab_index"]
                     index_name = index_info.get('index_name', 'N/A')
                     if self.verbose:
-                        self.console.print(f"[dim]📋 索引名称: {index_name}[/dim]")
+                        self.console.print(f"[dim]📦 索引名称: {index_name}[/dim]")
             else:
-                self.console.print("[red]⚠️ 工具索引初始化失败，但不影响基本功能[/red]")
+                self.console.print("[red]⚠️ 预制件索引初始化失败，但不影响基本功能[/red]")
                 if self.verbose:
                     for error in result["errors"]:
                         self.console.print(f"[dim red]  - {error}[/dim red]")

@@ -138,7 +138,7 @@ class ReActOrchestratorNode(AsyncNode):
 
     def _add_assistant_message(self, shared: Dict[str, Any], message: str, tool_calls: Optional[List[Dict[str, Any]]]) -> None:
         """添加助手消息到预留字段（OpenAI API标准格式）"""
-        from agent.context_types import create_assistant_message
+        from gtplanner.agent.context_types import create_assistant_message
 
         assistant_message = create_assistant_message(
             content=message,
@@ -153,7 +153,7 @@ class ReActOrchestratorNode(AsyncNode):
 
     def _add_tool_message(self, shared: Dict[str, Any], tool_call_id: str, content: str) -> None:
         """添加tool消息到预留字段（OpenAI API标准格式）"""
-        from agent.context_types import create_tool_message
+        from gtplanner.agent.context_types import create_tool_message
 
         tool_message = create_tool_message(
             content=content,
@@ -179,11 +179,17 @@ class ReActOrchestratorNode(AsyncNode):
     def _extract_tool_execution_results(self, shared: Dict[str, Any], tool_name: str, tool_result: Dict[str, Any]) -> None:
         """提取工具执行结果到主shared字典"""
         # 根据工具名称提取特定的结果
-        if tool_name == "tool_recommend" and tool_result.get("success"):
+        if tool_name == "prefab_recommend" and tool_result.get("success"):
             result_data = tool_result.get("result", {})
-            recommended_tools = result_data.get("recommended_tools")
-            if recommended_tools:
-                shared["recommended_tools"] = recommended_tools
+            recommended_prefabs = result_data.get("recommended_prefabs")
+            if recommended_prefabs:
+                shared["recommended_prefabs"] = recommended_prefabs
+        
+        elif tool_name == "search_prefabs" and tool_result.get("success"):
+            result_data = tool_result.get("result", {})
+            prefabs = result_data.get("prefabs")
+            if prefabs:
+                shared["recommended_prefabs"] = prefabs
 
         elif tool_name == "research" and tool_result.get("success"):
             result_data = tool_result.get("result", {})
@@ -196,6 +202,36 @@ class ReActOrchestratorNode(AsyncNode):
             # short_planning工具的result直接就是规划内容
             if result_data:
                 shared["short_planning"] = result_data
+        
+        elif tool_name == "design" and tool_result.get("success"):
+            # 提取设计文档信息（用于后续编辑）
+            document_content = tool_result.get("document")
+            if document_content:
+                # 初始化 generated_documents 列表（如果不存在）
+                if "generated_documents" not in shared:
+                    shared["generated_documents"] = []
+                
+                # 添加文档信息
+                shared["generated_documents"].append({
+                    "type": "design",
+                    "filename": "design.md",
+                    "content": document_content,
+                    "tool_name": tool_name
+                })
+        
+        elif tool_name == "database_design" and tool_result.get("success"):
+            # 提取数据库设计文档信息
+            db_design_content = tool_result.get("result")
+            if db_design_content:
+                if "generated_documents" not in shared:
+                    shared["generated_documents"] = []
+                
+                shared["generated_documents"].append({
+                    "type": "database_design",
+                    "filename": "database_design.md",
+                    "content": db_design_content,
+                    "tool_name": tool_name
+                })
 
     def _increment_react_cycle(self, shared: Dict[str, Any]) -> int:
         """增加ReAct循环计数"""

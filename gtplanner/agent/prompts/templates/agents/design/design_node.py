@@ -24,30 +24,43 @@ class AgentsDesignDesignNodeTemplates:
 基于以下输入生成一份完整的系统设计文档（Markdown 格式）：
 
 **输入信息**：
-- 用户需求：{user_requirements}
-- 项目规划（可选）：{project_planning}
-- 推荐工具（可选）：{tools_info}
-- 技术调研（可选）：{research_summary}
+- 用户需求：
+   {user_requirements}
+- 项目规划（可选）：
+   {project_planning}
+- 推荐预制件（可选）：
+   {prefabs_info}
+
+**⚠️ 重要提示**：
+- 下面的模板中包含"给 AI 的提示"部分，这些提示**仅供你理解如何生成内容**
+- **在你生成的最终文档中，不要包含任何"给 AI 的提示"内容**
+- 只输出实际的设计文档内容，不要输出以 `>` 开头的提示行
 
 # 输出格式（严格遵循）
 
 ```markdown
 # Design Doc: [Agent 名称]
 
-> 请勿删除给 AI 的提示
+## Standard Operating Procedure
 
-## Requirements
+> 给 AI 的提示：保持清晰的操作顺序。每个步骤都应以清晰的动词开始（例如：打开、检查、输入、确认）。
+> 如果流程包含重复步骤（循环），请明确指出循环的范围（哪些步骤被重复）以及其开始和停止的条件。 
+> 务必保持流程简洁，能用简单流程完成的不要过度复杂化。
+> 注意：不要在最终文档中包含这些提示行 详细描述完成此项任务的每一个操作步骤。
 
-> 给 AI 的提示：保持简单清晰。
-> 如果需求比较抽象，请写具体的用户故事
+操作步骤(简单线性示例)
+- [步骤1: 告诉xxx Agent：请帮我完成xxx任务]
+- [步骤2: 另一个清晰的动作] 
 
-[描述系统的核心需求，以清晰的功能点列表呈现]
+操作步骤(循环示例)
+- [步骤 1：清晰的动作]
+- [步骤 2：... ]
+- 对于 [某列表] 中的每一个 [项目]，重复执行以下步骤 4-6：
+   - [循环内的步骤 A]
+   - [循环内的步骤 B]
+   - [循环内的步骤 C]
+- [循环结束后的步骤，例如：确认所有项目均已处理]
 
-系统应该：
-1. [功能需求 1]
-2. [功能需求 2]
-3. [功能需求 3]
-...
 
 ## Flow Design
 
@@ -68,27 +81,51 @@ class AgentsDesignDesignNodeTemplates:
 
 ### Flow Diagram
 
+> 给 AI 的提示：mermaid 节点命名需要与上面的 Flow High-level Design 保持一致，以动词开头，清晰描述具体动作。节点应与 High-level Design 中的步骤一一对应。
+
 ```mermaid
 flowchart TD
-    A[节点1] --> B[节点2]
-    B --> C{{判断节点}}
-    C -- 条件1 --> D[节点3]
-    C -- 条件2 --> E[节点4]
+    A[步骤1: 执行某动作] --> B[步骤2: 处理某任务]
+    B --> C{{步骤3: 判断某条件}}
+    C -- 满足条件 --> D[步骤4: 执行动作A]
+    C -- 不满足条件 --> E[步骤5: 执行动作B]
 ```
 \```
+
+## Prefabs
+
+> 给 AI 的提示：
+> 1. 如果 `recommended_prefabs` 参数中有预制件信息，**必须在此列出所有推荐的预制件**。
+> 2. ⚠️ **预制件ID是最关键的信息**，会在后续代码调用中使用，务必从 `recommended_prefabs` 参数中准确复制，一个字符都不能错！
+> 3. 说明每个预制件在系统中的具体用途。
+> 4. 如果没有推荐预制件，可以省略此部分。
+> 5. **不要在最终文档中输出任何警告符号（⚠️）和提示性文字**。
+
+[如果有推荐的预制件，按以下格式列出]
+
+### 1. [预制件名称]
+- **ID**: `[预制件ID]`
+- **描述**: [预制件功能描述]
+- **用途**: [在本系统中的具体使用场景和调用方式]
 
 ## Utility Functions
 
 > 给 AI 的提示：
-> 1. 深入理解工具函数的定义。
-> 2. 只包含基于流程中节点所需的必要工具函数。
+> 1. **预制件优先**：优先使用上面推荐的预制件提供的功能。
+> 2. **严格基于需求**：**只列出用户需求中明确提到的**、且预制件无法覆盖的简单工具函数。
+> 3. **不要主动发散**：❌ **禁止**主动添加用户需求中没有提到的功能（如元数据提取、数据验证等）。
+> 4. **预制件能力说明**：预制件通常已包含以下功能，**不需要**创建工具函数：
+>    - ❌ 文件处理（上传/下载/验证/元数据提取）
+>    - ❌ 数据转换（格式转换、编码转换）
+>    - ❌ 内容处理（文本分析、图像处理、视频处理）
+> 5. **大多数情况下可以省略此部分** - 如果预制件能满足需求，直接省略。
 
-[列出系统需要的工具函数，但不要包含具体实现]
+[**仅当用户需求中明确提到**预制件无法提供的简单功能时，才列出]
 
 1. **[工具函数名]** (`utils/xxx.py`)
    - *Input*: [输入参数]
    - *Output*: [输出内容]
-   - *Necessity*: [为什么需要这个函数]
+   - *Necessity*: [用户需求中的哪部分要求此功能]
 
 ## Node Design
 
@@ -144,122 +181,23 @@ shared = {{
    - ❌ 错误：`FFmpegProcessingNode`
    - ✅ 正确：`VideoParseNode`
 
-3. **Flow 描述清晰**：
+3. **文件处理原则**：
+   - API **只接收 S3 URL 字符串**，不处理文件上传/下载
+   - ❌ 错误：设计"文件上传节点"、"文件验证节点"、"临时文件清理节点"
+   - ✅ 正确：直接使用预制件处理 S3 URL
+   - Shared Store 中的文件相关字段应该是 S3 URL 字符串（如 `video_s3_url`）
+   - 不要在 Utility Functions 中列出文件处理相关的工具函数
+
+4. **Flow 描述清晰**：
    - 说明节点之间的依赖关系
    - 说明分支和循环逻辑
    - 使用 mermaid 图准确表达流程
 
-4. **完整性**：
+5. **完整性**：
    - 必须包含所有章节
    - 每个节点都要在 Flow Diagram 中体现
    - Shared Store 要覆盖所有节点的输入输出
 
-# 参考示例
-
-以下是一个优秀的设计文档示例：
-
-```markdown
-# Design Doc: 文本转SQL Agent
-
-## Requirements
-
-系统应该接收自然语言查询和 SQLite 数据库路径作为输入，然后：
-1. 从数据库中提取 schema（表结构）
-2. 基于自然语言查询和 schema 生成 SQL 查询
-3. 对数据库执行 SQL 查询
-4. 如果 SQL 执行失败，尝试调试并重试 SQL 生成和执行，最多重试指定次数
-5. 返回 SQL 查询的最终结果或失败时的错误消息
-
-## Flow Design
-
-### Applicable Design Pattern:
-
-主要设计模式是带有嵌入式 **Agent** 调试行为的 **Workflow**（工作流）。
-- **Workflow**：流程遵循序列：获取Schema → 生成SQL → 执行SQL
-- **Agent（用于调试）**：如果 `ExecuteSQL` 失败，`DebugSQL` 节点像 agent 一样工作，将错误和之前的 SQL 作为上下文生成修正后的 SQL 查询
-
-### Flow High-level Design:
-
-1. **`GetSchema`**：获取数据库 schema
-2. **`GenerateSQL`**：基于自然语言问题和 schema 生成 SQL 查询
-3. **`ExecuteSQL`**：执行生成的 SQL。如果成功，流程结束。如果发生错误，转到 `DebugSQL`
-4. **`DebugSQL`**：基于错误消息尝试修正失败的 SQL 查询。然后转回 `ExecuteSQL` 重试修正后的查询
-
-### Flow Diagram
-
-\```mermaid
-flowchart TD
-    A[GetSchema] --> B[GenerateSQL]
-    B --> C{{ExecuteSQL}}
-    C -- Success --> D[End]
-    C -- Error --> E[DebugSQL]
-    E --> C
-\```
-
-## Utility Functions
-
-1. **调用 LLM** (`utils/call_llm.py`)
-   - *Input*: `prompt` (字符串)
-   - *Output*: `response` (字符串)
-   - *Necessity*: 由 `GenerateSQL` 和 `DebugSQL` 节点使用，与语言模型交互以生成和修正 SQL
-
-## Node Design
-
-### Shared Store
-
-\```python
-shared = {{
-    "db_path": "path/to/database.db",
-    "natural_query": "User's question",
-    "max_debug_attempts": 3,
-    "schema": None,
-    "generated_sql": None,
-    "execution_error": None,
-    "debug_attempts": 0,
-    "final_result": None,
-    "result_columns": None,
-    "final_error": None
-}}
-\```
-
-### Node Steps
-
-1. **`GetSchema`**
-   - *Purpose*: 提取并存储目标 SQLite 数据库的 schema
-   - *Type*: Regular
-   - *Steps*:
-     - *`prep`*: 从 shared store 读取 `db_path`
-     - *`exec`*: 连接到 SQLite 数据库，检查 `sqlite_master` 和 `PRAGMA table_info` 以构建所有表及其列的字符串表示
-     - *`post`*: 将提取的 `schema` 字符串写入 shared store
-
-2. **`GenerateSQL`**
-   - *Purpose*: 基于用户的自然语言查询和数据库 schema 生成 SQL 查询
-   - *Type*: Regular
-   - *Steps*:
-     - *`prep`*: 从 shared store 读取 `natural_query` 和 `schema`
-     - *`exec`*: 构建 LLM prompt，包含 schema 和自然语言查询。调用 `call_llm` 工具。解析响应以提取 SQL 查询
-     - *`post`*: 将 `generated_sql` 写入 shared store。重置 `debug_attempts` 为 0
-
-3. **`ExecuteSQL`**
-   - *Purpose*: 对数据库执行生成的 SQL 查询并处理结果或错误
-   - *Type*: Regular
-   - *Steps*:
-     - *`prep`*: 从 shared store 读取 `db_path` 和 `generated_sql`
-     - *`exec`*: 连接到 SQLite 数据库并执行 `generated_sql`。判断查询是 SELECT 还是 DML/DDL 语句
-     - *`post`*:
-       - 如果成功：在 shared store 中存储 `final_result` 和 `result_columns`。不返回 action（结束流程路径）
-       - 如果失败：在 shared store 中存储 `execution_error`。增加 `debug_attempts`。如果 `debug_attempts` 小于 `max_debug_attempts`，返回 `"error_retry"` action。否则，设置 `final_error` 并不返回 action
-
-4. **`DebugSQL`**
-   - *Purpose*: 基于错误消息使用 LLM 尝试修正失败的 SQL 查询
-   - *Type*: Regular
-   - *Steps*:
-     - *`prep`*: 从 shared store 读取 `natural_query`、`schema`、`generated_sql` 和 `execution_error`
-     - *`exec`*: 构建 LLM prompt，提供失败的 SQL、原始查询、schema 和错误消息。调用 `call_llm` 工具。解析响应以提取修正后的 SQL 查询
-     - *`post`*: 用修正后的 SQL 覆盖 shared store 中的 `generated_sql`。从 shared store 移除 `execution_error`。返回默认 action 以回到 `ExecuteSQL`
-\```
-
----
 
 # 开始生成
 
@@ -268,6 +206,8 @@ shared = {{
 **重要提醒**：
 - 你的输出应该**只包含**完整的 Markdown 文档内容
 - **不要使用 ```markdown ... ``` 代码块包裹**，直接输出 Markdown 内容
+- ⚠️ **不要在最终文档中包含任何以 `>` 开头的"给 AI 的提示"行**
+- 这些提示仅用于帮助你理解如何生成内容，不应出现在最终文档中
 - 不要添加任何额外的对话或解释
 - 严格遵循上述格式和约束
 
@@ -303,20 +243,23 @@ Based on the following inputs, generate a complete system design document (Markd
 **Input Information**:
 - User Requirements: {user_requirements}
 - Project Planning (optional): {project_planning}
-- Recommended Tools (optional): {tools_info}
+- Recommended Prefabs (optional): {prefabs_info}
 - Technical Research (optional): {research_summary}
+
+**⚠️ Important Notice**:
+- The template below contains "Notes for AI" sections to help you understand how to generate content
+- **Do NOT include any "Notes for AI" content in your final generated document**
+- Only output the actual design document content, do not output lines starting with `>`
 
 # Output Format (Strictly Follow)
 
 ```markdown
 # Design Doc: [Agent Name]
 
-> Please DON'T remove notes for AI
-
 ## Requirements
 
-> Notes for AI: Keep it simple and clear.
-> If the requirements are abstract, write concrete user stories
+> Notes for AI: Keep it simple and clear. If the requirements are abstract, write concrete user stories.
+> ⚠️ Note: Do NOT include these note lines in the final document
 
 [Describe the core requirements of the system as a clear list of functional points]
 
@@ -345,27 +288,51 @@ The system should:
 
 ### Flow Diagram
 
+> Notes for AI: Mermaid node naming should be consistent with the Flow High-level Design above, starting with verbs and clearly describing specific actions. Nodes should correspond one-to-one with steps in the High-level Design.
+
 ```mermaid
 flowchart TD
-    A[Node1] --> B[Node2]
-    B --> C{{Decision Node}}
-    C -- Condition1 --> D[Node3]
-    C -- Condition2 --> E[Node4]
+    A[Step 1: Execute Action] --> B[Step 2: Process Task]
+    B --> C{{Step 3: Check Condition}}
+    C -- Meets Condition --> D[Step 4: Execute Action A]
+    C -- Does Not Meet --> E[Step 5: Execute Action B]
 ```
 \```
 
+## Prefabs
+
+> Notes for AI:
+> 1. If there are prefabs in the `recommended_prefabs` parameter, **you MUST list all recommended prefabs here**.
+> 2. ⚠️ **The prefab ID is the most critical information** - it will be used in code implementation. You must copy it accurately from the `recommended_prefabs` parameter, character by character, without any mistakes!
+> 3. Explain the specific use case for each prefab in this system.
+> 4. If no prefabs are recommended, you may omit this section.
+> 5. **Do not output any warning symbols (⚠️) or instructional text in the final document**.
+
+[If there are recommended prefabs, list them in the following format]
+
+### 1. [Prefab Name]
+- **ID**: `[prefab-id]`
+- **Description**: [Prefab functionality description]
+- **Usage**: [Specific use case and how to call it in this system]
+
 ## Utility Functions
 
-> 给 AI 的提示：
-> 1. 深入理解工具函数的定义。
-> 2. 只包含基于流程中节点所需的必要工具函数。
+> Notes for AI:
+> 1. **Prefabs First**: Prioritize using the prefabs recommended above.
+> 2. **Strictly Based on Requirements**: **Only list simple utility functions explicitly mentioned in user requirements** that prefabs cannot cover.
+> 3. **Do Not Add Unrequested Features**: ❌ **Prohibited** to proactively add functions not mentioned in requirements (e.g., metadata extraction, data validation).
+> 4. **Prefab Capabilities**: Prefabs typically already include the following, **DO NOT** create utility functions for:
+>    - ❌ File handling (upload/download/validation/metadata extraction)
+>    - ❌ Data conversion (format conversion, encoding conversion)
+>    - ❌ Content processing (text analysis, image processing, video processing)
+> 5. **Usually omit this section** - If prefabs meet all requirements, omit directly.
 
-[List the utility functions the system needs, but don't include specific implementations]
+[**Only list when user requirements explicitly mention** simple features that prefabs cannot provide]
 
 1. **[Function Name]** (`utils/xxx.py`)
    - *Input*: [Input parameters]
    - *Output*: [Output content]
-   - *Necessity*: [Why this function is needed]
+   - *Necessity*: [Which part of user requirements requires this function]
 
 ## Node Design
 
@@ -421,12 +388,19 @@ shared = {{
    - ❌ Wrong: `FFmpegProcessingNode`
    - ✅ Correct: `VideoParseNode`
 
-3. **Clear Flow Description**:
+3. **File Handling Principles**:
+   - The API **only receives S3 URL strings**, does not handle file uploads/downloads
+   - ❌ Wrong: Design "File Upload Node", "File Validation Node", "Temp File Cleanup Node"
+   - ✅ Correct: Directly use prefabs to process S3 URLs
+   - File-related fields in Shared Store should be S3 URL strings (e.g., `video_s3_url`)
+   - Do not list file handling related utility functions in Utility Functions
+
+4. **Clear Flow Description**:
    - Explain dependencies between nodes
    - Explain branching and looping logic
    - Use mermaid diagrams to accurately express the flow
 
-4. **Completeness**:
+5. **Completeness**:
    - Must include all sections
    - Every node must be reflected in the Flow Diagram
    - Shared Store must cover inputs and outputs of all nodes
@@ -446,6 +420,8 @@ Now, based on the above input information and format requirements, generate a co
 **Important Reminder**:
 - Your output should **only contain** the complete Markdown document content
 - **Do NOT wrap output in ```markdown ... ``` code blocks**, output Markdown directly
+- ⚠️ **Do NOT include any lines starting with `>` (Notes for AI) in the final document**
+- These notes are only to help you understand how to generate content, they should not appear in the final document
 - Do not add any extra conversation or explanations
 - Strictly follow the above format and constraints
 

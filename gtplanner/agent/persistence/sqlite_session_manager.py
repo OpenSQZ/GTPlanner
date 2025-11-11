@@ -492,7 +492,7 @@ class SQLiteSessionManager:
 
         Args:
             session_id: 会话ID
-            tool_execution_updates: 工具执行结果更新（recommended_tools, short_planning等）
+            tool_execution_updates: 工具执行结果更新（recommended_prefabs, short_planning等）
         """
 
         current_context = self.dao.get_active_compressed_context(session_id)

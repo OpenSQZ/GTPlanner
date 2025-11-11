@@ -37,13 +37,13 @@ fallback_enabled = true
 supported_languages = ["en", "zh", "es", "fr", "ja"]
 
 [default.vector_service]
-# Vector service configuration for tool recommendation
+# Vector service configuration for prefab recommendation
 # These values will be overridden by environment variables if set
 base_url = "http://localhost:8080"  # Default fallback, override with VECTOR_SERVICE_BASE_URL
 timeout = 30  # Override with VECTOR_SERVICE_TIMEOUT
-# Index name for tools - override with VECTOR_SERVICE_INDEX_NAME
+# Index name for prefabs - override with VECTOR_SERVICE_INDEX_NAME
 # Note: Index name must start with 'document_' prefix as required by vector service
-tools_index_name = "document_gtplanner_tools"
+prefabs_index_name = "document_gtplanner_prefabs"
 # Vector field name for document embedding - override with VECTOR_SERVICE_VECTOR_FIELD
 vector_field = "combined_text"
 

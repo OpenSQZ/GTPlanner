@@ -7,6 +7,7 @@ GTPlanner 原子能力节点模块 - 优化版本
 节点列表：
 - Node_Search: 搜索引擎节点
 - Node_URL: URL解析节点
+- NodeViewDocument: 查看文档节点
 
 注意：
 - Node_Req已被移动到deprecated目录，由UnifiedRequirementsNode替代
@@ -14,8 +15,10 @@ GTPlanner 原子能力节点模块 - 优化版本
 
 from .node_search import NodeSearch
 from .node_url import NodeURL
+from .node_view_document import NodeViewDocument
 
 __all__ = [
     'NodeSearch',
-    'NodeURL'
+    'NodeURL',
+    'NodeViewDocument'
 ]

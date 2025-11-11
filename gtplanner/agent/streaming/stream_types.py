@@ -26,6 +26,8 @@ class StreamEventType(Enum):
 
     # 设计文档相关事件
     DESIGN_DOCUMENT_GENERATED = "design_document_generated"
+    PREFABS_INFO = "prefabs_info"
+    DOCUMENT_EDIT_PROPOSAL = "document_edit_proposal"  # 文档编辑提案
 
     # 状态相关事件
     PROCESSING_STATUS = "processing_status"
@@ -141,6 +143,42 @@ class DesignDocument:
         return {
             "filename": self.filename,
             "content": self.content
+        }
+
+
+@dataclass
+class DocumentEdit:
+    """单个文档编辑操作"""
+    search: str
+    replace: str
+    reason: str
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "search": self.search,
+            "replace": self.replace,
+            "reason": self.reason
+        }
+
+
+@dataclass
+class DocumentEditProposal:
+    """文档编辑提案数据结构"""
+    proposal_id: str
+    document_type: str  # "design" or "database_design"
+    document_filename: str
+    edits: List[DocumentEdit]
+    summary: str
+    preview_content: Optional[str] = None  # 应用所有编辑后的预览内容
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "proposal_id": self.proposal_id,
+            "document_type": self.document_type,
+            "document_filename": self.document_filename,
+            "edits": [edit.to_dict() for edit in self.edits],
+            "summary": self.summary,
+            "preview_content": self.preview_content
         }
 
 
@@ -288,6 +326,51 @@ class StreamEventBuilder:
             event_type=StreamEventType.DESIGN_DOCUMENT_GENERATED,
             session_id=session_id,
             data=document.to_dict()
+        )
+    
+    @staticmethod
+    def prefabs_info(
+        session_id: str,
+        prefabs: List[Dict[str, str]]
+    ) -> StreamEvent:
+        """
+        创建预制件信息事件（轻量级）
+        
+        Args:
+            session_id: 会话ID
+            prefabs: 预制件列表，每个预制件包含：
+                - id: 预制件ID（必需）
+                - version: 版本号（必需）
+        
+        Note:
+            前端收到此事件后，使用 id 和 version 调用 prefab-gateway 接口
+            获取完整的 prefab-manifest.json
+        """
+        return StreamEvent(
+            event_type=StreamEventType.PREFABS_INFO,
+            session_id=session_id,
+            data={"prefabs": prefabs}
+        )
+    
+    @staticmethod
+    def document_edit_proposal(
+        session_id: str,
+        proposal: DocumentEditProposal
+    ) -> StreamEvent:
+        """
+        创建文档编辑提案事件
+        
+        Args:
+            session_id: 会话ID
+            proposal: 文档编辑提案对象
+        
+        Note:
+            此事件会发送给前端，前端展示 diff 视图供用户确认
+        """
+        return StreamEvent(
+            event_type=StreamEventType.DOCUMENT_EDIT_PROPOSAL,
+            session_id=session_id,
+            data=proposal.to_dict()
         )
 
 

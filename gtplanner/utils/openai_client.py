@@ -2,12 +2,22 @@
 OpenAI SDK封装层
 
 提供统一的OpenAI SDK异步接口，集成配置管理、错误处理、重试机制和Function Calling功能。
+
+功能特性：
+- 异步 API 调用（chat_completion, chat_completion_stream）
+- 自动重试机制和错误处理
+- Function Calling 支持
+- 工具调用标签过滤（ToolCallTagFilter）
+- 多模态支持（图片 Base64 编码、Vision API）
+- 性能统计和日志记录
 """
 
 import asyncio
+import base64
 import os
 import time
-from typing import Dict, List, Any, Optional, AsyncIterator, Callable, TypedDict
+from pathlib import Path
+from typing import Dict, List, Any, Optional, AsyncIterator, Callable, TypedDict, Union
 import copy
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
@@ -22,9 +32,184 @@ except ImportError:
 
 
 class Message(TypedDict):
-    """消息类型定义"""
+    """
+    消息类型定义
+    
+    支持文本消息和多模态消息：
+    - 文本消息: {"role": "user", "content": "text"}
+    - 多模态消息: {"role": "user", "content": [{"type": "text", "text": "..."}, {"type": "image_url", "image_url": {...}}]}
+    """
     role: str
-    content: str
+    content: Union[str, List[Dict[str, Any]]]
+
+
+# ============================================================================
+# 多模态工具函数
+# ============================================================================
+
+def encode_image_to_base64(
+    image_source: Union[str, Path, bytes],
+    image_format: Optional[str] = None
+) -> str:
+    """
+    将图片编码为 Base64 字符串（Data URL 格式）
+    
+    Args:
+        image_source: 图片来源，支持：
+            - 文件路径（str 或 Path）
+            - 图片字节数据（bytes）
+        image_format: 图片格式（如 'jpeg', 'png', 'gif', 'webp'）
+            - 如果为 None，会尝试从文件扩展名推断
+            - 对于 bytes 输入，默认使用 'jpeg'
+    
+    Returns:
+        Base64 编码的 Data URL 字符串（如 "data:image/jpeg;base64,..."）
+    
+    Examples:
+        >>> # 从文件路径编码
+        >>> url = encode_image_to_base64("path/to/image.jpg")
+        >>> url = encode_image_to_base64(Path("path/to/image.png"))
+        
+        >>> # 从字节数据编码
+        >>> with open("image.jpg", "rb") as f:
+        ...     image_bytes = f.read()
+        >>> url = encode_image_to_base64(image_bytes, image_format="jpeg")
+    """
+    # 处理文件路径输入
+    if isinstance(image_source, (str, Path)):
+        image_path = Path(image_source)
+        
+        if not image_path.exists():
+            raise FileNotFoundError(f"图片文件不存在: {image_path}")
+        
+        # 从文件扩展名推断格式
+        if image_format is None:
+            ext = image_path.suffix.lower().lstrip('.')
+            # 标准化扩展名
+            format_mapping = {
+                'jpg': 'jpeg',
+                'jpeg': 'jpeg',
+                'png': 'png',
+                'gif': 'gif',
+                'webp': 'webp',
+                'bmp': 'bmp'
+            }
+            image_format = format_mapping.get(ext, 'jpeg')
+        
+        # 读取文件内容
+        with open(image_path, 'rb') as f:
+            image_data = f.read()
+    
+    # 处理字节数据输入
+    elif isinstance(image_source, bytes):
+        image_data = image_source
+        if image_format is None:
+            image_format = 'jpeg'  # 默认格式
+    
+    else:
+        raise TypeError(f"不支持的图片源类型: {type(image_source)}")
+    
+    # Base64 编码
+    base64_encoded = base64.b64encode(image_data).decode('utf-8')
+    
+    # 构建 Data URL
+    data_url = f"data:image/{image_format};base64,{base64_encoded}"
+    
+    return data_url
+
+
+def create_vision_message(
+    role: str,
+    text: Optional[str] = None,
+    image_urls: Optional[List[str]] = None,
+    image_files: Optional[List[Union[str, Path]]] = None,
+    image_detail: str = "auto"
+) -> Message:
+    """
+    创建支持多模态（文本+图片）的消息
+    
+    Args:
+        role: 消息角色（"user", "assistant", "system"）
+        text: 文本内容（可选）
+        image_urls: 图片 URL 列表（可以是 HTTP URL 或 Data URL）
+        image_files: 图片文件路径列表（会自动编码为 Base64）
+        image_detail: 图片细节级别（"auto", "low", "high"）
+            - "low": 低细节，更快更便宜
+            - "high": 高细节，更慢更贵但更准确
+            - "auto": 自动选择（默认）
+    
+    Returns:
+        多模态消息对象
+    
+    Examples:
+        >>> # 纯文本消息
+        >>> msg = create_vision_message("user", text="描述这张图片")
+        
+        >>> # 文本 + 单张图片（URL）
+        >>> msg = create_vision_message(
+        ...     "user",
+        ...     text="这是什么？",
+        ...     image_urls=["https://example.com/image.jpg"]
+        ... )
+        
+        >>> # 文本 + 单张图片（本地文件）
+        >>> msg = create_vision_message(
+        ...     "user",
+        ...     text="分析这张图片",
+        ...     image_files=["./photo.jpg"]
+        ... )
+        
+        >>> # 文本 + 多张图片（混合）
+        >>> msg = create_vision_message(
+        ...     "user",
+        ...     text="比较这些图片",
+        ...     image_urls=["https://example.com/img1.jpg"],
+        ...     image_files=["./img2.jpg", "./img3.png"],
+        ...     image_detail="high"
+        ... )
+    """
+    content_parts: List[Dict[str, Any]] = []
+    
+    # 添加文本内容
+    if text:
+        content_parts.append({
+            "type": "text",
+            "text": text
+        })
+    
+    # 添加图片 URL
+    if image_urls:
+        for url in image_urls:
+            content_parts.append({
+                "type": "image_url",
+                "image_url": {
+                    "url": url,
+                    "detail": image_detail
+                }
+            })
+    
+    # 添加本地图片文件（自动编码为 Base64）
+    if image_files:
+        for file_path in image_files:
+            base64_url = encode_image_to_base64(file_path)
+            content_parts.append({
+                "type": "image_url",
+                "image_url": {
+                    "url": base64_url,
+                    "detail": image_detail
+                }
+            })
+    
+    # 如果没有任何内容，抛出错误
+    if not content_parts:
+        raise ValueError("必须提供至少一项内容（text、image_urls 或 image_files）")
+    
+    # 如果只有文本，简化为字符串格式（向后兼容）
+    if len(content_parts) == 1 and content_parts[0]["type"] == "text":
+        return {"role": role, "content": text}
+    
+    # 多模态格式
+    return {"role": role, "content": content_parts}
 
 
 class ToolCallTagFilter:
@@ -391,7 +576,7 @@ class RetryManager:
                 delay = self._calculate_delay(attempt)
 
                 # 使用日志记录重试信息
-                from utils.logger_config import get_logger
+                from gtplanner.utils.logger_config import get_logger
                 logger = get_logger("retry_manager")
                 logger.warning(f"⚠️ API调用失败 (尝试 {attempt + 1}/{self.max_retries + 1}): {e}")
                 logger.info(f"🔄 等待 {delay:.1f}秒后重试...")

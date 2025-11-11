@@ -30,12 +30,18 @@ class AgentPromptType(Enum):
     # 研究Agent
     RESEARCH_ANALYSIS = "research_analysis"
     RESEARCH_SUMMARY = "research_summary"
-
-    # 工具推荐Agent
-    TOOL_RECOMMENDATION = "tool_recommendation"
+    
+    # 预制件推荐Agent
+    PREFAB_RECOMMENDATION = "prefab_recommendation"
 
     # 设计Agent（统一）
     DESIGN = "design"
+    
+    # 数据库设计Agent
+    DATABASE_DESIGN = "database_design"
+    
+    # 文档编辑Agent
+    DOCUMENT_EDIT = "document_edit"
 
 
 class CommonPromptType(Enum):
@@ -115,10 +121,14 @@ class PromptTypeRegistry:
                 return "agents.research.llm_analysis_node"
             elif prompt_type.value == "research_summary":
                 return "agents.research.result_assembly_node"
-            elif prompt_type.value == "tool_recommendation":
-                return "agents.tool_recommend.node_tool_recommend"
+            elif prompt_type.value == "prefab_recommendation":
+                return "agents.prefab_recommend.node_prefab_recommend"
             elif prompt_type.value == "design":
                 return "agents.design.design_node"
+            elif prompt_type.value == "database_design":
+                return "agents.database_design.database_design_node"
+            elif prompt_type.value == "document_edit":
+                return "agents.document_edit.document_edit_node"
         
         elif category == PromptCategory.COMMON:
             if prompt_type.value.endswith("_analysis"):

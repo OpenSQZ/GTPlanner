@@ -104,7 +104,7 @@ class PromptManager:
             template_path = PromptTypeRegistry.get_prompt_path(prompt_type)
             
             # 动态导入模板模块
-            module_path = f"agent.prompts.templates.{template_path}"
+            module_path = f"gtplanner.agent.prompts.templates.{template_path}"
             template_module = importlib.import_module(module_path)
             
             # 获取模板类

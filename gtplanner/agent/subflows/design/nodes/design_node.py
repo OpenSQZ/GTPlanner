@@ -14,7 +14,8 @@ from gtplanner.utils.openai_client import get_openai_client
 from gtplanner.agent.streaming import (
     emit_processing_status,
     emit_error,
-    emit_design_document
+    emit_design_document,
+    emit_prefabs_info
 )
 
 # 导入多语言提示词系统
@@ -44,8 +45,8 @@ class DesignNode(AsyncNode):
             # 可选参数：项目规划（如果之前调用了 short_planning）
             project_planning = shared.get("short_planning", "")
             
-            # 可选参数：推荐工具（如果之前调用了 tool_recommend）
-            recommended_tools = shared.get("recommended_tools", [])
+            # 可选参数：推荐预制件（如果之前调用了 prefab_recommend 或 search_prefabs）
+            recommended_prefabs = shared.get("recommended_prefabs", [])
             
             # 可选参数：技术调研结果（如果之前调用了 research）
             research_findings = shared.get("research_findings", {})
@@ -56,10 +57,10 @@ class DesignNode(AsyncNode):
             # 使用文本管理器格式化可选信息
             text_manager = get_text_manager()
             
-            tools_info = text_manager.build_tools_content(
-                recommended_tools=recommended_tools,
+            prefabs_info = text_manager.build_tools_content(
+                recommended_prefabs=recommended_prefabs,
                 language=language
-            ) if recommended_tools else ""
+            ) if recommended_prefabs else ""
             
             research_summary = text_manager.build_research_content(
                 research_findings=research_findings,
@@ -72,7 +73,7 @@ class DesignNode(AsyncNode):
             return {
                 "user_requirements": user_requirements,
                 "project_planning": project_planning,
-                "tools_info": tools_info,
+                "prefabs_info": prefabs_info,
                 "research_summary": research_summary,
                 "language": language,
                 "timestamp": time.time()
@@ -96,7 +97,7 @@ class DesignNode(AsyncNode):
                 language=prep_result.get("language"),
                 user_requirements=prep_result["user_requirements"],
                 project_planning=prep_result["project_planning"],
-                tools_info=prep_result["tools_info"],
+                prefabs_info=prep_result["prefabs_info"],
                 research_summary=prep_result["research_summary"]
             )
             
@@ -139,8 +140,33 @@ class DesignNode(AsyncNode):
             shared["agent_design_document"] = design_document
             shared["documentation"] = design_document
             
+            # ⭐ 重要：保存为 system_design，供后续 database_design 节点使用
+            shared["system_design"] = design_document
+            
             # 发送设计文档事件到前端
             await emit_design_document(shared, "design.md", design_document)
+            
+            # 发送预制件信息事件到前端（轻量级，只包含 id 和 version）
+            recommended_prefabs = shared.get("recommended_prefabs", [])
+            print(f"🔍 [Design Node] recommended_prefabs 类型: {type(recommended_prefabs)}, 长度: {len(recommended_prefabs) if isinstance(recommended_prefabs, list) else 'N/A'}")
+            
+            if recommended_prefabs:
+                prefabs_info = []
+                for prefab in recommended_prefabs:
+                    if isinstance(prefab, dict) and "id" in prefab:
+                        prefab_data = {
+                            "id": prefab.get("id"),
+                            "version": prefab.get("version", "latest")
+                        }
+                        prefabs_info.append(prefab_data)
+                        print(f"  - 提取预制件: {prefab_data}")
+                
+                if prefabs_info:
+                    print(f"📤 [Design Node] 准备发送 {len(prefabs_info)} 个预制件信息")
+                    await emit_prefabs_info(shared, prefabs_info)
+                    print(f"✅ [Design Node] 已调用 emit_prefabs_info")
+                else:
+                    print(f"⚠️ [Design Node] prefabs_info 为空，没有有效的预制件数据")
             
             # 更新系统消息
             if "system_messages" not in shared:

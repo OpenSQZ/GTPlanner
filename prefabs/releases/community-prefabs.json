@@ -1,12 +1,84 @@
 [
   {
-    "id": "hello-world-prefab-test",
-    "version": "0.1.3",
+    "id": "llm-client",
+    "version": "1.0.1",
     "author": "ketd",
-    "repo_url": "https://github.com/ketd/hello-world-prefab",
-    "name": "Hello World 示例预制件",
-    "description": "一个简单的 Hello World 预制件，用于演示和测试 Prefab 平台的基本功能和工作流程",
-    "tags": ["example", "demo", "hello-world"]
+    "repo_url": "https://github.com/ketd/llm-client",
+    "name": "大模型客户端预制件",
+    "description": "智能内容分析与生成工具，支持文本理解、摘要生成、内容分类、情感分析等 AI 能力。基于 OpenAI 兼容 API，支持流式和非流式返回",
+    "tags": ["llm", "ai", "大模型", "内容分析", "文本生成"]
+  },
+  {
+    "id": "amap-weather-prefab",
+    "version": "1.0.0",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/Amap-Weather",
+    "name": "高德地图天气查询预制件",
+    "description": "基于高德地图 API 的天气查询预制件，支持实时天气和天气预报查询",
+    "tags": ["weather", "amap", "天气"]
+  },
+  {
+    "id": "video-processing-prefab",
+    "version": "0.3.1",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/Video-processing",
+    "name": "视频处理预制件",
+    "description": "基于 MoviePy 的视频处理工具集,可以将视频转位音频",
+    "tags": ["video", "audio", "multimedia"]
+  },
+  {
+    "id": "asr-prefab",
+    "version": "0.2.1",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/asr",
+    "name": "语音识别预制件",
+    "description": "基于 SenseVoice 的高精度语音识别工具，支持中英文及多语言识别，可用于音频转文字、语音分析等场景",
+    "tags": ["asr", "speech-recognition", "语音识别", "sensevoice"]
+  },
+  {
+    "id": "file-processing-prefab",
+    "version": "0.1.5",
+    "author": "ketd",
+    "repo_url": "https://github.com/The-Agent-Builder/File-Processing",
+    "name": "文件处理预制件",
+    "description": "封装文件解析 API，支持将 PDF、Markdown、图片等文件解析为 Markdown 格式的纯文本",
+    "tags": ["file-processing", "pdf", "markdown", "ocr", "document-parsing"]
+  },
+  {
+    "id": "jina-ai-prefab",
+    "version": "0.1.2",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/jina-prefab",
+    "name": "Jina AI 预制件",
+    "description": "使用 Jina AI 的 API 进行网络搜索和 URL 内容读取",
+    "tags": ["jina", "search", "web-reader", "ai", "content-extraction"]
+  },
+  {
+    "id": "email-service-prefab",
+    "version": "1.1.0",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/Email-service-Prefab",
+    "name": "邮件服务预制件",
+    "description": "基于 SMTP 协议的邮件发送服务，支持 HTML 内容、抄送、密送和附件",
+    "tags": ["email", "smtp", "mail", "notification"]
+  },
+  {
+    "id": "browser-automation-agent",
+    "version": "0.1.0",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/browser-automation-agent",
+    "name": "浏览器操作员",
+    "description": "一个很聪明的浏览器操作员，用简单清晰的话语描述清楚你实现什么网页操作，他会帮你端到端的执行。支持的操作包括网页截图，文件下载，网页内容读取，将网页内容保存为PDF。 示例:'截图example.com','从http://xxx.com 下载最新文件’ ps:可以在一个请求中一次性完成多个操作,直接返回文件,或者完成调研任务.",
+    "tags": ["web-scraping", "playwright",  "browser-automation", "ai-driven", "crawler", "网页爬取", "浏览器自动化"]
+  },
+  {
+    "id": "mysql-database-client",
+    "version": "1.0.0",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/mysql-database-client",
+    "name": "MySQL 数据库操作预制件",
+    "description": "MySQL 数据库客户端工具，支持连接管理、查询执行、批量插入、事务处理、数据导入导出等数据库操作。提供简洁的 API 接口，适用于需要数据持久化的各类应用场景",
+    "tags": ["mysql", "database", "sql", "data-persistence", "数据库", "数据持久化"]
   }
 ]
 
