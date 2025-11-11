@@ -1,0 +1,11 @@
+[
+  {
+    "id": "llm-client",
+    "version": "1.0.1",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/llm-client",
+    "name": "大模型客户端预制件",
+    "description": "智能内容分析与生成工具，支持文本理解、摘要生成、内容分类、情感分析等 AI 能力。基于 OpenAI 兼容 API，支持流式和非流式返回",
+    "tags": ["llm", "ai", "大模型", "内容分析", "文本生成"]
+  }
+]
