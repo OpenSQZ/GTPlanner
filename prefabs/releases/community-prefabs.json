@@ -1,0 +1,11 @@
+[
+  {
+    "id": "amap-weather-prefab",
+    "version": "1.0.0",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/Amap-Weather",
+    "name": "高德地图天气查询预制件",
+    "description": "基于高德地图 API 的天气查询预制件，支持实时天气和天气预报查询",
+    "tags": ["weather", "amap", "天气"]
+  }
+]
