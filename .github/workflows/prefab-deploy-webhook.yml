@@ -1,12 +1,22 @@
 name: Prefab Deploy on Merge
 
-# 当 PR 合并到 main 时触发部署
+# 当 PR 合并到 main 时触发部署，或手动触发
 on:
   push:
     branches:
       - main
     paths:
       - 'prefabs/releases/community-prefabs.json'
+  workflow_dispatch:
+    inputs:
+      prefab_id:
+        description: 'Prefab ID to deploy (e.g., llm-client)'
+        required: true
+        type: string
+      version:
+        description: 'Version to deploy (e.g., 1.0.1)'
+        required: true
+        type: string
 
 jobs:
   trigger-deployment:
@@ -17,48 +27,89 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2  # 获取最近两次提交以便对比
+          fetch-depth: 2  # 获取最近两次提交以便对比（仅在 push 触发时需要）
 
       - name: Extract changed entry
         id: extract
+        env:
+          MANUAL_PREFAB_ID: ${{ github.event.inputs.prefab_id }}
+          MANUAL_VERSION: ${{ github.event.inputs.version }}
         run: |
-          # 获取上一次提交的文件
-          git show HEAD~1:prefabs/releases/community-prefabs.json > old.json 2>/dev/null || echo '[]' > old.json
-          git show HEAD:prefabs/releases/community-prefabs.json > new.json 2>/dev/null || echo '[]' > new.json
-
-          # 使用 Python 找出新增或修改的条目
           python3 << 'PYTHON_SCRIPT'
           import json
           import sys
-
-          with open('old.json') as f:
-              old_data = json.load(f)
-          with open('new.json') as f:
-              new_data = json.load(f)
-
-          old_dict = {(item['id'], item['version']): item for item in old_data}
-          new_dict = {(item['id'], item['version']): item for item in new_data}
-
-          # 找出新增或修改的条目
-          changed = []
-          for key, item in new_dict.items():
-              if key not in old_dict or item != old_dict[key]:
-                  changed.append(item)
-
-          # 输出到 GitHub Actions
           import os
+
+          manual_prefab_id = os.environ.get('MANUAL_PREFAB_ID')
+          manual_version = os.environ.get('MANUAL_VERSION')
+
+          # 如果是手动触发
+          if manual_prefab_id and manual_version:
+              print(f"🔧 Manual deployment triggered for {manual_prefab_id}@{manual_version}")
+              
+              # 从 community-prefabs.json 中读取指定的 prefab
+              with open('prefabs/releases/community-prefabs.json') as f:
+                  all_prefabs = json.load(f)
+              
+              # 查找匹配的 prefab
+              target_prefab = None
+              for prefab in all_prefabs:
+                  if prefab['id'] == manual_prefab_id and prefab['version'] == manual_version:
+                      target_prefab = prefab
+                      break
+              
+              if not target_prefab:
+                  print(f"::error::Prefab {manual_prefab_id}@{manual_version} not found in community-prefabs.json")
+                  sys.exit(1)
+              
+              changed = [target_prefab]
+              print(f"✓ Found prefab: {target_prefab['name']}")
+          
+          # 如果是 push 触发
+          else:
+              print("📝 Detecting changes from git push...")
+              
+              # 获取上一次提交的文件
+              import subprocess
+              
+              try:
+                  old_content = subprocess.check_output(
+                      ['git', 'show', 'HEAD~1:prefabs/releases/community-prefabs.json'],
+                      stderr=subprocess.DEVNULL
+                  ).decode('utf-8')
+                  old_data = json.loads(old_content)
+              except:
+                  old_data = []
+              
+              try:
+                  new_content = subprocess.check_output(
+                      ['git', 'show', 'HEAD:prefabs/releases/community-prefabs.json'],
+                      stderr=subprocess.DEVNULL
+                  ).decode('utf-8')
+                  new_data = json.loads(new_content)
+              except:
+                  new_data = []
+              
+              old_dict = {(item['id'], item['version']): item for item in old_data}
+              new_dict = {(item['id'], item['version']): item for item in new_data}
+              
+              # 找出新增或修改的条目
+              changed = []
+              for key, item in new_dict.items():
+                  if key not in old_dict or item != old_dict[key]:
+                      changed.append(item)
+              
+              if not changed:
+                  print("No changes detected")
+              elif len(changed) > 1:
+                  print(f"Warning: Multiple changes detected ({len(changed)}), deploying all:")
+                  for item in changed:
+                      print(f"  - {item['id']}@{item['version']}")
+          
+          # 输出到 GitHub Actions
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"changed_entries={json.dumps(changed)}\n")
               f.write(f"has_changes={'true' if changed else 'false'}\n")
-          
-          if not changed:
-              print("No changes detected")
-              sys.exit(0)
-
-          if len(changed) > 1:
-              print(f"Warning: Multiple changes detected ({len(changed)}), deploying all:")
-              for item in changed:
-                  print(f"  - {item['id']}@{item['version']}")
           PYTHON_SCRIPT
 
       - name: Download and deploy prefabs
