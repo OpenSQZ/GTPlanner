@@ -209,30 +209,29 @@ jobs:
 
                       # 构建 multipart form data（手动构建，避免依赖 requests 库）
                       boundary = '----WebKitFormBoundary' + os.urandom(16).hex()
-                      parts = []
+                      body_parts = []
 
                       # 添加文本字段
                       for field_name, field_value in [
                           ('prefab_id', prefab_id),
                           ('version', version)
                       ]:
-                          parts.append(f'--{boundary}'.encode())
-                          parts.append(f'Content-Disposition: form-data; name="{field_name}"'.encode())
-                          parts.append(b'')
-                          parts.append(str(field_value).encode())
+                          body_parts.append(f'--{boundary}\r\n'.encode())
+                          body_parts.append(f'Content-Disposition: form-data; name="{field_name}"\r\n\r\n'.encode())
+                          body_parts.append(f'{field_value}\r\n'.encode())
 
                       # 添加文件字段
-                      parts.append(f'--{boundary}'.encode())
-                      parts.append(
-                          f'Content-Disposition: form-data; name="whl_file"; filename="{whl_filename}"'.encode()
+                      body_parts.append(f'--{boundary}\r\n'.encode())
+                      body_parts.append(
+                          f'Content-Disposition: form-data; name="whl_file"; filename="{whl_filename}"\r\n'.encode()
                       )
-                      parts.append(b'Content-Type: application/octet-stream')
-                      parts.append(b'')
-                      parts.append(file_content)  # 使用已读取的内容
-                      parts.append(f'--{boundary}--'.encode())
+                      body_parts.append(b'Content-Type: application/octet-stream\r\n\r\n')
+                      body_parts.append(file_content)
+                      body_parts.append(b'\r\n')
+                      body_parts.append(f'--{boundary}--\r\n'.encode())
 
                       # 组装请求体
-                      body = b'\r\n'.join(parts)
+                      body = b''.join(body_parts)
 
                       # 发送请求
                       headers = {
@@ -245,18 +244,33 @@ jobs:
                           headers['X-Hub-Signature-256'] = signature
 
                       request = Request(deploy_url, data=body, headers=headers, method='POST')
-                      with urlopen(request, timeout=60, context=ssl_context) as response:
-                          response_data = response.read().decode('utf-8')
-                          status_code = response.status
+                      try:
+                          with urlopen(request, timeout=60, context=ssl_context) as response:
+                              response_data = response.read().decode('utf-8')
+                              status_code = response.status
 
-                          if status_code in (200, 202):
-                              print(f"✅ Deployment triggered for {prefab_id}@{version}")
-                              print(f"   Response: {response_data}")
+                              if status_code in (200, 202):
+                                  print(f"✅ Deployment triggered for {prefab_id}@{version}")
+                                  print(f"   Response: {response_data}")
+                              else:
+                                  print(f"::error::Failed to deploy {prefab_id}@{version}")
+                                  print(f"   Status: {status_code}")
+                                  print(f"   Response: {response_data}")
+                                  sys.exit(1)
+                      except Exception as upload_error:
+                          # 捕获 HTTP 错误并显示详细信息
+                          error_msg = str(upload_error)
+                          if hasattr(upload_error, 'read'):
+                              try:
+                                  error_body = upload_error.read().decode('utf-8')
+                                  print(f"::error::Failed to upload {prefab_id}@{version}")
+                                  print(f"   Error: {error_msg}")
+                                  print(f"   Server response: {error_body}")
+                              except:
+                                  print(f"::error::Failed to upload {prefab_id}@{version}: {error_msg}")
                           else:
-                              print(f"::error::Failed to deploy {prefab_id}@{version}")
-                              print(f"   Status: {status_code}")
-                              print(f"   Response: {response_data}")
-                              sys.exit(1)
+                              print(f"::error::Failed to upload {prefab_id}@{version}: {error_msg}")
+                          raise
 
               except Exception as e:
                   print(f"::error::Failed to process {prefab_id}@{version}: {e}")
