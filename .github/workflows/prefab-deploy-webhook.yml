@@ -122,12 +122,10 @@ jobs:
         env:
           FACTORY_URL: ${{ secrets.PREFAB_FACTORY_DEPLOY_URL }}
           WEBHOOK_SECRET: ${{ secrets.PREFAB_FACTORY_WEBHOOK_SECRET }}
+          CHANGED_ENTRIES: ${{ steps.extract.outputs.changed_entries }}
         run: |
-          # 读取变更的条目
-          CHANGED_ENTRIES='${{ steps.extract.outputs.changed_entries }}'
-
           # 遍历每个变更的条目，下载 .whl 并上传到 factory
-          echo "$CHANGED_ENTRIES" | python3 << 'PYTHON_SCRIPT'
+          python3 << 'PYTHON_SCRIPT'
           import json
           import os
           import sys
@@ -139,7 +137,8 @@ jobs:
           import hashlib
           import hmac
 
-          input_data = sys.stdin.read().strip()
+          # 从环境变量读取变更条目（避免 heredoc 与管道冲突）
+          input_data = os.environ.get('CHANGED_ENTRIES', '').strip()
           if not input_data:
               print("::error::No changed entries data received")
               sys.exit(1)
