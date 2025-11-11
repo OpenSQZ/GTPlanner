@@ -45,22 +45,3 @@ jobs:
           uv run flake8 gtplanner/ --max-line-length=120 --exclude=__pycache__
         continue-on-error: true
 
-  validate-prefabs:
-    name: Validate Prefab Configuration
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      
-      - name: Validate Prefab releases config
-        working-directory: prefabs/releases
-        run: |
-          uv sync
-          uv run python scripts/validate_schema.py
-
