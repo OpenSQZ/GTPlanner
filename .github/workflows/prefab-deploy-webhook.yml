@@ -221,12 +221,23 @@ jobs:
                       try:
                           # 创建客户端（禁用 SSL 验证以支持自签名证书）
                           with httpx.Client(verify=False, timeout=60.0) as client:
-                              response = client.post(
+                              # 构建请求（不立即发送）
+                              request = client.build_request(
+                                  'POST',
                                   deploy_url,
                                   files=files,
                                   data=data,
                                   headers=headers
                               )
+                              
+                              # 调试：打印请求 headers
+                              print(f"📤 Request headers:")
+                              for key, value in request.headers.items():
+                                  if 'content-type' in key.lower():
+                                      print(f"   {key}: {value}")
+                              
+                              # 发送请求
+                              response = client.send(request)
                               
                               if response.status_code in (200, 202):
                                   print(f"✅ Deployment triggered for {prefab_id}@{version}")
