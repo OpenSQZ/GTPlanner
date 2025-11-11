@@ -24,7 +24,7 @@ jobs:
         run: |
           # 获取上一次提交的文件
           git show HEAD~1:prefabs/releases/community-prefabs.json > old.json 2>/dev/null || echo '[]' > old.json
-          git show HEAD:prefabs/releases/community-prefabs.json > new.json
+          git show HEAD:prefabs/releases/community-prefabs.json > new.json 2>/dev/null || echo '[]' > new.json
 
           # 使用 Python 找出新增或修改的条目
           python3 << 'PYTHON_SCRIPT'
@@ -45,6 +45,12 @@ jobs:
               if key not in old_dict or item != old_dict[key]:
                   changed.append(item)
 
+          # 输出到 GitHub Actions
+          import os
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"changed_entries={json.dumps(changed)}\n")
+              f.write(f"has_changes={'true' if changed else 'false'}\n")
+          
           if not changed:
               print("No changes detected")
               sys.exit(0)
@@ -53,12 +59,6 @@ jobs:
               print(f"Warning: Multiple changes detected ({len(changed)}), deploying all:")
               for item in changed:
                   print(f"  - {item['id']}@{item['version']}")
-
-          # 输出到 GitHub Actions
-          import os
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write(f"changed_entries={json.dumps(changed)}\n")
-              f.write(f"has_changes={'true' if changed else 'false'}\n")
           PYTHON_SCRIPT
 
       - name: Download and deploy prefabs
@@ -83,7 +83,12 @@ jobs:
           import hashlib
           import hmac
 
-          changed_entries = json.loads(sys.stdin.read())
+          input_data = sys.stdin.read().strip()
+          if not input_data:
+              print("::error::No changed entries data received")
+              sys.exit(1)
+          
+          changed_entries = json.loads(input_data)
           factory_url = os.environ.get('FACTORY_URL')
           webhook_secret = os.environ.get('WEBHOOK_SECRET', '')
 
