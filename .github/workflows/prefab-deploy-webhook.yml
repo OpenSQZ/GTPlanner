@@ -129,6 +129,7 @@ jobs:
           import json
           import os
           import sys
+          import ssl
           import tempfile
           from pathlib import Path
           from urllib.parse import urlparse, urlencode
@@ -136,6 +137,9 @@ jobs:
           import mimetypes
           import hashlib
           import hmac
+
+          # 创建不验证 SSL 证书的上下文（用于自签名证书）
+          ssl_context = ssl._create_unverified_context()
 
           # 从环境变量读取变更条目（避免 heredoc 与管道冲突）
           input_data = os.environ.get('CHANGED_ENTRIES', '').strip()
@@ -241,7 +245,7 @@ jobs:
                           headers['X-Hub-Signature-256'] = signature
 
                       request = Request(deploy_url, data=body, headers=headers, method='POST')
-                      with urlopen(request, timeout=60) as response:
+                      with urlopen(request, timeout=60, context=ssl_context) as response:
                           response_data = response.read().decode('utf-8')
                           status_code = response.status
 
