@@ -124,22 +124,21 @@ jobs:
           WEBHOOK_SECRET: ${{ secrets.PREFAB_FACTORY_WEBHOOK_SECRET }}
           CHANGED_ENTRIES: ${{ steps.extract.outputs.changed_entries }}
         run: |
+          # 安装 httpx（用于正确处理 multipart/form-data）
+          pip3 install -q httpx
+          
           # 遍历每个变更的条目，下载 .whl 并上传到 factory
           python3 << 'PYTHON_SCRIPT'
           import json
           import os
           import sys
-          import ssl
           import tempfile
           from pathlib import Path
-          from urllib.parse import urlparse, urlencode
-          from urllib.request import urlopen, Request, urlretrieve
-          import mimetypes
+          from urllib.parse import urlparse
+          from urllib.request import urlretrieve
           import hashlib
           import hmac
-
-          # 创建不验证 SSL 证书的上下文（用于自签名证书）
-          ssl_context = ssl._create_unverified_context()
+          import httpx
 
           # 从环境变量读取变更条目（避免 heredoc 与管道冲突）
           input_data = os.environ.get('CHANGED_ENTRIES', '').strip()
@@ -207,70 +206,38 @@ jobs:
                       # 准备 multipart/form-data 上传
                       print(f"⬆️  Uploading to factory: {deploy_url}")
 
-                      # 构建 multipart form data（手动构建，避免依赖 requests 库）
-                      # boundary 不应包含前导破折号，破折号只在使用时添加
-                      boundary = 'WebKitFormBoundary' + os.urandom(16).hex()
-                      body_parts = []
-
-                      # 添加文本字段
-                      for field_name, field_value in [
-                          ('prefab_id', prefab_id),
-                          ('version', version)
-                      ]:
-                          body_parts.append(f'--{boundary}\r\n'.encode())
-                          body_parts.append(f'Content-Disposition: form-data; name="{field_name}"\r\n\r\n'.encode())
-                          body_parts.append(f'{field_value}\r\n'.encode())
-
-                      # 添加文件字段
-                      body_parts.append(f'--{boundary}\r\n'.encode())
-                      body_parts.append(
-                          f'Content-Disposition: form-data; name="whl_file"; filename="{whl_filename}"\r\n'.encode()
-                      )
-                      body_parts.append(b'Content-Type: application/octet-stream\r\n\r\n')
-                      body_parts.append(file_content)
-                      body_parts.append(b'\r\n')
-                      body_parts.append(f'--{boundary}--\r\n'.encode())
-
-                      # 组装请求体
-                      body = b''.join(body_parts)
-
-                      # 发送请求
-                      headers = {
-                          'Content-Type': f'multipart/form-data; boundary={boundary}',
-                          'Content-Length': str(len(body))
+                      # 使用 httpx 上传（自动处理 multipart/form-data 格式）
+                      files = {
+                          'whl_file': (whl_filename, file_content, 'application/octet-stream')
                       }
-                      
-                      # 添加签名 header（如果有）
+                      data = {
+                          'prefab_id': prefab_id,
+                          'version': version
+                      }
+                      headers = {}
                       if signature:
                           headers['X-Hub-Signature-256'] = signature
-
-                      request = Request(deploy_url, data=body, headers=headers, method='POST')
+                      
                       try:
-                          with urlopen(request, timeout=60, context=ssl_context) as response:
-                              response_data = response.read().decode('utf-8')
-                              status_code = response.status
-
-                              if status_code in (200, 202):
+                          # 创建客户端（禁用 SSL 验证以支持自签名证书）
+                          with httpx.Client(verify=False, timeout=60.0) as client:
+                              response = client.post(
+                                  deploy_url,
+                                  files=files,
+                                  data=data,
+                                  headers=headers
+                              )
+                              
+                              if response.status_code in (200, 202):
                                   print(f"✅ Deployment triggered for {prefab_id}@{version}")
-                                  print(f"   Response: {response_data}")
+                                  print(f"   Response: {response.text}")
                               else:
                                   print(f"::error::Failed to deploy {prefab_id}@{version}")
-                                  print(f"   Status: {status_code}")
-                                  print(f"   Response: {response_data}")
+                                  print(f"   Status: {response.status_code}")
+                                  print(f"   Response: {response.text}")
                                   sys.exit(1)
                       except Exception as upload_error:
-                          # 捕获 HTTP 错误并显示详细信息
-                          error_msg = str(upload_error)
-                          if hasattr(upload_error, 'read'):
-                              try:
-                                  error_body = upload_error.read().decode('utf-8')
-                                  print(f"::error::Failed to upload {prefab_id}@{version}")
-                                  print(f"   Error: {error_msg}")
-                                  print(f"   Server response: {error_body}")
-                              except:
-                                  print(f"::error::Failed to upload {prefab_id}@{version}: {error_msg}")
-                          else:
-                              print(f"::error::Failed to upload {prefab_id}@{version}: {error_msg}")
+                          print(f"::error::Failed to upload {prefab_id}@{version}: {upload_error}")
                           raise
 
               except Exception as e:
