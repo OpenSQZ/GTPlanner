@@ -36,8 +36,8 @@ def create_mock_response_with_edits():
     response_json = {
         "edits": [
             {
-                "search": "### 3.2 数据存储\n\n使用 PostgreSQL 作为主数据库。",
-                "replace": "### 3.2 数据存储\n\n使用 PostgreSQL 作为主数据库，配合 Redis 作为缓存层。",
+                "search": "## 3.2 数据存储\n\n使用 PostgreSQL 作为主数据库。",
+                "replace": "## 3.2 数据存储\n\n使用 PostgreSQL 作为主数据库，配合 Redis 作为缓存层。",
                 "reason": "根据用户需求添加 Redis 缓存层说明"
             },
             {

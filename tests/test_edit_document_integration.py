@@ -121,8 +121,8 @@ CREATE TABLE `overdue_acceptors` (
     
     assert result["success"] == True, "工具应该执行成功"
     assert "proposal_id" in result
-    assert "edits" in result
-    assert len(result["edits"]) > 0
+    assert "edits_count" in result
+    assert result["edits_count"] > 0
     
     # 8. 验证事件是否被发送
     print(f"\n✅ 步骤 7: 验证事件发送")

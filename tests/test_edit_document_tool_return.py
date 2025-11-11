@@ -113,7 +113,7 @@ CREATE TABLE `overdue_acceptors` (
     # 基本验证
     assert result["success"] == True, "工具应该执行成功"
     assert "proposal_id" in result, "应该包含 proposal_id"
-    assert "edits" in result, "应该包含 edits 列表"
+    assert "edits_count" in result, "应该包含 edits_count"
     assert "summary" in result, "应该包含 summary"
     assert "document_type" in result, "应该包含 document_type"
     assert "document_filename" in result, "应该包含 document_filename"
@@ -124,28 +124,16 @@ CREATE TABLE `overdue_acceptors` (
     print(f"  ✅ proposal_id: {result['proposal_id']}")
     print(f"  ✅ document_type: {result['document_type']}")
     print(f"  ✅ document_filename: {result['document_filename']}")
-    print(f"  ✅ edits 数量: {len(result['edits'])}")
+    print(f"  ✅ edits_count: {result['edits_count']}")
     print(f"  ✅ summary: {result['summary'][:100]}...")
     
-    # 验证编辑内容
-    print(f"\n📝 编辑内容:")
-    for i, edit in enumerate(result['edits']):
-        print(f"\n  编辑 #{i+1}:")
-        print(f"    - search (前50字符): {edit['search'][:50]}...")
-        print(f"    - replace (前50字符): {edit['replace'][:50]}...")
-        print(f"    - reason: {edit['reason']}")
-        
-        assert "search" in edit, f"编辑 #{i+1} 应该包含 search 字段"
-        assert "replace" in edit, f"编辑 #{i+1} 应该包含 replace 字段"
-        assert "reason" in edit, f"编辑 #{i+1} 应该包含 reason 字段"
+    # 验证编辑数量
+    assert result['edits_count'] > 0, "应该有至少一个编辑操作"
     
-    # 验证 LLM 能够理解返回的内容
-    print(f"\n🤖 LLM 可见信息验证:")
-    print(f"  ✅ LLM 可以看到 {len(result['edits'])} 个具体的编辑操作")
-    print(f"  ✅ LLM 可以看到每个编辑的原文 (search)")
-    print(f"  ✅ LLM 可以看到每个编辑的新文 (replace)")
-    print(f"  ✅ LLM 可以看到每个编辑的原因 (reason)")
-    print(f"  ✅ LLM 可以向用户解释具体做了什么修改")
+    # 验证消息格式
+    print(f"\n🤖 返回消息验证:")
+    print(f"  ✅ message: {result.get('message', '')}")
+    print(f"  ✅ note: {result.get('note', '')}")
     
     print("\n✅ 测试通过！edit_document 工具返回完整的编辑内容")
     return result
