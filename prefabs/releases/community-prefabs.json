@@ -7,5 +7,14 @@
     "name": "大模型客户端预制件",
     "description": "智能内容分析与生成工具，支持文本理解、摘要生成、内容分类、情感分析等 AI 能力。基于 OpenAI 兼容 API，支持流式和非流式返回",
     "tags": ["llm", "ai", "大模型", "内容分析", "文本生成"]
+  },
+  {
+    "id": "jina-ai-prefab",
+    "version": "0.1.2",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/jina-prefab",
+    "name": "Jina AI 预制件",
+    "description": "使用 Jina AI 的 API 进行网络搜索和 URL 内容读取",
+    "tags": ["jina", "search", "web-reader", "ai", "content-extraction"]
   }
 ]
