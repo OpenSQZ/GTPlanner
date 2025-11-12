@@ -53,7 +53,7 @@ GTPlanner的目标是帮您轻松生成一份Agent PRD，也即AI能够读懂的
 
 ## Web UI (推荐)
 
-为了获得最佳体验，我们强烈推荐使用 Web UI。它提供了为现代开发者量身打造的流畅 AI 规划工作流。
+为了获得最佳体验，我们强烈推荐使用 Web UI （暂未开源，计划中）。它提供了为现代开发者量身打造的流畅 AI 规划工作流。
 
 ![GTPlanner Web UI](../../assets/web.gif)
 
