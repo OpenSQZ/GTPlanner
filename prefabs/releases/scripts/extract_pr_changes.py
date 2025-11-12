@@ -19,6 +19,27 @@ def run_command(cmd: list[str]) -> str:
     return result.stdout.strip()
 
 
+def get_first_parent_commit() -> str:
+    """获取第一个父提交（在 merge commit 中排除来自 main 的提交）"""
+    try:
+        # 检查当前提交是否为 merge commit
+        parents_output = run_command(['git', 'rev-parse', 'HEAD^@'])
+
+        # 过滤空字符串并获取父提交列表
+        parents = [p for p in parents_output.split() if p]
+
+        if len(parents) > 1:
+            # 这是一个 merge commit，使用第一个父提交（通常是特性分支的提交）
+            print(f"ℹ️  Detected merge commit with {len(parents)} parents")
+            return parents[0]
+        else:
+            # 不是 merge commit，使用 HEAD
+            return 'HEAD'
+    except subprocess.CalledProcessError:
+        # 单个提交或其他错误，使用 HEAD
+        return 'HEAD'
+
+
 def main():
     """主函数"""
     try:
@@ -31,9 +52,14 @@ def main():
         except subprocess.CalledProcessError:
             # 文件在 main 分支不存在，视为空数组
             base_data = []
-        
+
+        # 智能选择比较提交：如果是 merge commit，使用第一个父提交
+        compare_ref = get_first_parent_commit()
+        if compare_ref != 'HEAD':
+            print(f"ℹ️  Using commit {compare_ref[:8]} for comparison (before merge)")
+
         head_content = run_command([
-            'git', 'show', 'HEAD:prefabs/releases/community-prefabs.json'
+            'git', 'show', f'{compare_ref}:prefabs/releases/community-prefabs.json'
         ])
         head_data = json.loads(head_content)
 
