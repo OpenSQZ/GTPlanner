@@ -43,5 +43,14 @@
     "name": "文件处理预制件",
     "description": "封装文件解析 API，支持将 PDF、Markdown、图片等文件解析为 Markdown 格式的纯文本",
     "tags": ["file-processing", "pdf", "markdown", "ocr", "document-parsing"]
+  },
+  {
+    "id": "jina-ai-prefab",
+    "version": "0.1.2",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/jina-prefab",
+    "name": "Jina AI 预制件",
+    "description": "使用 Jina AI 的 API 进行网络搜索和 URL 内容读取",
+    "tags": ["jina", "search", "web-reader", "ai", "content-extraction"]
   }
 ]
