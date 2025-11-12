@@ -34,5 +34,14 @@
     "name": "语音识别预制件",
     "description": "基于 SenseVoice 的高精度语音识别工具，支持中英文及多语言识别，可用于音频转文字、语音分析等场景",
     "tags": ["asr", "speech-recognition", "语音识别", "sensevoice"]
+  },
+  {
+    "id": "file-processing-prefab",
+    "version": "0.1.5",
+    "author": "ketd",
+    "repo_url": "https://github.com/The-Agent-Builder/File-Processing",
+    "name": "文件处理预制件",
+    "description": "封装文件解析 API，支持将 PDF、Markdown、图片等文件解析为 Markdown 格式的纯文本",
+    "tags": ["file-processing", "pdf", "markdown", "ocr", "document-parsing"]
   }
 ]
