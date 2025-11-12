@@ -25,5 +25,14 @@
     "name": "视频处理预制件",
     "description": "基于 MoviePy 的视频处理工具集,可以将视频转位音频",
     "tags": ["video", "audio", "multimedia"]
+  },
+  {
+    "id": "asr-prefab",
+    "version": "0.2.1",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/asr",
+    "name": "语音识别预制件",
+    "description": "基于 SenseVoice 的高精度语音识别工具，支持中英文及多语言识别，可用于音频转文字、语音分析等场景",
+    "tags": ["asr", "speech-recognition", "语音识别", "sensevoice"]
   }
 ]
