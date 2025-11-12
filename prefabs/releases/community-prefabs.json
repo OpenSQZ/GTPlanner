@@ -61,5 +61,14 @@
     "name": "邮件服务预制件",
     "description": "基于 SMTP 协议的邮件发送服务，支持 HTML 内容、抄送、密送和附件",
     "tags": ["email", "smtp", "mail", "notification"]
+  },
+  {
+    "id": "browser-automation-agent",
+    "version": "0.1.0",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/Browser-Automation-Agent",
+    "name": "浏览器操作员",
+    "description": "一个很聪明的浏览器操作员，用简单清晰的话语描述清楚你实现什么网页操作，他会帮你端到端的执行。支持的操作包括网页截图，文件下载，网页内容读取，将网页内容保存为PDF。 示例:'截图example.com','从http://xxx.com 下载最新文件' ps:可以在一个请求中一次性完成多个操作,直接返回文件,或者完成调研任务.",
+    "tags": ["web-scraping", "playwright", "browser-automation", "ai-driven", "crawler", "网页爬取", "浏览器自动化"]
   }
 ]
