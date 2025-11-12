@@ -29,9 +29,33 @@ def get_first_parent_commit() -> str:
         parents = [p for p in parents_output.split() if p]
 
         if len(parents) > 1:
-            # 这是一个 merge commit，使用第一个父提交（通常是特性分支的提交）
+            # 这是一个 merge commit，需要找到特性分支的提交
             print(f"ℹ️  Detected merge commit with {len(parents)} parents")
-            return parents[0]
+
+            # 获取 origin/main 的提交哈希
+            try:
+                main_commit = run_command(['git', 'rev-parse', 'origin/main'])
+
+                # 对于每个父提交，检查它是否是 main 的祖先
+                for parent in parents:
+                    try:
+                        # 检查 parent 是否可以到达 main
+                        run_command(['git', 'merge-base', '--is-ancestor', parent, 'origin/main'])
+                        # 如果命令成功，说明 parent 是 main 的祖先，跳过它
+                        print(f"   Skipping parent {parent[:8]} (ancestor of origin/main)")
+                        continue
+                    except subprocess.CalledProcessError:
+                        # parent 不是 main 的祖先，这是我们要的特性分支提交
+                        print(f"   Using parent {parent[:8]} (feature branch)")
+                        return parent
+
+                # 如果所有父提交都是 main 的祖先，使用第一个
+                print(f"   Warning: All parents are ancestors of main, using first parent")
+                return parents[0]
+
+            except subprocess.CalledProcessError:
+                # 无法获取 main 提交，使用第一个父提交
+                return parents[0]
         else:
             # 不是 merge commit，使用 HEAD
             return 'HEAD'
