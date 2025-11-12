@@ -16,5 +16,14 @@
     "name": "高德地图天气查询预制件",
     "description": "基于高德地图 API 的天气查询预制件，支持实时天气和天气预报查询",
     "tags": ["weather", "amap", "天气"]
+  },
+  {
+    "id": "video-processing-prefab",
+    "version": "0.3.1",
+    "author": "ketd",
+    "repo_url": "https://github.com/ketd/Video-processing",
+    "name": "视频处理预制件",
+    "description": "基于 MoviePy 的视频处理工具集,可以将视频转位音频",
+    "tags": ["video", "audio", "multimedia"]
   }
 ]
