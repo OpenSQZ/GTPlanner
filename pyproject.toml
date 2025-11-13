@@ -16,7 +16,7 @@ dependencies = [
     "pocketflow-tracing>=0.1.5",
     "aiohttp >= 3.12.14",
     "json-repair>=0.45.0",
-    "fastapi == 0.115.9",
+    "fastapi == 0.121.1",
     "uvicorn == 0.23.1",
     "uvicorn[standard] == 0.23.1",
     "fastmcp",
