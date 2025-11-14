@@ -742,17 +742,17 @@ async def _execute_database_design(arguments: Dict[str, Any], shared: Dict[str, 
 async def _execute_edit_document(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
     """
     执行文档编辑 - 使用 DocumentEditFlow subagent（智能模式）
-    
+
     参数：
     - document_type: 必需，文档类型 ("design" 或 "database_design")
     - edit_instructions: 必需，自然语言描述的修改需求
-    
+
     工作流程：
     1. DocumentEditFlow subagent 读取当前文档
     2. 使用 LLM 理解 edit_instructions
     3. LLM 自动生成精确的 search/replace 操作
     4. 验证并生成修改提案
-    5. 通过 SSE 发送 diff 视图给前端
+    5. 🔑 返回完整提案数据（不使用 SSE），包含 user_decision 字段
     """
     # 验证必需参数
     document_type = arguments.get("document_type")
@@ -761,14 +761,14 @@ async def _execute_edit_document(arguments: Dict[str, Any], shared: Dict[str, An
             "success": False,
             "error": "document_type is required"
         }
-    
+
     edit_instructions = arguments.get("edit_instructions")
     if not edit_instructions:
         return {
             "success": False,
             "error": "edit_instructions is required"
         }
-    
+
     try:
         # 创建独立的流程 shared 字典
         flow_shared = {
@@ -779,30 +779,27 @@ async def _execute_edit_document(arguments: Dict[str, Any], shared: Dict[str, An
             "language": shared.get("language") if shared else None,
             "streaming_session": shared.get("streaming_session") if shared else None
         }
-        
+
         # 使用 DocumentEditFlow
         from gtplanner.agent.subflows.document_edit.flows.document_edit_flow import DocumentEditFlow
         flow = DocumentEditFlow()
-        
+
         print(f"📝 开始编辑文档: {document_type}")
         print(f"📋 修改需求: {edit_instructions}")
-        
+
         # 执行流程（subagent 内部会调用 LLM 生成具体的编辑操作）
         result = await flow.run_async(flow_shared)
-        
+
         # 从流程 shared 中获取结果
         proposal_id = flow_shared.get("edit_proposal_id")
         pending_edits = flow_shared.get("pending_document_edits", {})
-        
-        # 注意：不再将 pending_edits 保存到 shared/tool_execution_results
-        # 提案详情已通过 SSE 事件发送给前端，前端在本地状态管理
-        
+
         # 判断成功
         if result == "edit_proposal_generated" and proposal_id:
-            # 获取提案详情（仅用于返回摘要）
+            # 🔑 关键变更：返回完整提案数据
             proposal_details = pending_edits.get(proposal_id, {})
-            
-            # 只返回引用和摘要，不返回完整的 edits 列表
+
+            # 返回完整的提案数据，供 LLM 查看和前端处理
             return {
                 "success": True,
                 "message": "✅ 文档编辑提案已生成，等待用户确认",
@@ -810,8 +807,10 @@ async def _execute_edit_document(arguments: Dict[str, Any], shared: Dict[str, An
                 "document_type": proposal_details.get("document_type"),
                 "document_filename": proposal_details.get("document_filename"),
                 "summary": proposal_details.get("summary", ""),
-                "edits_count": len(proposal_details.get("edits", [])),
-                "note": "详细编辑内容已发送给用户，等待确认后会自动应用到文档",
+                "edits": proposal_details.get("edits", []),  # 🔑 完整编辑列表
+                "preview_content": proposal_details.get("preview_content"),
+                "user_decision": None,  # 🔑 空字段，等待前端填写（accepted/rejected）
+                "timestamp": proposal_details.get("timestamp"),
                 "tool_name": "edit_document"
             }
         else:

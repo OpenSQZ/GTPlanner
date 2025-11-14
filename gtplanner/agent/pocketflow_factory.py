@@ -160,6 +160,11 @@ class PocketFlowSharedFactory:
             if "short_planning" in shared:
                 tool_execution_results_updates["short_planning"] = shared["short_planning"]
 
+            # 🔑 关键新增：将文档编辑提案添加到 tool_execution_results_updates
+            # 这样提案数据会持久化在聊天历史中，LLM 可以看到完整的提案和用户决策
+            if "pending_document_edits" in shared:
+                tool_execution_results_updates["pending_document_edits"] = shared["pending_document_edits"]
+
             # 检查设计文档相关字段 - 只保存元数据，不保存大型文档内容
             designs = {}
 
