@@ -6,14 +6,15 @@ Document Edit Node
 2. 使用 LLM 理解自然语言的修改需求
 3. LLM 自动生成精确的 search/replace 操作
 4. 验证编辑操作的有效性
-5. 生成编辑提案并通过 SSE 发送给前端
+5. 生成编辑提案并返回完整数据（不使用 SSE）
 """
 
 import uuid
 import json
+import time
 from typing import Dict, Any
 from pocketflow import AsyncNode
-from gtplanner.agent.streaming import emit_document_edit_proposal, emit_processing_status, emit_error
+from gtplanner.agent.streaming import emit_processing_status, emit_error
 from gtplanner.utils.openai_client import get_openai_client
 from gtplanner.agent.prompts import get_prompt, PromptTypes
 
@@ -160,25 +161,16 @@ class DocumentEditNode(AsyncNode):
                     "validation_errors": validation_errors
                 }
             
-            # 生成预览内容（应用所有编辑）
-            preview_content = document_content
-            for edit in edits:
-                search_text = edit.get("search", "")
-                replace_text = edit.get("replace", "")
-                # 只替换第一次出现的地方（保证精确性）
-                preview_content = preview_content.replace(search_text, replace_text, 1)
-            
             # 生成提案ID
             proposal_id = f"edit_{uuid.uuid4().hex[:8]}"
-            
+
             return {
                 "success": True,
                 "proposal_id": proposal_id,
                 "document_type": prep_result["document_type"],
                 "document_filename": prep_result["document_filename"],
                 "edits": edits,
-                "summary": summary,
-                "preview_content": preview_content
+                "summary": summary
             }
             
         except json.JSONDecodeError as e:
@@ -210,60 +202,52 @@ class DocumentEditNode(AsyncNode):
         prep_result: Dict[str, Any],
         exec_result: Dict[str, Any]
     ) -> str:
-        """后处理：发送编辑提案到前端"""
+        """后处理：保存完整提案数据到 shared（不使用 SSE）"""
         print(f"🚀 [DocumentEditNode.post_async] 开始执行")
         print(f"🔍 [DocumentEditNode.post_async] exec_result.success: {exec_result.get('success')}")
-        print(f"🔍 [DocumentEditNode.post_async] streaming_session 存在: {shared.get('streaming_session') is not None}")
-        
+
         if not exec_result.get("success"):
             error_msg = exec_result.get("error", "Unknown error")
             validation_errors = exec_result.get("validation_errors", [])
-            
+
             error_details = error_msg
             if validation_errors:
                 error_details += "\n\nValidation errors:\n" + "\n".join(validation_errors)
-            
+
             await emit_error(shared, error_details)
             shared["document_edit_error"] = error_details
             return "edit_failed"
-        
-        # 发送编辑提案到前端
+
+        # 提取提案数据
         proposal_id = exec_result["proposal_id"]
         document_type = exec_result["document_type"]
         document_filename = exec_result["document_filename"]
         edits = exec_result["edits"]
         summary = exec_result["summary"]
-        preview_content = exec_result.get("preview_content")
-        
-        await emit_document_edit_proposal(
-            shared,
-            proposal_id=proposal_id,
-            document_type=document_type,
-            document_filename=document_filename,
-            edits=edits,
-            summary=summary,
-            preview_content=preview_content
-        )
-        
+
         await emit_processing_status(
             shared,
             f"✅ 文档编辑提案已生成（ID: {proposal_id}），等待用户确认"
         )
-        
-        # 保存提案信息到 shared（用于后续的 tool_execution_results_updates）
+
+        # 保存完整提案信息到 shared（用于 tool_execution_results_updates）
+        # 🔑 关键变更：保存完整提案数据，包括 user_decision 字段
         if "pending_document_edits" not in shared:
             shared["pending_document_edits"] = {}
-        
+
         shared["pending_document_edits"][proposal_id] = {
+            "proposal_id": proposal_id,
             "document_type": document_type,
             "document_filename": document_filename,
             "edits": edits,
             "summary": summary,
-            "status": "pending",
-            "created_at": uuid.uuid4().hex  # 使用简单的时间戳替代
+            "user_decision": None,  # 🔑 空字段，等待前端填写
+            "timestamp": int(time.time() * 1000)  # 毫秒时间戳
         }
-        
+
         # 保存提案ID供工具返回使用
         shared["edit_proposal_id"] = proposal_id
-        
+
+        print(f"✅ [DocumentEditNode] 提案已保存到 shared: {proposal_id}")
+
         return "edit_proposal_generated"
