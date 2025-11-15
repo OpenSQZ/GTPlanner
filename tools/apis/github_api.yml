@@ -1,0 +1,143 @@
+id: "public.github-api"
+type: "APIS"
+summary: "获取GitHub仓库信息和开发者数据。"
+description: |
+  通过GitHub REST API，可以查询公共仓库信息、用户数据、提交历史、问题和拉取请求等。
+  支持基本的公开数据访问，对于私有仓库需要认证。
+  
+  主要功能：
+  - 查询仓库信息（星标数、分支、语言等）
+  - 获取用户和组织数据
+  - 列出提交历史、问题和拉取请求
+  - 访问仓库内容和文件
+  - 公开数据可直接访问，私有数据需要认证令牌
+
+examples:
+  - title: "使用 cURL 查询仓库信息"
+    content: |
+      curl "https://api.github.com/repos/OpenSQZ/GTPlanner"
+  
+  - title: "Python 示例"
+    content: |
+      import requests
+
+      # 查询GTPlanner仓库信息
+      url = "https://api.github.com/repos/OpenSQZ/GTPlanner"
+      response = requests.get(url)
+      data = response.json()
+
+      print(f"仓库名: {data['name']}")
+      print(f"描述: {data['description']}")
+      print(f"星标数: {data['stargazers_count']}")
+      print(f"分支数: {data['forks_count']}")
+
+base_url: "https://api.github.com"
+endpoints:
+  - summary: "获取仓库信息。"
+    method: "GET"
+    path: "/repos/{owner}/{repo}"
+    inputs:
+      type: "object"
+      properties:
+        owner:
+          type: "string"
+          description: "仓库所有者的用户名或组织名，例如: OpenSQZ"
+        repo:
+          type: "string"
+          description: "仓库名称，例如: GTPlanner"
+    outputs:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          description: "仓库名称"
+        description:
+          type: "string"
+          description: "仓库描述"
+        stargazers_count:
+          type: "integer"
+          description: "星标数量"
+        forks_count:
+          type: "integer"
+          description: "分支数量"
+        language:
+          type: "string"
+          description: "主要编程语言"
+  
+  - summary: "列出仓库提交历史。"
+    method: "GET"
+    path: "/repos/{owner}/{repo}/commits"
+    inputs:
+      type: "object"
+      properties:
+        owner:
+          type: "string"
+          description: "仓库所有者"
+        repo:
+          type: "string"
+          description: "仓库名称"
+        per_page:
+          type: "integer"
+          description: "每页显示的提交数量，默认为30"
+          default: 30
+    outputs:
+      type: "array"
+      items:
+        type: "object"
+        properties:
+          sha:
+            type: "string"
+            description: "提交SHA哈希值"
+          commit:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                description: "提交信息"
+              author:
+                type: "object"
+                properties:
+                  name:
+                    type: "string"
+                    description: "作者名称"
+                  date:
+                    type: "string"
+                    description: "提交日期"
+  
+  - summary: "搜索仓库。"
+    method: "GET"
+    path: "/search/repositories"
+    inputs:
+      type: "object"
+      properties:
+        q:
+          type: "string"
+          description: "搜索查询字符串，例如: ai planning tool"
+        sort:
+          type: "string"
+          description: "排序方式，可选stars, forks, help-wanted-issues, updated"
+          default: "stars"
+        order:
+          type: "string"
+          description: "排序顺序，可选desc, asc"
+          default: "desc"
+    outputs:
+      type: "object"
+      properties:
+        total_count:
+          type: "integer"
+          description: "匹配的仓库总数"
+        items:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+                description: "仓库名称"
+              full_name:
+                type: "string"
+                description: "完整仓库名称（所有者/仓库名）"
+              html_url:
+                type: "string"
+                description: "仓库GitHub页面URL"
