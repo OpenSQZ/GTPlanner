@@ -242,9 +242,18 @@ class MultilingualConfig:
                 logger.warning(f"Error reading vector service config from settings: {e}")
 
         # Environment variables have higher priority than settings.toml
+        try:
+            timeout_env = os.getenv("VECTOR_SERVICE_TIMEOUT")
+            if timeout_env:
+                timeout = int(timeout_env.strip().split()[0])  # 只取第一个数字部分
+            else:
+                timeout = config.get("timeout", 30)
+        except (ValueError, AttributeError):
+            timeout = config.get("timeout", 30)
+
         config.update({
             "base_url": os.getenv("VECTOR_SERVICE_BASE_URL") or os.getenv("GTPLANNER_VECTOR_SERVICE_BASE_URL") or config.get("base_url"),
-            "timeout": int(os.getenv("VECTOR_SERVICE_TIMEOUT") or config.get("timeout", 30)),
+            "timeout": timeout,
             "prefabs_index_name": os.getenv("VECTOR_SERVICE_INDEX_NAME") or config.get("prefabs_index_name", "document_gtplanner_prefabs"),
             "vector_field": os.getenv("VECTOR_SERVICE_VECTOR_FIELD") or config.get("vector_field", "combined_text")
         })

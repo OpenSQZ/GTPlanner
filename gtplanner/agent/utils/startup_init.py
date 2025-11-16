@@ -99,11 +99,33 @@ async def _check_vector_service_config(shared: Dict[str, Any] = None) -> Dict[st
                 "config": vector_config
             }
         
-        # 检查向量服务可用性
+        # 检查向量服务可用性（使用智谱AI API测试）
         import requests
         try:
-            response = requests.get(f"{base_url}/health", timeout=5)
-            available = response.status_code == 200
+            from gtplanner.utils.config_manager import get_llm_config
+            llm_config = get_llm_config()
+            api_key = llm_config.get("api_key")
+
+            if not api_key:
+                available = False
+                error = "LLM API密钥未配置"
+            else:
+                # 测试智谱AI嵌入API
+                response = requests.post(
+                    base_url,
+                    json={
+                        "model": "embedding-2",
+                        "input": "test"
+                    },
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {api_key}"
+                    },
+                    timeout=5
+                )
+                available = response.status_code == 200
+                if not available:
+                    error = f"智谱AI API调用失败: {response.status_code}"
         except Exception as e:
             available = False
             error = str(e)
