@@ -158,6 +158,12 @@ Create a video analysis assistant that can automatically extract video subtitles
 python gtplanner.py "Design a document analysis assistant that supports PDF, Word document parsing and intelligent Q&A"
 ```
 
+Use the built-in RAG preset to scaffold a document-QA/standard-review agent:
+
+```bash
+python gtplanner.py --preset rag-doc-qa "设计一个标准研判RAG助手：支持标准PDF导入、条款检索、指标抽取和合规性分析"
+```
+
 CLI detailed documentation (session management, parameter explanations, etc.) → [CLI Documentation](./gtplanner/agent/cli/README.md)
 
 ### API Usage

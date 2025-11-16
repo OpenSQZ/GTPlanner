@@ -414,6 +414,11 @@ class ReActOrchestratorNode(AsyncNode):
                 PromptTypes.System.ORCHESTRATOR_FUNCTION_CALLING,
                 language=language
             )
+            preset_prompt = (shared.get("preset_prompt") or "").strip()
+            preset_name = shared.get("preset_name")
+            if preset_prompt:
+                preset_label = f"Preset: {preset_name}" if preset_name else "Preset"
+                system_prompt = f"{system_prompt}\n\n# {preset_label}\n{preset_prompt}"
 
             # 使用流式API（启用工具调用标签过滤）
             stream = self.openai_client.chat_completion_stream(

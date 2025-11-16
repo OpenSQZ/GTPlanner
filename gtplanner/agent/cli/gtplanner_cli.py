@@ -39,6 +39,7 @@ from gtplanner.agent.cli.cli_text_manager import CLITextManager
 
 # 导入索引管理器
 from gtplanner.agent.utils.startup_init import initialize_application
+from gtplanner.agent.presets import get_preset_prompt
 
 
 class ModernGTPlannerCLI:
@@ -49,7 +50,8 @@ class ModernGTPlannerCLI:
                  show_timestamps: bool = False,
                  show_metadata: bool = False,
                  verbose: bool = False,
-                 language: str = "zh"):
+                 language: str = "zh",
+                 preset: str = "default"):
         """
         初始化CLI
 
@@ -59,6 +61,7 @@ class ModernGTPlannerCLI:
             show_metadata: 是否显示元数据
             verbose: 是否显示详细信息
             language: 界面语言 (zh/en/ja/es/fr)，默认为中文
+            preset: 预设规划模式（default/rag-doc-qa）
         """
         self.console = Console()
         self.enable_streaming = enable_streaming
@@ -66,6 +69,8 @@ class ModernGTPlannerCLI:
         self.show_metadata = show_metadata
         self.verbose = verbose
         self.language = language
+        self.preset = preset
+        self.preset_prompt = get_preset_prompt(preset, language)
         self.running = True
 
         # 初始化CLI文本管理器
@@ -369,7 +374,14 @@ I want to build an online education platform
                 await streaming_session.start()
 
             # 处理用户输入
-            result = await self.planner.process(user_input, context, streaming_session, language=self.language)
+            result = await self.planner.process(
+                user_input,
+                context,
+                streaming_session,
+                language=self.language,
+                preset_prompt=self.preset_prompt,
+                preset_name=self.preset
+            )
 
             # 处理结果
             if result.success:
@@ -622,6 +634,7 @@ I want to build an online education platform
 - **流式响应**: {'✅ 启用' if self.enable_streaming else '❌ 禁用'}
 - **时间戳显示**: {'✅ 启用' if self.show_timestamps else '❌ 禁用'}
 - **元数据显示**: {'✅ 启用' if self.show_metadata else '❌ 禁用'}
+- **预设模式**: {self.preset}
 - **详细模式**: {'✅ 启用' if self.verbose else '❌ 禁用'}
 
 ## 🔧 修改配置
@@ -737,6 +750,10 @@ async def main():
                        choices=["zh", "en", "ja", "es", "fr"],
                        default="zh",
                        help="界面语言 (zh=中文, en=英文, ja=日文, es=西班牙文, fr=法文)，默认为中文")
+    parser.add_argument("--preset",
+                       choices=["default", "rag-doc-qa"],
+                       default="default",
+                       help="预设规划模式，rag-doc-qa 将输出面向文档问答/标准研判的RAG规划模板")
 
     args = parser.parse_args()
 
@@ -746,7 +763,8 @@ async def main():
         show_timestamps=args.timestamps,
         show_metadata=args.metadata,
         verbose=args.verbose,
-        language=args.language
+        language=args.language,
+        preset=args.preset
     )
 
     # 如果指定了加载会话

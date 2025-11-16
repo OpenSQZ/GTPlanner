@@ -30,6 +30,8 @@ class AgentsDesignDesignNodeTemplates:
    {project_planning}
 - 推荐预制件（可选）：
    {prefabs_info}
+- 预设规划要求（可选）：
+   {preset_guidance}
 
 **⚠️ 重要提示**：
 - 下面的模板中包含"给 AI 的提示"部分，这些提示**仅供你理解如何生成内容**
@@ -245,6 +247,7 @@ Based on the following inputs, generate a complete system design document (Markd
 - Project Planning (optional): {project_planning}
 - Recommended Prefabs (optional): {prefabs_info}
 - Technical Research (optional): {research_summary}
+- Preset Guidance (optional): {preset_guidance}
 
 **⚠️ Important Notice**:
 - The template below contains "Notes for AI" sections to help you understand how to generate content
