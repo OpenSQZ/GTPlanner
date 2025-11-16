@@ -11,12 +11,84 @@ from typing import Any, Optional
 
 from fastmcp import FastMCP
 
-from api.v1.planning import (
-    LongPlanningRequest,
-    ShortPlanningRequest,
-    long_planning,
-    short_planning,
-)
+# 导入本地规划模块
+import sys
+from pathlib import Path
+
+# 添加项目根目录到路径
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+# 导入短规划流程
+from gtplanner.agent.subflows.short_planning.flows.short_planning_flow import ShortPlanningFlow
+
+# 定义请求模型
+class LongPlanningRequest:
+    def __init__(self, requirement: str, previous_flow: str, design_doc=None, language: str = None, user_id: str = None):
+        self.requirement = requirement
+        self.previous_flow = previous_flow
+        self.design_doc = design_doc
+        self.language = language
+        self.user_id = user_id
+
+class ShortPlanningRequest:
+    def __init__(self, requirement: str, previous_flow: str = None, language: str = None, user_id: str = None):
+        self.requirement = requirement
+        self.previous_flow = previous_flow
+        self.language = language
+        self.user_id = user_id
+
+# 创建规划流程实例
+short_planning_flow = ShortPlanningFlow()
+
+async def short_planning(request: ShortPlanningRequest) -> dict:
+    """短规划处理函数"""
+    try:
+        # 准备共享状态
+        shared_state = {
+            "user_requirements": request.requirement,
+            "previous_planning": request.previous_flow,
+            "language": request.language or "zh",
+            "user_id": request.user_id
+        }
+
+        # 运行短规划流程
+        result = await short_planning_flow.run_async(shared_state)
+
+        return {
+            "flow": result,
+            "language": request.language or "zh"
+        }
+    except Exception as e:
+        return {
+            "flow": f"Error: {str(e)}",
+            "language": request.language or "zh"
+        }
+
+async def long_planning(request: LongPlanningRequest) -> dict:
+    """长规划处理函数（暂时使用短规划逻辑）"""
+    try:
+        # 准备共享状态
+        shared_state = {
+            "user_requirements": request.requirement,
+            "previous_planning": request.previous_flow,
+            "design_doc": request.design_doc,
+            "language": request.language or "zh",
+            "user_id": request.user_id
+        }
+
+        # 运行短规划流程（长规划功能待实现）
+        result = await short_planning_flow.run_async(shared_state)
+
+        return {
+            "flow": result,
+            "language": request.language or "zh"
+        }
+    except Exception as e:
+        return {
+            "flow": f"Error: {str(e)}",
+            "language": request.language or "zh"
+        }
 
 app = FastMCP()
 
