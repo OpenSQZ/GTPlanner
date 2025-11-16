@@ -11,6 +11,13 @@ from datetime import datetime
 from .stream_types import StreamEvent, StreamEventType
 from .stream_interface import StreamHandler
 
+try:
+    from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+    from rich.console import Console
+    RICH_AVAILABLE = True
+except ImportError:
+    RICH_AVAILABLE = False
+
 
 class CLIStreamHandler(StreamHandler):
     """
@@ -28,6 +35,17 @@ class CLIStreamHandler(StreamHandler):
         self.is_message_active = False
         self.active_tools: Dict[str, Dict[str, Any]] = {}
         self._closed = False
+        
+        # ⭐ 进度条相关属性
+        if RICH_AVAILABLE:
+            self.progress: Optional[Progress] = None
+            self.console = Console()
+        else:
+            self.progress = None
+            self.console = None
+        self.progress_task = None
+        self.is_long_running_task = False
+        self.chunk_count = 0
 
     async def handle_event(self, event: StreamEvent) -> None:
         """处理单个流式事件"""
@@ -86,7 +104,34 @@ class CLIStreamHandler(StreamHandler):
     async def _handle_message_start(self, event: StreamEvent) -> None:
         """处理助手消息开始事件"""
         if not self.is_message_active:
-            print("\n🤖 GTPlanner: ", end="", flush=True)
+            # ⭐ 检查元数据，判断是否是长时间任务（文档生成）
+            metadata = event.metadata or {}
+            message_type = metadata.get("message_type", "")
+            
+            if message_type == "document_generation" and RICH_AVAILABLE and self.console:
+                # ⭐ 长时间任务：显示进度条
+                self.is_long_running_task = True
+                self.chunk_count = 0
+                self.progress = Progress(
+                    SpinnerColumn(),
+                    TextColumn("[progress.description]{task.description}"),
+                    BarColumn(),
+                    TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                    TimeElapsedColumn(),
+                    console=self.console,
+                    transient=False
+                )
+                self.progress.start()
+                # 使用较大的 total 值，通过字符数估算进度
+                self.progress_task = self.progress.add_task(
+                    "🤖 AI 正在生成设计文档...",
+                    total=100
+                )
+            else:
+                # 普通消息：显示流式内容
+                self.is_long_running_task = False
+                print("\n🤖 GTPlanner: ", end="", flush=True)
+            
             self.is_message_active = True
             self.current_message = ""
 
@@ -95,13 +140,34 @@ class CLIStreamHandler(StreamHandler):
         chunk_content = event.data.get("content", "")
 
         if chunk_content:
-            print(chunk_content, end="", flush=True)
+            if self.is_long_running_task and self.progress and self.progress_task is not None:
+                # ⭐ 长时间任务：更新进度条而不是显示内容
+                self.chunk_count += len(chunk_content)
+                # 根据字符数估算进度（假设平均文档长度约 5000 字符）
+                # 可以根据实际情况调整这个估算值
+                estimated_total_chars = 5000
+                progress_value = min(self.chunk_count / estimated_total_chars * 100, 99)  # 最多99%，留1%给完成
+                self.progress.update(self.progress_task, completed=progress_value)
+            else:
+                # 普通消息：显示流式内容
+                print(chunk_content, end="", flush=True)
+            
             self.current_message += chunk_content
 
     async def _handle_message_end(self, event: StreamEvent) -> None:
         """处理助手消息结束事件"""
         if self.is_message_active:
-            print()  # 换行
+            if self.is_long_running_task and self.progress and self.progress_task is not None:
+                # ⭐ 完成进度条
+                self.progress.update(self.progress_task, completed=100)
+                self.progress.stop()
+                self.progress = None
+                self.progress_task = None
+                self.is_long_running_task = False
+            else:
+                # 普通消息：换行
+                print()
+            
             self.is_message_active = False
 
             # 如果有完整消息且与当前累积的不同，使用完整消息
@@ -110,6 +176,7 @@ class CLIStreamHandler(StreamHandler):
                 print(f"📝 完整回复: {complete_message}")
 
             self.current_message = ""
+            self.chunk_count = 0
 
     async def _handle_tool_start(self, event: StreamEvent) -> None:
         """处理工具调用开始事件"""
@@ -178,49 +245,29 @@ class CLIStreamHandler(StreamHandler):
             print(f"   详细信息: {error_details}")
 
     async def _handle_design_document(self, event: StreamEvent) -> None:
-        """处理设计文档生成事件"""
-        filename = event.data.get("filename", "unknown.md")
+        """
+        处理设计文档生成事件（包括设计文档和数据库设计文档）
+        
+        为文件名添加时间戳，避免文件覆盖，保留历史版本。
+        """
+        from pathlib import Path
+        
+        original_filename = event.data.get("filename", "unknown.md")
         content = event.data.get("content", "")
 
         # 如果正在显示消息，先换行
         if self.is_message_active:
             print()
 
-        print(f"\n📄 设计文档已生成: {filename}")
+        # 生成带时间戳的文件名（格式：base_name_YYYYMMDD_HHMMSS.ext）
+        base_name = Path(original_filename).stem
+        extension = Path(original_filename).suffix
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{base_name}_{timestamp}{extension}"
 
-        # 使用文件生成器保存文档
-        try:
-            from gtplanner.utils.file_generator import write_file
-            file_info = write_file(filename, content)
-
-            print(f"   📁 保存路径: {file_info['path']}")
-            print(f"   📏 文件大小: {file_info['size']} 字节")
-
-            if self.show_metadata:
-                print(f"   🕒 创建时间: {datetime.fromtimestamp(file_info['created_at']).strftime('%H:%M:%S')}")
-                print(f"   📝 编码格式: {file_info['encoding']}")
-
-        except Exception as e:
-            print(f"   ❌ 保存失败: {str(e)}")
-            # 如果保存失败，至少显示文档内容的前几行
-            lines = content.split('\n')[:3]
-            print(f"   📝 文档预览:")
-            for line in lines:
-                print(f"      {line}")
-            total_lines = len(content.split('\n'))
-            if total_lines > 3:
-                print(f"      ... (共 {total_lines} 行)")
-
-    async def _handle_design_document(self, event: StreamEvent) -> None:
-        """处理设计文档生成事件"""
-        filename = event.data.get("filename", "unknown.md")
-        content = event.data.get("content", "")
-
-        # 如果正在显示消息，先换行
-        if self.is_message_active:
-            print()
-
-        print(f"\n📄 设计文档已生成: {filename}")
+        # 根据文件名判断文档类型
+        doc_type = "数据库设计文档" if "database" in original_filename.lower() else "设计文档"
+        print(f"\n📄 {doc_type}已生成: {filename}")
 
         # 使用文件生成器保存文档
         try:
@@ -284,6 +331,12 @@ class CLIStreamHandler(StreamHandler):
 
         self._closed = True
 
+        # ⭐ 关闭进度条（如果存在）
+        if self.progress:
+            self.progress.stop()
+            self.progress = None
+            self.progress_task = None
+
         # 如果还有活跃的工具调用，显示中断信息
         if self.active_tools:
             print(f"\n⚠️  中断了{len(self.active_tools)}个正在执行的工具调用")
@@ -295,6 +348,8 @@ class CLIStreamHandler(StreamHandler):
         self.active_tools.clear()
         self.current_message = ""
         self.is_message_active = False
+        self.is_long_running_task = False
+        self.chunk_count = 0
 
     def _format_timestamp(self, timestamp_str: str) -> str:
         """格式化时间戳"""

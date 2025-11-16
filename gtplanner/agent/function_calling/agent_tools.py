@@ -342,6 +342,40 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
         }
     }
     tools.append(view_document_tool)
+    
+    # 添加 export_document 工具
+    export_document_tool = {
+        "type": "function",
+        "function": {
+            "name": "export_document",
+            "description": "将已生成的文档导出为多种格式（HTML、TXT、MD等）。支持单格式或批量导出。**使用场景**：当用户需要将文档导出为其他格式时调用此工具。注意：PDF 和 DOCX 格式暂未实现，请使用 HTML 或 TXT 格式。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "document_type": {
+                        "type": "string",
+                        "enum": ["design", "database_design", "all"],
+                        "description": "要导出的文档类型。'design' 导出设计文档，'database_design' 导出数据库设计文档，'all' 导出所有文档"
+                    },
+                    "export_formats": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": ["md", "html", "txt", "pdf", "docx"]
+                        },
+                        "description": "要导出的格式列表。支持的格式：'md'（Markdown）、'html'（HTML网页）、'txt'（纯文本）。注意：'pdf' 和 'docx' 暂未实现"
+                    },
+                    "output_dir": {
+                        "type": "string",
+                        "description": "输出目录，默认为 'output'。导出的文件将保存到此目录",
+                        "default": "output"
+                    }
+                },
+                "required": ["document_type", "export_formats"]
+            }
+        }
+    }
+    tools.append(export_document_tool)
 
     return tools
 
@@ -379,6 +413,8 @@ async def execute_agent_tool(tool_name: str, arguments: Dict[str, Any], shared: 
             return await _execute_edit_document(arguments, shared)
         elif tool_name == "view_document":
             return await _execute_view_document(arguments, shared)
+        elif tool_name == "export_document":
+            return await _execute_export_document(arguments, shared)
         else:
             return {
                 "success": False,
@@ -537,8 +573,6 @@ async def _execute_research(arguments: Dict[str, Any], shared: Dict[str, Any] = 
             "success": False,
             "error": f"Research execution failed: {str(e)}"
         }
-
-
 
 
 
@@ -894,6 +928,109 @@ async def _execute_view_document(arguments: Dict[str, Any], shared: Dict[str, An
             "success": False,
             "error": f"查看文档执行异常: {str(e)}",
             "tool_name": "view_document"
+        }
+
+
+async def _execute_export_document(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
+    """
+    执行文档导出 - 将已生成的文档导出为多种格式
+    
+    参数：
+    - document_type: 必需，文档类型（"design"、"database_design" 或 "all"）
+    - export_formats: 必需，要导出的格式列表（["html", "txt", "md"] 等）
+    - output_dir: 可选，输出目录，默认为 "output"
+    
+    功能说明：
+    - 从 shared["generated_documents"] 读取文档内容
+    - 支持多种格式转换（MD、HTML、TXT）
+    - PDF 和 DOCX 格式暂未实现
+    - 转换后的文件保存到指定目录
+    """
+    document_type = arguments.get("document_type")
+    export_formats = arguments.get("export_formats", [])
+    output_dir = arguments.get("output_dir", "output")
+    
+    # 参数验证
+    if not document_type:
+        return {
+            "success": False,
+            "error": "document_type is required",
+            "tool_name": "export_document"
+        }
+    
+    if not export_formats:
+        return {
+            "success": False,
+            "error": "export_formats is required and cannot be empty",
+            "tool_name": "export_document"
+        }
+    
+    try:
+        # 确保 shared 字典存在
+        if shared is None:
+            shared = {}
+        
+        # 获取已生成的文档列表
+        generated_documents = shared.get("generated_documents", [])
+        
+        # 调试日志
+        print(f"[EXPORT] 导出文档: {document_type}")
+        print(f"[INFO] 当前 generated_documents: {len(generated_documents)} 个文档")
+        print(f"[INFO] 导出格式: {export_formats}")
+        print(f"[INFO] 输出目录: {output_dir}")
+        
+        if generated_documents:
+            doc_types = [doc.get("type") for doc in generated_documents]
+            print(f"[INFO] 可用文档类型: {doc_types}")
+        else:
+            print("[WARN] 没有找到任何已生成的文档")
+        
+        # 准备 Node 所需的 shared 数据
+        node_shared = {
+            "document_type": document_type,
+            "export_formats": export_formats,
+            "output_dir": output_dir,
+            "generated_documents": generated_documents,
+            "streaming_session": shared.get("streaming_session") if shared else None
+        }
+        
+        # 使用 NodeExportDocument 执行
+        from gtplanner.agent.nodes import NodeExportDocument
+        node = NodeExportDocument()
+        
+        # 执行节点
+        result = await node.run_async(node_shared)
+        
+        # 返回结果，添加 tool_name
+        if result and result.get("success"):
+            result["tool_name"] = "export_document"
+            saved_files = result.get("saved_files", [])
+            total_exported = result.get("total_exported", 0)
+            total_failed = result.get("total_failed", 0)
+            
+            print(f"[OK] 文档导出成功: 成功 {total_exported} 个，失败 {total_failed} 个")
+            if saved_files:
+                print("[FILES] 导出的文件:")
+                for file_info in saved_files:
+                    print(f"   - {file_info.get('filename')} ({file_info.get('format')}) - {file_info.get('path')}")
+            
+            return result
+        else:
+            error_msg = result.get("error") if result else "文档导出失败"
+            print(f"[ERROR] 文档导出失败: {error_msg}")
+            return {
+                "success": False,
+                "error": error_msg,
+                "tool_name": "export_document"
+            }
+    except Exception as e:
+        print(f"[ERROR] 文档导出执行异常: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "error": f"文档导出执行异常: {str(e)}",
+            "tool_name": "export_document"
         }
 
 

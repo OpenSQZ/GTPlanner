@@ -45,13 +45,21 @@ class DocumentEditNode(AsyncNode):
         document_content = None
         document_filename = None
         
-        # 尝试从 generated_documents 中获取
+        # 尝试从 generated_documents 中获取最新的文档（按 timestamp 排序）
         generated_documents = shared.get("generated_documents", [])
-        for doc in generated_documents:
-            if doc.get("type") == document_type:
-                document_content = doc.get("content")
-                document_filename = doc.get("filename")
-                break
+        
+        # 筛选出匹配类型的文档，并按 timestamp 降序排序（最新的在前）
+        matching_docs = [
+            doc for doc in generated_documents 
+            if doc.get("type") == document_type
+        ]
+        
+        if matching_docs:
+            # 按 timestamp 降序排序，获取最新的文档
+            matching_docs.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+            latest_doc = matching_docs[0]
+            document_content = latest_doc.get("content")
+            document_filename = latest_doc.get("filename")
         
         if not document_content:
             return {

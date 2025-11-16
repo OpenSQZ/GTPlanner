@@ -122,12 +122,18 @@ class NodeViewDocument(AsyncNode):
                     "error": "没有找到已生成的文档，请先使用 design 或 database_design 工具生成文档"
                 }
             
-            # 查找指定类型的文档
-            target_document = None
-            for doc in generated_documents:
-                if doc.get("type") == document_type:
-                    target_document = doc
-                    break
+            # 查找指定类型的最新文档（按 timestamp 排序）
+            matching_docs = [
+                doc for doc in generated_documents 
+                if doc.get("type") == document_type
+            ]
+            
+            if matching_docs:
+                # 按 timestamp 降序排序，获取最新的文档
+                matching_docs.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+                target_document = matching_docs[0]
+            else:
+                target_document = None
             
             if not target_document:
                 available_types = [doc.get("type") for doc in generated_documents]

@@ -449,9 +449,9 @@ class SimpleOpenAIConfig:
         # 尝试从 settings.toml 加载配置
         settings = self._load_settings()
 
-        self.api_key = api_key or self._get_setting(settings, "llm.api_key") or os.getenv("OPENAI_API_KEY")
-        self.base_url = base_url or self._get_setting(settings, "llm.base_url") or os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
-        self.model = self._get_setting(settings, "llm.model") or os.getenv("OPENAI_MODEL", model)
+        self.api_key = api_key or self._get_setting(settings, "llm.api_key") or os.getenv("OPENAI_API_KEY") or os.getenv("LLM_API_KEY")
+        self.base_url = base_url or self._get_setting(settings, "llm.base_url") or os.getenv("OPENAI_BASE_URL") or os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
+        self.model = self._get_setting(settings, "llm.model") or os.getenv("OPENAI_MODEL") or os.getenv("LLM_MODEL", model)
         self.temperature = self._get_setting(settings, "llm.temperature", temperature)
         self.max_tokens = self._get_setting(settings, "llm.max_tokens", max_tokens)
         self.timeout = self._get_setting(settings, "llm.timeout", timeout)

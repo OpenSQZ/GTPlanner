@@ -41,7 +41,7 @@ class AgentsDesignDesignNodeTemplates:
 ```markdown
 # Design Doc: [Agent 名称]
 
-## Standard Operating Procedure
+## 标准操作流程
 
 > 给 AI 的提示：保持清晰的操作顺序。每个步骤都应以清晰的动词开始（例如：打开、检查、输入、确认）。
 > 如果流程包含重复步骤（循环），请明确指出循环的范围（哪些步骤被重复）以及其开始和停止的条件。 
@@ -62,26 +62,26 @@ class AgentsDesignDesignNodeTemplates:
 - [循环结束后的步骤，例如：确认所有项目均已处理]
 
 
-## Flow Design
+## 流程设计
 
 > 给 AI 的提示：
 > 1. 考虑 agent、map-reduce、rag 和 workflow 等设计模式，选择合适的应用。
 > 2. 提供简洁的高层次工作流程描述。
 
-### Applicable Design Pattern:
+### 适用的设计模式：
 
 [选择适用的设计模式：Workflow / Agent / Map-Reduce / RAG，并简要说明原因]
 
-### Flow High-level Design:
+### 流程高层设计：
 
 1. **[步骤1名称]**: [步骤描述 - 高层次]
 2. **[步骤2名称]**: [步骤描述 - 高层次]
 3. **[步骤3名称]**: [步骤描述 - 高层次]
 ...
 
-### Flow Diagram
+### 流程图
 
-> 给 AI 的提示：mermaid 节点命名需要与上面的 Flow High-level Design 保持一致，以动词开头，清晰描述具体动作。节点应与 High-level Design 中的步骤一一对应。
+> 给 AI 的提示：mermaid 节点命名需要与上面的流程高层设计保持一致，以动词开头，清晰描述具体动作。节点应与流程高层设计中的步骤一一对应。
 
 ```mermaid
 flowchart TD
@@ -92,7 +92,7 @@ flowchart TD
 ```
 \```
 
-## Prefabs
+## 预制件
 
 > 给 AI 的提示：
 > 1. 如果 `recommended_prefabs` 参数中有预制件信息，**必须在此列出所有推荐的预制件**。
@@ -108,7 +108,7 @@ flowchart TD
 - **描述**: [预制件功能描述]
 - **用途**: [在本系统中的具体使用场景和调用方式]
 
-## Utility Functions
+## 工具函数
 
 > 给 AI 的提示：
 > 1. **预制件优先**：优先使用上面推荐的预制件提供的功能。
@@ -123,13 +123,13 @@ flowchart TD
 [**仅当用户需求中明确提到**预制件无法提供的简单功能时，才列出]
 
 1. **[工具函数名]** (`utils/xxx.py`)
-   - *Input*: [输入参数]
-   - *Output*: [输出内容]
-   - *Necessity*: [用户需求中的哪部分要求此功能]
+   - *输入*: [输入参数]
+   - *输出*: [输出内容]
+   - *必要性*: [用户需求中的哪部分要求此功能]
 
-## Node Design
+## 节点设计
 
-### Shared Store
+### 共享存储
 
 > 给 AI 的提示：尽量减少数据冗余
 
@@ -144,22 +144,22 @@ shared = {{
 }}
 \```
 
-### Node Steps
+### 节点步骤
 
 > 给 AI 的提示：仔细决定是否使用 Batch/Async Node/Flow。
 
-1. **[Node 1 名称]**
-   - *Purpose*: [节点的目的 - 高层次]
-   - *Type*: Regular / Batch / Async
-   - *Steps*:
+1. **[节点 1 名称]**
+   - *目的*: [节点的目的 - 高层次]
+   - *类型*: Regular / Batch / Async
+   - *步骤*:
      - *`prep`*: [准备阶段做什么 - 从 shared 读取什么]
      - *`exec`*: [执行阶段做什么 - 核心逻辑是什么]
      - *`post`*: [后处理阶段做什么 - 向 shared 写入什么，返回什么 action]
 
-2. **[Node 2 名称]**
-   - *Purpose*: [节点的目的]
-   - *Type*: Regular / Batch / Async
-   - *Steps*:
+2. **[节点 2 名称]**
+   - *目的*: [节点的目的]
+   - *类型*: Regular / Batch / Async
+   - *步骤*:
      - *`prep`*: [准备阶段]
      - *`exec`*: [执行阶段]
      - *`post`*: [后处理阶段]

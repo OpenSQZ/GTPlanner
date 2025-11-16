@@ -17,6 +17,10 @@ from gtplanner.agent.streaming import (
     emit_design_document,
     emit_prefabs_info
 )
+from gtplanner.agent.streaming.stream_types import (
+    StreamEventBuilder,
+    AssistantMessageChunk
+)
 
 # 导入多语言提示词系统
 from gtplanner.agent.prompts import get_prompt, PromptTypes
@@ -76,6 +80,7 @@ class DesignNode(AsyncNode):
                 "prefabs_info": prefabs_info,
                 "research_summary": research_summary,
                 "language": language,
+                "streaming_session": shared.get("streaming_session"),  # ⭐ 传递 streaming_session
                 "timestamp": time.time()
             }
             
@@ -83,13 +88,13 @@ class DesignNode(AsyncNode):
             return {"error": f"Design preparation failed: {str(e)}"}
     
     async def exec_async(self, prep_result: Dict[str, Any]) -> Dict[str, Any]:
-        """执行阶段：调用 LLM 生成设计文档"""
+        """执行阶段：调用 LLM 生成设计文档（支持流式输出）"""
         try:
             if "error" in prep_result:
                 raise ValueError(prep_result["error"])
             
-            # 注意：exec 阶段不能访问 shared，所以这里无法发送事件
-            # 进度事件应在 prep 和 post 阶段发送
+            # ⭐ 获取 streaming_session（从 prep_result 传递）
+            streaming_session = prep_result.get("streaming_session")
             
             # 构建 prompt
             prompt = get_prompt(
@@ -103,11 +108,55 @@ class DesignNode(AsyncNode):
             
             # 调用 LLM 生成设计文档
             client = get_openai_client()
-            response = await client.chat_completion(
-                messages=[{"role": "user", "content": prompt}]
-            )
             
-            design_document = response.choices[0].message.content if response.choices else ""
+            # ⭐ 如果支持流式输出，使用流式调用
+            if streaming_session:
+                # 发送消息开始事件，标记为文档生成类型
+                await streaming_session.emit_event(
+                    StreamEventBuilder.assistant_message_start(
+                        streaming_session.session_id,
+                        metadata={"message_type": "document_generation"}
+                    )
+                )
+                
+                # 使用流式调用
+                design_document = ""
+                stream = client.chat_completion_stream(
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                
+                chunk_index = 0
+                async for chunk in stream:
+                    if chunk.choices and len(chunk.choices) > 0:
+                        delta = chunk.choices[0].delta
+                        if delta.content:
+                            design_document += delta.content
+                            # 发送流式内容片段
+                            await streaming_session.emit_event(
+                                StreamEventBuilder.assistant_message_chunk(
+                                    streaming_session.session_id,
+                                    AssistantMessageChunk(
+                                        content=delta.content,
+                                        chunk_index=chunk_index
+                                    )
+                                )
+                            )
+                            chunk_index += 1
+                
+                # 发送消息结束事件
+                await streaming_session.emit_event(
+                    StreamEventBuilder.assistant_message_end(
+                        streaming_session.session_id,
+                        complete_message=design_document,
+                        message_metadata={"message_type": "document_generation"}
+                    )
+                )
+            else:
+                # 非流式调用（向后兼容）
+                response = await client.chat_completion(
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                design_document = response.choices[0].message.content if response.choices else ""
             
             if not design_document or not design_document.strip():
                 raise ValueError("LLM returned empty design document")

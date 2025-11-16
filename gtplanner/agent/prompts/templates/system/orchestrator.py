@@ -153,6 +153,19 @@ class SystemOrchestratorTemplates:
 - **`research`**：技术调研（需要 JINA_API_KEY）
   - 使用场景：需要深入了解某个技术方案时
 
+- **`view_document`**：查看已生成的文档内容
+  - 使用场景：需要查看或引用已生成的设计文档内容时调用
+  - 支持查看 `design` 或 `database_design` 类型的文档
+
+- **`edit_document`**：编辑已生成的设计文档
+  - 使用场景：用户需要对已生成的设计文档进行修改时调用
+  - 这是一个智能子Agent，会自动分析文档并生成修改方案
+
+- **`export_document`**：导出文档为多种格式
+  - 使用场景：用户需要将文档导出为其他格式（HTML、TXT等）时调用
+  - 支持导出 `design`、`database_design` 或所有文档
+  - 支持的格式：MD、HTML、TXT（PDF 和 DOCX 暂未实现）
+
 **设计 Agent/工作流时的流程规则**：
 1. ⭐ **首先判断用户意图**：是否真的需要设计 Agent/工作流？
 2. ⭐ **如果需要设计，必须先调用 `prefab_recommend`** 获取预制件推荐
