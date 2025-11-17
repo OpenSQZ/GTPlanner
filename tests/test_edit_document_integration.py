@@ -124,62 +124,40 @@ CREATE TABLE `overdue_acceptors` (
     assert "edits" in result
     assert len(result["edits"]) > 0
     
-    # 8. 验证事件是否被发送
-    print(f"\n✅ 步骤 7: 验证事件发送")
-    print(f"📊 总共发送的事件数: {len(mock_session.emitted_events)}")
-    
-    # 打印所有事件类型
-    for i, event in enumerate(mock_session.emitted_events):
-        event_type = event.event_type.value if hasattr(event.event_type, 'value') else event.event_type
-        print(f"  事件 #{i+1}: {event_type}")
-    
-    # 查找 document_edit_proposal 事件
-    proposal_events = [
-        e for e in mock_session.emitted_events 
-        if (hasattr(e.event_type, 'value') and e.event_type.value == "document_edit_proposal") or
-           (e.event_type == StreamEventType.DOCUMENT_EDIT_PROPOSAL)
-    ]
-    
-    print(f"\n🔍 查找 document_edit_proposal 事件:")
-    print(f"  找到的数量: {len(proposal_events)}")
-    
-    if len(proposal_events) == 0:
-        print("\n❌ 问题诊断:")
-        print("  - document_edit_proposal 事件没有被发送！")
-        print("  - 可能原因：")
-        print("    1. DocumentEditNode.post_async 没有被执行")
-        print("    2. emit_document_edit_proposal 没有被调用")
-        print("    3. streaming_session 在某个环节丢失了")
-        
-        # 检查 shared 中是否还有 streaming_session
-        print(f"\n  检查 shared 状态:")
-        print(f"    - streaming_session 还存在: {shared.get('streaming_session') is not None}")
-        print(f"    - pending_document_edits: {list(shared.get('pending_document_edits', {}).keys())}")
-        
-        raise AssertionError("document_edit_proposal 事件没有被发送！")
-    
-    # 验证事件内容
-    proposal_event = proposal_events[0]
-    print(f"\n✅ 找到 document_edit_proposal 事件！")
-    print(f"  - session_id: {proposal_event.session_id}")
-    print(f"  - proposal_id: {proposal_event.data.get('proposal_id')}")
-    print(f"  - document_type: {proposal_event.data.get('document_type')}")
-    print(f"  - edits 数量: {len(proposal_event.data.get('edits', []))}")
-    
-    assert proposal_event.session_id == "test_session_integration"
-    assert "proposal_id" in proposal_event.data
-    assert "edits" in proposal_event.data
-    assert len(proposal_event.data["edits"]) > 0
-    
-    print(f"\n✅ 所有验证通过！")
+    # 8. 验证返回结果包含所有必要字段
+    print(f"\n✅ 步骤 7: 验证返回结果完整性")
+
+    # 验证必要字段存在
+    required_fields = ["success", "message", "proposal_id", "document_type",
+                      "document_filename", "summary", "edits", "user_decision"]
+
+    for field in required_fields:
+        assert field in result, f"返回结果缺少必要字段: {field}"
+
+    # 验证字段内容
+    assert result["success"] is True, "success 应为 True"
+    assert result["document_type"] == "database_design", "document_type 应为 database_design"
+    assert result["document_filename"] == "database_design.md", "文档文件名应为 database_design.md"
+    assert len(result["edits"]) > 0, "edits 不应为空"
+    assert result["user_decision"] is None, "user_decision 初始值应为 None"
+
+    # 验证 edits 结构
+    first_edit = result["edits"][0]
+    assert "search" in first_edit, "每个 edit 应包含 search 字段"
+    assert "replace" in first_edit, "每个 edit 应包含 replace 字段"
+    assert "reason" in first_edit, "每个 edit 应包含 reason 字段"
+
+    print(f"\n✅ 所有字段验证通过！")
+    print(f"  - proposal_id: {result['proposal_id']}")
+    print(f"  - document_type: {result['document_type']}")
+    print(f"  - edits 数量: {len(result['edits'])}")
+    print(f"  - user_decision: {result['user_decision']}")
+
     print(f"\n🎯 结论:")
     print(f"  1. edit_document 工具成功执行")
-    print(f"  2. document_edit_proposal 事件成功发送")
-    print(f"  3. 事件内容正确")
-    print(f"  4. 如果实际运行时前端没收到，问题可能在：")
-    print(f"     - SSE 传输层（Next.js API route）")
-    print(f"     - 前端事件解析")
-    print(f"     - 或者实际运行时 streaming_session 为 None")
+    print(f"  2. 返回完整提案数据（不使用 SSE）")
+    print(f"  3. 提案包含所有必要字段（edits, user_decision 等）")
+    print(f"  4. 前端可以直接从 tool result 解析并显示提案")
 
 
 async def main():
