@@ -53,6 +53,12 @@ class DesignNode(AsyncNode):
             
             # 获取语言设置
             language = shared.get("language")
+            preset_prompt = shared.get("preset_prompt")
+            preset_name = shared.get("preset_name")
+            preset_guidance = ""
+            if preset_prompt:
+                preset_title = preset_name or "custom preset"
+                preset_guidance = f"{preset_title}:\\n{preset_prompt}"
             
             # 使用文本管理器格式化可选信息
             text_manager = get_text_manager()
@@ -76,6 +82,7 @@ class DesignNode(AsyncNode):
                 "prefabs_info": prefabs_info,
                 "research_summary": research_summary,
                 "language": language,
+                "preset_guidance": preset_guidance or "",
                 "timestamp": time.time()
             }
             
@@ -98,7 +105,8 @@ class DesignNode(AsyncNode):
                 user_requirements=prep_result["user_requirements"],
                 project_planning=prep_result["project_planning"],
                 prefabs_info=prep_result["prefabs_info"],
-                research_summary=prep_result["research_summary"]
+                research_summary=prep_result["research_summary"],
+                preset_guidance=prep_result.get("preset_guidance", "")
             )
             
             # 调用 LLM 生成设计文档

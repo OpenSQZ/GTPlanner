@@ -44,7 +44,9 @@ class StatelessGTPlanner:
         user_input: str,
         context: AgentContext,
         streaming_session: StreamingSession,
-        language: Optional[str] = None
+        language: Optional[str] = None,
+        preset_prompt: Optional[str] = None,
+        preset_name: Optional[str] = None
     ) -> AgentResult:
         """
         处理用户请求（纯函数，统一流式架构）
@@ -54,6 +56,8 @@ class StatelessGTPlanner:
             context: Agent上下文（只读，可能已压缩）
             streaming_session: 流式会话（必填）
             language: 语言选择，支持 'zh', 'en', 'ja', 'es', 'fr'（可选）
+            preset_prompt: 预设模式的系统提示（可选）
+            preset_name: 预设模式名称（可选）
 
         Returns:
             处理结果对象
@@ -73,7 +77,13 @@ class StatelessGTPlanner:
             )
 
             # 1. 使用工厂创建独立的pocketflow shared字典
-            shared = PocketFlowSharedFactory.create_shared_dict(user_input, context, language=language)
+            shared = PocketFlowSharedFactory.create_shared_dict(
+                user_input,
+                context,
+                language=language,
+                preset_prompt=preset_prompt,
+                preset_name=preset_name
+            )
 
             # 2. 注入流式回调（统一流式架构）
             shared["streaming_session"] = streaming_session
@@ -242,7 +252,10 @@ class StatelessGTPlanner:
 async def process_user_request(
     user_input: str,
     context: AgentContext,
-    streaming_session: Optional[StreamingSession] = None
+    streaming_session: Optional[StreamingSession] = None,
+    language: Optional[str] = None,
+    preset_prompt: Optional[str] = None,
+    preset_name: Optional[str] = None
 ) -> AgentResult:
     """
     处理用户请求的便捷函数（支持流式响应）
@@ -251,12 +264,22 @@ async def process_user_request(
         user_input: 用户输入
         context: Agent上下文
         streaming_session: 可选的流式会话
+        language: 语言选项
+        preset_prompt: 预设模式提示内容
+        preset_name: 预设模式名称
 
     Returns:
         处理结果
     """
     planner = StatelessGTPlanner()
-    return await planner.process(user_input, context, streaming_session)
+    return await planner.process(
+        user_input,
+        context,
+        streaming_session,
+        language=language,
+        preset_prompt=preset_prompt,
+        preset_name=preset_name
+    )
 
 
 

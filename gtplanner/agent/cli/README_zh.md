@@ -49,6 +49,9 @@ python gtplanner.py --verbose "创建会议纪要自动生成助手"
 
 # 指定语言
 python gtplanner.py --language zh "为视频字幕提取工具生成PRD"
+
+# 使用 RAG 预设模式（文档问答/标准研判）
+python gtplanner.py --preset rag-doc-qa "设计一个针对地方标准的RAG合规助手"
 ```
 
 ---

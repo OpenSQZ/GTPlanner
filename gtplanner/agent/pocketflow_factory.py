@@ -25,7 +25,9 @@ class PocketFlowSharedFactory:
     def create_shared_dict(
         user_input: str,
         context: AgentContext,
-        language: Optional[str] = None
+        language: Optional[str] = None,
+        preset_prompt: Optional[str] = None,
+        preset_name: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         从用户输入和AgentContext创建pocketflow shared字典
@@ -34,6 +36,8 @@ class PocketFlowSharedFactory:
             user_input: 当前用户输入
             context: Agent上下文（只读，可能已压缩）
             language: 语言选择，支持 'zh', 'en', 'ja', 'es', 'fr'（可选）
+            preset_prompt: 预设规划模式提示（可选）
+            preset_name: 预设规划模式名称（可选）
 
         Returns:
             pocketflow shared字典
@@ -76,6 +80,9 @@ class PocketFlowSharedFactory:
 
             # 语言选择 - 添加到shared字典中供各个节点使用
             "language": language,
+            # 预设模式信息
+            "preset_prompt": preset_prompt,
+            "preset_name": preset_name,
 
             # 工具执行结果数据（统一字段名）- 只设置非空值，避免覆盖工具执行结果
             # 注意：工具节点会在执行后设置这些字段，这里只设置已有的非空值
