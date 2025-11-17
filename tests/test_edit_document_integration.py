@@ -118,11 +118,11 @@ CREATE TABLE `overdue_acceptors` (
     # 7. 验证工具返回值
     print(f"\n✅ 步骤 6: 验证工具返回值")
     print(json.dumps(result, ensure_ascii=False, indent=2)[:500] + "...")
-    
+
     assert result["success"] == True, "工具应该执行成功"
     assert "proposal_id" in result
-    assert "edits_count" in result
-    assert result["edits_count"] > 0
+    assert "edits" in result
+    assert len(result["edits"]) > 0
     
     # 8. 验证事件是否被发送
     print(f"\n✅ 步骤 7: 验证事件发送")
