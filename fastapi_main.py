@@ -10,6 +10,13 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+# 确保加载环境变量
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # 导入 SSE GTPlanner API
 from gtplanner.agent.api.agent_api import SSEGTPlanner
 
