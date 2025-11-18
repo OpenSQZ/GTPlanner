@@ -6,8 +6,16 @@ on:
     branches: [ main ]
     tags:
       - 'v*'
+    paths-ignore:
+      - 'prefabs/releases/community-prefabs.json'
+      - '**.md'
+      - 'docs/**'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - 'prefabs/releases/community-prefabs.json'
+      - '**.md'
+      - 'docs/**'
   workflow_dispatch:
     inputs:
       skip_tests:
