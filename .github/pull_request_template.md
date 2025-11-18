@@ -4,6 +4,7 @@
 
 For better organization and review process, please use the appropriate specialized template:
 
+- **📦 Prefab Contribution**: [Use Prefab Template](?template=prefab.md) - For adding/updating prefabs in community-prefabs.json
 - **🔧 API Tool Contribution**: [Use API Tool Template](?template=api_tool.md)
 - **📦 Python Package Tool**: [Use Python Package Template](?template=python_package_tool.md)
 - **📚 Documentation Changes**: [Use Documentation Template](?template=documentation.md)
