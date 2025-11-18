@@ -184,6 +184,7 @@ def load_logging_config_from_settings() -> LoggerConfig:
             environments=True,
             env_switcher="ENV_FOR_DYNACONF",
             load_dotenv=True,
+            encoding="utf-8"  # 明确指定编码
         )
 
         # 从配置文件读取日志设置
@@ -203,7 +204,7 @@ def load_logging_config_from_settings() -> LoggerConfig:
     except Exception as e:
         # 如果加载配置失败，返回默认配置
         print(f"警告: 加载日志配置失败，使用默认配置: {e}")
-        return LoggerConfig(console_output=False)  # 默认不输出到控制台
+        return LoggerConfig(console_output=False)
 
 
 # 全局日志管理器实例

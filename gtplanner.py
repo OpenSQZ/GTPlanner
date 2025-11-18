@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GTPlanner 启动脚本
 
@@ -14,6 +15,22 @@ GTPlanner 启动脚本
 """
 
 import sys
+import os
+
+# 在Windows系统上设置UTF-8编码，解决中文显示问题
+if sys.platform.startswith('win'):
+    # 设置环境变量
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    os.environ['PYTHONUTF8'] = '1'
+    # 设置标准输出和错误输出的编码
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8')
+    # 设置标准输入编码
+    if hasattr(sys.stdin, 'reconfigure'):
+        sys.stdin.reconfigure(encoding='utf-8')
+
 import subprocess
 from pathlib import Path
 

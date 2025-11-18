@@ -195,12 +195,16 @@ class StreamEventBuilder:
         )
     
     @staticmethod
-    def assistant_message_start(session_id: str) -> StreamEvent:
+    def assistant_message_start(
+        session_id: str, 
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> StreamEvent:
         """创建助手消息开始事件"""
         return StreamEvent(
             event_type=StreamEventType.ASSISTANT_MESSAGE_START,
             session_id=session_id,
-            data={}
+            data={},
+            metadata=metadata or {}
         )
     
     @staticmethod

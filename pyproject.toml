@@ -27,9 +27,11 @@ dependencies = [
     "pydantic>=2.5.0",
 ]
 
-[tool.setuptools.packages.find]
-include = ["agent*", "utils*"]
-exclude = ["mcp*", "static*", "assets*"]
+[tool.setuptools]
+packages = ["gtplanner", "gtplanner.agent", "gtplanner.utils"]
+
+[tool.setuptools.package-data]
+"*" = ["*.md", "*.toml", "*.json"]
 
 [[tool.uv.index]]
 url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"

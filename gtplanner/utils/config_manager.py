@@ -1,8 +1,7 @@
 """
-Configuration manager for GTPlanner multilingual settings.
+GTPlanner 多语言设置的配置管理器。
 
-This module provides centralized configuration management for multilingual
-functionality, integrating with dynaconf settings.
+此模块提供了多语言功能的集中配置管理，集成了 dynaconf 设置。
 """
 
 import os
@@ -20,20 +19,20 @@ logger = logging.getLogger(__name__)
 
 
 class MultilingualConfig:
-    """Configuration manager for multilingual settings and API keys."""
+    """多语言设置和 API 密钥的配置管理器。"""
 
     def __init__(self, settings_file: str = "settings.toml"):
-        """Initialize the configuration manager.
+        """初始化配置管理器。
 
-        Args:
-            settings_file: Path to the settings file
+        参数:
+            settings_file: 设置文件路径
         """
         self.settings_file = settings_file
         self._settings = None
         self._load_settings()
     
     def _load_settings(self):
-        """Load settings from dynaconf or environment variables."""
+        """从 dynaconf 或环境变量加载设置。"""
         if Dynaconf:
             try:
                 self._settings = Dynaconf(
@@ -51,10 +50,10 @@ class MultilingualConfig:
             self._settings = None
     
     def get_default_language(self) -> str:
-        """Get the default language setting.
+        """获取默认语言设置。
         
-        Returns:
-            The default language code
+        返回:
+            默认语言代码
         """
         # Try dynaconf settings first
         if self._settings:
@@ -74,10 +73,10 @@ class MultilingualConfig:
         return "en"
     
     def is_auto_detect_enabled(self) -> bool:
-        """Check if automatic language detection is enabled.
+        """检查是否启用自动语言检测。
         
-        Returns:
-            True if auto-detection is enabled, False otherwise
+        返回:
+            如果启用自动检测则为 True，否则为 False
         """
         # Try dynaconf settings first
         if self._settings:
@@ -91,10 +90,10 @@ class MultilingualConfig:
         return env_auto_detect in ("true", "1", "yes", "on")
     
     def is_fallback_enabled(self) -> bool:
-        """Check if fallback to default language is enabled.
+        """检查是否启用默认语言回退。
         
-        Returns:
-            True if fallback is enabled, False otherwise
+        返回:
+            如果启用回退则为 True，否则为 False
         """
         # Try dynaconf settings first
         if self._settings:
@@ -108,10 +107,10 @@ class MultilingualConfig:
         return env_fallback in ("true", "1", "yes", "on")
     
     def get_supported_languages_config(self) -> List[str]:
-        """Get the list of supported languages from configuration.
+        """从配置中获取支持的语言列表。
         
-        Returns:
-            List of supported language codes
+        返回:
+            支持的语言代码列表
         """
         # Try dynaconf settings first
         if self._settings:
@@ -141,13 +140,13 @@ class MultilingualConfig:
         return get_supported_languages()
     
     def get_language_preference(self, user_id: Optional[str] = None) -> Optional[str]:
-        """Get user's language preference.
+        """获取用户的语言偏好。
         
-        Args:
-            user_id: Optional user identifier for user-specific preferences
+        参数:
+            user_id: 用户特定偏好的可选用户标识符
             
-        Returns:
-            The user's preferred language code, or None if not set
+        返回:
+            用户的首选语言代码，如果未设置则为 None
         """
         # For now, we'll use environment variables for user preferences
         # In a real application, this might come from a database or user profile
@@ -167,10 +166,10 @@ class MultilingualConfig:
         return None
 
     def get_jina_api_key(self) -> Optional[str]:
-        """Get Jina API key from configuration.
+        """从配置中获取 Jina API 密钥。
 
-        Returns:
-            The Jina API key, or None if not set
+        返回:
+            Jina API 密钥，如果未设置则为 None
         """
         # Try dynaconf settings first
         if self._settings:
@@ -194,10 +193,10 @@ class MultilingualConfig:
         return None
 
     def get_llm_config(self) -> Dict[str, Any]:
-        """Get LLM configuration.
+        """获取 LLM 配置。
 
-        Returns:
-            Dictionary containing LLM configuration
+        返回:
+            包含 LLM 配置的字典
         """
         config = {}
 
@@ -222,10 +221,10 @@ class MultilingualConfig:
         return {k: v for k, v in config.items() if v is not None}
 
     def get_vector_service_config(self) -> Dict[str, Any]:
-        """Get vector service configuration.
+        """获取向量服务配置。
 
-        Returns:
-            Dictionary containing vector service configuration
+        返回:
+            包含向量服务配置的字典
         """
         config = {}
 
@@ -252,10 +251,10 @@ class MultilingualConfig:
         return {k: v for k, v in config.items() if v is not None}
 
     def get_all_config(self) -> Dict[str, Any]:
-        """Get all configuration as a dictionary.
+        """获取所有配置作为字典。
 
-        Returns:
-            Dictionary containing all configuration values
+        返回:
+            包含所有配置值的字典
         """
         return {
             "default_language": self.get_default_language(),
@@ -269,10 +268,10 @@ class MultilingualConfig:
         }
     
     def validate_config(self) -> List[str]:
-        """Validate the current configuration.
+        """验证当前配置。
         
-        Returns:
-            List of validation warnings/errors
+        返回:
+            验证警告/错误列表
         """
         warnings = []
         
@@ -295,89 +294,89 @@ class MultilingualConfig:
         return warnings
 
 
-# Global configuration manager instance
+# 全局配置管理器实例
 multilingual_config = MultilingualConfig()
 
 
 def get_default_language() -> str:
-    """Convenience function to get the default language.
+    """获取默认语言的便捷函数。
     
-    Returns:
-        The default language code
+    返回:
+        默认语言代码
     """
     return multilingual_config.get_default_language()
 
 
 def is_auto_detect_enabled() -> bool:
-    """Convenience function to check if auto-detection is enabled.
+    """检查是否启用自动检测的便捷函数。
     
-    Returns:
-        True if auto-detection is enabled
+    返回:
+        如果启用自动检测则为 True
     """
     return multilingual_config.is_auto_detect_enabled()
 
 
 def is_fallback_enabled() -> bool:
-    """Convenience function to check if fallback is enabled.
+    """检查是否启用回退的便捷函数。
     
-    Returns:
-        True if fallback is enabled
+    返回:
+        如果启用回退则为 True
     """
     return multilingual_config.is_fallback_enabled()
 
 
 def get_supported_languages_config() -> List[str]:
-    """Convenience function to get supported languages from config.
+    """从配置获取支持语言的便捷函数。
     
-    Returns:
-        List of supported language codes
+    返回:
+        支持的语言代码列表
     """
     return multilingual_config.get_supported_languages_config()
 
 
 def get_language_preference(user_id: Optional[str] = None) -> Optional[str]:
-    """Convenience function to get user's language preference.
+    """获取用户语言偏好的便捷函数。
 
-    Args:
-        user_id: Optional user identifier
+    参数:
+        user_id: 可选的用户标识符
 
-    Returns:
-        The user's preferred language code, or None if not set
+    返回:
+        用户的首选语言代码，如果未设置则为 None
     """
     return multilingual_config.get_language_preference(user_id)
 
 
 def get_jina_api_key() -> Optional[str]:
-    """Convenience function to get Jina API key.
+    """获取 Jina API 密钥的便捷函数。
 
-    Returns:
-        The Jina API key, or None if not set
+    返回:
+        Jina API 密钥，如果未设置则为 None
     """
     return multilingual_config.get_jina_api_key()
 
 
 def get_llm_config() -> Dict[str, Any]:
-    """Convenience function to get LLM configuration.
+    """获取 LLM 配置的便捷函数。
 
-    Returns:
-        Dictionary containing LLM configuration
+    返回:
+        包含 LLM 配置的字典
     """
     return multilingual_config.get_llm_config()
 
 
 def get_vector_service_config() -> Dict[str, Any]:
-    """Convenience function to get vector service configuration.
+    """获取向量服务配置的便捷函数。
 
-    Returns:
-        Dictionary containing vector service configuration
+    返回:
+        包含向量服务配置的字典
     """
     return multilingual_config.get_vector_service_config()
 
 
 def get_all_config() -> Dict[str, Any]:
-    """Convenience function to get all configuration.
+    """获取所有配置的便捷函数。
 
-    Returns:
-        Dictionary containing all configuration values
+    返回:
+        包含所有配置值的字典
     """
     return multilingual_config.get_all_config()
