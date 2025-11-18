@@ -115,22 +115,35 @@ def main():
                 updated_metadata.append(key)
 
         # 检查删除的条目
+        deleted_entries = []
         for key in base_dict.keys():
             if key not in head_dict:
                 deleted_entries.append(key)
 
-        # 计算总变更数
-        total_changes = len(new_prefabs) + len(new_versions) + len(updated_metadata) + len(deleted_entries)
+        # 特殊处理：如果删除是因为版本更新（同一个 id 有新版本），则不算真正的删除
+        legitimate_deletions = []
+        for deleted_key in deleted_entries:
+            deleted_id, deleted_version = deleted_key
+            # 检查是否有同一个 id 的新版本
+            if any(prefab_id == deleted_id for prefab_id, _ in new_versions):
+                legitimate_deletions.append(deleted_key)
+
+        # 过滤掉合法的删除（版本更新导致的旧版本删除）
+        actual_deletions = [key for key in deleted_entries if key not in legitimate_deletions]
+
+        # 计算总变更数（不包括合法的删除）
+        total_changes = len(new_prefabs) + len(new_versions) + len(updated_metadata) + len(actual_deletions)
 
         if total_changes == 0:
             print("::error::No changes found in community-prefabs.json")
             print("Each PR should add or update exactly one prefab entry")
             sys.exit(1)
 
-        if deleted_entries:
-            print(f"::error::PR contains {len(deleted_entries)} deletion(s), which is not allowed:")
-            for key in deleted_entries:
+        if actual_deletions:
+            print(f"::error::PR contains {len(actual_deletions)} deletion(s), which is not allowed:")
+            for key in actual_deletions:
                 print(f"  - {key[0]}@{key[1]}")
+            print("\nNote: Version updates (deleting old version + adding new version) are allowed.")
             sys.exit(1)
 
         if total_changes > 1:
@@ -167,10 +180,16 @@ def main():
         print(f"✅ Found {change_type}: {prefab_id}@{version}")
 
         if change_type == "new version":
-            # 显示之前的版本
+            # 显示之前的版本和删除的旧版本
             old_versions = [v for (id, v) in base_dict.keys() if id == prefab_id]
             if old_versions:
-                print(f"Previous versions: {', '.join(sorted(old_versions))}")
+                print(f"   Previous version(s): {', '.join(sorted(old_versions))}")
+
+            # 显示被替换的版本
+            replaced_versions = [v for (id, v) in legitimate_deletions if id == prefab_id]
+            if replaced_versions:
+                print(f"   Replacing version(s): {', '.join(sorted(replaced_versions))}")
+                print(f"   ℹ️  This is a version update (old version removed, new version added)")
 
         elif change_type == "metadata update":
             # 显示具体变更的字段
