@@ -73,7 +73,7 @@
   },
   {
     "id": "imagen",
-    "version": "1.0.0",
+    "version": "0.1.2",
     "author": "redreamality",
     "repo_url": "https://github.com/redreamality/imagen",
     "name": "Imagen 图像生成预制件",
