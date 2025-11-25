@@ -2,6 +2,7 @@
 """
 预制件索引构建脚本（用于 CI/CD）
 
+独立脚本，不依赖 gtplanner 或 pocketflow 包。
 当 community-prefabs.json 更新时，通过 GitHub Actions 调用此脚本
 将预制件数据推送到向量服务建立索引。
 
@@ -16,7 +17,151 @@ import argparse
 import json
 import sys
 import os
+import time
+import requests
 from pathlib import Path
+from typing import List, Dict, Any
+
+
+# 默认配置
+DEFAULT_INDEX_NAME = "document_gtplanner_prefabs"
+DEFAULT_VECTOR_FIELD = "combined_text"
+DEFAULT_VECTOR_DIMENSION = 1024
+DEFAULT_TIMEOUT = 30
+
+
+def check_vector_service_available(vector_service_url: str) -> bool:
+    """检查向量服务是否可用"""
+    try:
+        response = requests.get(f"{vector_service_url}/health", timeout=5)
+        return response.status_code == 200
+    except Exception:
+        return False
+
+
+def convert_prefab_to_document(prefab: Dict) -> Dict[str, Any]:
+    """
+    将预制件转换为向量服务的文档格式
+
+    Args:
+        prefab: 预制件对象（从 community-prefabs.json）
+
+    Returns:
+        文档对象
+    """
+    # 构建标签字符串
+    tags = prefab.get("tags", [])
+    tags_str = ", ".join(tags) if tags else ""
+
+    # 构建组合文本（用于 embedding）
+    combined_text = f"{prefab['name']} {prefab['description']}"
+    if tags_str:
+        combined_text += f" {tags_str}"
+
+    # 构建 artifact URL
+    repo_url = prefab["repo_url"].rstrip('/')
+    version = prefab["version"]
+    prefab_id = prefab["id"]
+    artifact_url = f"{repo_url}/releases/download/v{version}/{prefab_id}-{version}.whl"
+
+    # 返回文档对象
+    document = {
+        "id": prefab["id"],
+        "type": "PREFAB",
+        "summary": prefab["name"],
+        "description": prefab["description"],
+        "tags": tags_str,
+        "combined_text": combined_text,
+        # 元数据
+        "version": prefab["version"],
+        "author": prefab["author"],
+        "repo_url": prefab["repo_url"],
+        "artifact_url": artifact_url,
+        "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+    return document
+
+
+def call_vector_service_index(
+    vector_service_url: str,
+    index_name: str,
+    documents: List[Dict],
+    vector_field: str,
+    force_reindex: bool,
+    timeout: int
+) -> Dict[str, Any]:
+    """
+    调用向量服务建立索引
+
+    步骤：
+    1. 创建索引（如果需要）
+    2. 添加文档
+
+    Args:
+        vector_service_url: 向量服务地址
+        index_name: 索引名称
+        documents: 文档列表
+        vector_field: 向量字段名
+        force_reindex: 是否强制重建
+        timeout: 请求超时时间
+
+    Returns:
+        索引结果
+    """
+    # 1. 如果强制重建，先清空索引
+    if force_reindex:
+        try:
+            requests.delete(
+                f"{vector_service_url}/index/{index_name}/clear",
+                timeout=timeout
+            )
+            print(f"🗑️  已清空旧索引")
+        except Exception as e:
+            print(f"⚠️  清空索引失败（可能索引不存在）: {e}")
+
+    # 2. 创建/确保索引存在
+    create_index_request = {
+        "vector_field": vector_field,
+        "vector_dimension": DEFAULT_VECTOR_DIMENSION,
+        "description": f"预制件索引: {index_name}"
+    }
+
+    response = requests.put(
+        f"{vector_service_url}/index/{index_name}",
+        json=create_index_request,
+        timeout=timeout,
+        headers={"Content-Type": "application/json"}
+    )
+
+    if response.status_code != 200:
+        error_msg = f"创建索引失败: {response.status_code}, {response.text}"
+        raise RuntimeError(error_msg)
+
+    print(f"✅ 索引已就绪: {index_name}")
+
+    # 3. 添加文档
+    create_docs_request = {
+        "documents": documents,
+        "vector_field": vector_field,
+        "index": index_name
+    }
+
+    response = requests.post(
+        f"{vector_service_url}/documents",
+        json=create_docs_request,
+        timeout=timeout,
+        headers={"Content-Type": "application/json"}
+    )
+
+    if response.status_code == 200:
+        result = response.json()
+        print(f"✅ 已添加 {result.get('count', 0)} 个文档到索引: {index_name}")
+        return result
+    else:
+        error_msg = f"添加文档失败: {response.status_code}, {response.text}"
+        raise RuntimeError(error_msg)
 
 
 def build_index(vector_service_url: str, input_json: Path):
@@ -36,55 +181,65 @@ def build_index(vector_service_url: str, input_json: Path):
         print(f"❌ Input file not found: {input_json}")
         sys.exit(1)
 
-    with open(input_json) as f:
+    with open(input_json, 'r', encoding='utf-8') as f:
         prefabs = json.load(f)
 
     print(f"📦 Loaded {len(prefabs)} prefabs from {input_json.name}")
 
-    # 2. 添加 GTPlanner 到 Python path（以便导入模块）
-    gtplanner_root = input_json.parent.parent.parent
-    sys.path.insert(0, str(gtplanner_root))
-
-    try:
-        from gtplanner.agent.utils.prefab_indexer import PrefabIndexer
-    except ImportError as e:
-        print(f"❌ Failed to import PrefabIndexer: {e}")
-        print(f"   Make sure gtplanner package is installed or accessible")
+    # 2. 检查向量服务是否可用
+    if not check_vector_service_available(vector_service_url):
+        print(f"❌ Vector service is not available at {vector_service_url}")
+        print(f"   Please check the service URL and network connectivity")
         sys.exit(1)
 
-    # 3. 构建索引
+    print(f"✅ Vector service is available")
+
+    # 3. 转换为文档格式
+    print(f"🔨 Converting prefabs to documents...")
+    start_time = time.time()
+
+    documents = []
+    for prefab in prefabs:
+        try:
+            doc = convert_prefab_to_document(prefab)
+            documents.append(doc)
+        except Exception as e:
+            print(f"⚠️  Failed to convert prefab {prefab.get('id')}: {e}")
+            continue
+
+    print(f"📝 Converted {len(documents)} documents")
+
+    # 4. 构建索引
     try:
-        indexer = PrefabIndexer(vector_service_url=vector_service_url)
-
-        # 检查向量服务是否可用
-        if not indexer.check_vector_service_available():
-            print(f"❌ Vector service is not available at {vector_service_url}")
-            print(f"   Please check the service URL and network connectivity")
-            sys.exit(1)
-
-        print(f"✅ Vector service is available")
-
-        # 构建索引（强制重建）
         print(f"🔨 Building index...")
-        result = indexer.build_index(
-            json_path=str(input_json),
-            force_reindex=True
+        result = call_vector_service_index(
+            vector_service_url=vector_service_url,
+            index_name=DEFAULT_INDEX_NAME,
+            documents=documents,
+            vector_field=DEFAULT_VECTOR_FIELD,
+            force_reindex=True,
+            timeout=DEFAULT_TIMEOUT
         )
 
-        if not result.get("success"):
-            error_msg = result.get("error", "Unknown error")
-            print(f"❌ Index build failed: {error_msg}")
-            sys.exit(1)
+        elapsed_time = time.time() - start_time
 
-        # 4. 输出结果
+        # 5. 输出结果
         print(f"\n✅ Index build completed successfully!")
-        print(f"   Index Name: {result['index_name']}")
-        print(f"   Indexed Count: {result['indexed_count']}")
-        print(f"   Elapsed Time: {result['elapsed_time']}s")
+        print(f"   Index Name: {DEFAULT_INDEX_NAME}")
+        print(f"   Indexed Count: {len(documents)}")
+        print(f"   Elapsed Time: {round(elapsed_time, 2)}s")
 
         # 输出详细结果（JSON 格式，便于 CI/CD 解析）
         print(f"\n📊 Build Result:")
-        print(json.dumps(result, indent=2, ensure_ascii=False))
+        build_result = {
+            "success": True,
+            "index_name": DEFAULT_INDEX_NAME,
+            "indexed_count": len(documents),
+            "elapsed_time": round(elapsed_time, 2),
+            "vector_service_url": vector_service_url,
+            **result
+        }
+        print(json.dumps(build_result, indent=2, ensure_ascii=False))
 
     except Exception as e:
         print(f"❌ Failed to build index: {e}")
