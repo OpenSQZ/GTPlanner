@@ -14,7 +14,6 @@ import asyncio
 import logging
 from typing import Dict, Any, Optional
 
-from gtplanner.agent.utils.prefab_index_manager import prefab_index_manager, ensure_prefab_index
 from gtplanner.utils.config_manager import get_vector_service_config
 from gtplanner.agent.streaming import emit_processing_status
 
@@ -22,16 +21,16 @@ logger = logging.getLogger(__name__)
 
 
 async def initialize_application(
-    preload_index: bool = True,
+    preload_index: bool = False,  # 默认不预加载索引
     shared: Dict[str, Any] = None
 ) -> Dict[str, Any]:
     """
     应用启动初始化
-    
+
     Args:
-        preload_index: 是否预加载预制件索引
+        preload_index: 是否检查预制件索引（已弃用，保留仅为兼容性）
         shared: 共享状态，用于事件发送
-        
+
     Returns:
         初始化结果字典
     """
@@ -42,23 +41,25 @@ async def initialize_application(
     }
     
     logger.info("🚀 开始应用初始化...")
-    
+
     try:
-        # 1. 检查向量服务配置
+        # 1. 检查 AGENT_BUILDER_API_KEY 环境变量
+        api_key_result = await _check_agent_builder_api_key(shared)
+        init_result["components"]["agent_builder_api_key"] = api_key_result
+
+        if not api_key_result["configured"]:
+            init_result["errors"].append("AGENT_BUILDER_API_KEY 未配置")
+
+        # 2. 检查向量服务配置
         vector_config_result = await _check_vector_service_config(shared)
         init_result["components"]["vector_service"] = vector_config_result
-        
+
         if not vector_config_result["available"]:
             init_result["errors"].append("向量服务不可用")
-        
-        # 2. 预加载预制件索引（如果启用）
-        if preload_index and vector_config_result["available"]:
-            prefab_index_result = await _preload_prefab_index(shared)
-            init_result["components"]["prefab_index"] = prefab_index_result
-            
-            if not prefab_index_result["success"]:
-                init_result["errors"].append(f"预制件索引预加载失败: {prefab_index_result.get('error', 'Unknown error')}")
-        
+
+        # 注意：预制件索引由 CI/CD 构建，不在启动时加载
+        # 如需重建索引，请运行: python prefabs/releases/scripts/build_index.py
+
         # 3. 其他初始化任务可以在这里添加
         
         # 判断整体初始化是否成功
@@ -81,6 +82,67 @@ async def initialize_application(
         init_result["success"] = False
         init_result["errors"].append(error_msg)
         return init_result
+
+
+async def _check_agent_builder_api_key(shared: Dict[str, Any] = None) -> Dict[str, Any]:
+    """检查 AGENT_BUILDER_API_KEY 环境变量"""
+    import os
+
+    try:
+        if shared:
+            await emit_processing_status(shared, "🔑 检查 AGENT_BUILDER_API_KEY 配置...")
+
+        api_key = os.getenv("AGENT_BUILDER_API_KEY")
+
+        # 检查是否配置
+        if not api_key or not api_key.strip():
+            logger.warning("⚠️  AGENT_BUILDER_API_KEY 未配置")
+            logger.warning("⚠️  call_prefab_function 工具将不可用")
+            logger.warning("📝 请访问 https://the-agent-builder.com/workspace/api/keys 获取 API Key")
+            logger.warning("💡 然后设置环境变量: export AGENT_BUILDER_API_KEY='your-api-key'")
+
+            if shared:
+                await emit_processing_status(
+                    shared,
+                    "⚠️  AGENT_BUILDER_API_KEY 未配置，call_prefab_function 工具将不可用\n"
+                    "📝 请访问 https://the-agent-builder.com/workspace/api/keys 获取 API Key"
+                )
+
+            return {
+                "configured": False,
+                "message": "AGENT_BUILDER_API_KEY 未配置",
+                "guide_url": "https://the-agent-builder.com/workspace/api/keys"
+            }
+
+        # 检查格式（应该以 sk- 开头）
+        if not api_key.startswith("sk-"):
+            logger.warning("⚠️  AGENT_BUILDER_API_KEY 格式可能不正确（应以 'sk-' 开头）")
+
+            if shared:
+                await emit_processing_status(shared, "⚠️  AGENT_BUILDER_API_KEY 格式可能不正确")
+
+            return {
+                "configured": True,
+                "valid_format": False,
+                "message": "API Key 格式可能不正确（应以 'sk-' 开头）"
+            }
+
+        logger.info("✅ AGENT_BUILDER_API_KEY 已配置")
+        if shared:
+            await emit_processing_status(shared, "✅ AGENT_BUILDER_API_KEY 已配置")
+
+        return {
+            "configured": True,
+            "valid_format": True,
+            "message": "API Key 已正确配置"
+        }
+
+    except Exception as e:
+        logger.error(f"检查 AGENT_BUILDER_API_KEY 时出错: {str(e)}")
+        return {
+            "configured": False,
+            "error": f"检查失败: {str(e)}"
+        }
 
 
 async def _check_vector_service_config(shared: Dict[str, Any] = None) -> Dict[str, Any]:
@@ -129,45 +191,10 @@ async def _check_vector_service_config(shared: Dict[str, Any] = None) -> Dict[st
         }
 
 
-async def _preload_prefab_index(shared: Dict[str, Any] = None) -> Dict[str, Any]:
-    """预加载预制件索引"""
-    try:
-        if shared:
-            await emit_processing_status(shared, "📦 预加载预制件索引...")
-        
-        # 使用索引管理器确保索引存在
-        index_name = await ensure_prefab_index(
-            force_reindex=False,  # 启动时不强制重建，让管理器智能判断
-            shared=shared
-        )
-        
-        # 获取索引信息
-        index_info = prefab_index_manager.get_index_info()
-        
-        return {
-            "success": True,
-            "index_name": index_name,
-            "index_info": index_info
-        }
-        
-    except Exception as e:
-        error_msg = f"预制件索引预加载失败: {str(e)}"
-        logger.error(error_msg)
-        return {
-            "success": False,
-            "error": error_msg
-        }
-
-
-def initialize_application_sync(
-    preload_index: bool = True
-) -> Dict[str, Any]:
+def initialize_application_sync() -> Dict[str, Any]:
     """
     同步版本的应用初始化（用于非异步环境）
-    
-    Args:
-        preload_index: 是否预加载预制件索引
-        
+
     Returns:
         初始化结果字典
     """
@@ -178,9 +205,9 @@ def initialize_application_sync(
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-        
+
         return loop.run_until_complete(
-            initialize_application(preload_index)
+            initialize_application()
         )
         
     except Exception as e:
@@ -193,10 +220,12 @@ def initialize_application_sync(
 
 async def get_application_status() -> Dict[str, Any]:
     """获取应用状态"""
+    vector_config = get_vector_service_config()
     return {
+        "agent_builder_api_key": await _check_agent_builder_api_key(),
         "prefab_index": {
-            "ready": prefab_index_manager.is_index_ready(),
-            "info": prefab_index_manager.get_index_info()
+            "index_name": vector_config.get("prefabs_index_name", "document_gtplanner_prefabs"),
+            "note": "索引由 CI/CD 构建，不在运行时管理"
         },
         "vector_service": await _check_vector_service_config()
     }
@@ -205,10 +234,8 @@ async def get_application_status() -> Dict[str, Any]:
 # 便捷函数
 async def ensure_application_ready(shared: Dict[str, Any] = None) -> bool:
     """确保应用就绪"""
-    if not tool_index_manager.is_index_ready():
-        init_result = await initialize_application(shared=shared)
-        return init_result["success"]
-    return True
+    init_result = await initialize_application(shared=shared)
+    return init_result["success"]
 
 
 if __name__ == "__main__":

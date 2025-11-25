@@ -991,21 +991,11 @@ async def _execute_prefab_recommend(arguments: Dict[str, Any], shared: Dict[str,
                 "suggestion": f"Try calling search_prefabs with the same query: search_prefabs(query=\"{query}\")"
             }
         
-        # 2. 使用索引管理器确保索引存在（启动时已预加载，这里只是确认）
-        from gtplanner.agent.utils.prefab_index_manager import ensure_prefab_index
-        
-        # 智能检测：只在必要时重建（如文件更新）
-        index_name = await ensure_prefab_index(
-            force_reindex=False,
-            shared=shared
-        )
-        
-        if not index_name:
-            return {
-                "success": False,
-                "error": "Failed to initialize prefab index"
-            }
-        
+        # 2. 从配置获取索引名称
+        from gtplanner.utils.config_manager import get_vector_service_config
+        vector_config = get_vector_service_config()
+        index_name = vector_config.get("prefabs_index_name", "document_gtplanner_prefabs")
+
         # 3. 执行预制件推荐
         from gtplanner.agent.nodes.node_prefab_recommend import NodePrefabRecommend
         recommend_node = NodePrefabRecommend()
