@@ -241,12 +241,17 @@ async def ensure_application_ready(shared: Dict[str, Any] = None) -> bool:
 if __name__ == "__main__":
     # 测试初始化
     import asyncio
-    
+
     async def test_init():
         result = await initialize_application()
-        print("初始化结果:", result)
-        
+        # 只打印成功状态，不打印完整结果（避免泄露敏感信息）
+        print(f"初始化{'成功' if result['success'] else '失败'}")
+        if not result['success']:
+            print(f"错误: {result['errors']}")
+
         status = await get_application_status()
-        print("应用状态:", status)
-    
+        # 只打印索引信息，不打印完整状态（避免泄露 API Key 等敏感信息）
+        print(f"索引名称: {status['prefab_index']['index_name']}")
+        print(f"向量服务: {'可用' if status['vector_service']['available'] else '不可用'}")
+
     asyncio.run(test_init())
