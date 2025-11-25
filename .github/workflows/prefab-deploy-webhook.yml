@@ -19,9 +19,49 @@ on:
         type: string
 
 jobs:
+  # 新增：构建预制件索引
+  build-index:
+    name: Build Prefab Index
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -q requests
+
+      - name: Build prefab index
+        env:
+          VECTOR_SERVICE_URL: ${{ secrets.VECTOR_SERVICE_URL }}
+        run: |
+          python3 prefabs/releases/scripts/build_index.py \
+            --vector-service-url "$VECTOR_SERVICE_URL" \
+            --input prefabs/releases/community-prefabs.json
+
+      - name: Index build summary
+        if: success()
+        run: |
+          echo "✅ Prefab index built successfully"
+          echo "   The vector service now has the latest prefab data"
+
+      - name: Index build failed
+        if: failure()
+        run: |
+          echo "❌ Failed to build prefab index"
+          echo "   Please check the vector service URL and logs above"
+
+  # 现有的部署 job，添加依赖关系
   trigger-deployment:
     name: Trigger Prefab Factory Deployment
     runs-on: ubuntu-latest
+    needs: build-index  # 等待索引构建完成
 
     steps:
       - name: Checkout code
