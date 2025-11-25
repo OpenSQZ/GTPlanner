@@ -38,7 +38,7 @@ jobs:
 
     steps:
     - name: Checkout代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       
     - name: 设置Python环境
       uses: actions/setup-python@v4
@@ -123,7 +123,7 @@ jobs:
     
     steps:
     - name: Checkout代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       
     - name: 设置Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -180,7 +180,7 @@ jobs:
 
     steps:
     - name: Checkout代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: 设置Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -226,7 +226,7 @@ jobs:
     
     steps:
     - name: Checkout代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       
     - name: Deploy to Kubernetes
       env:
@@ -298,7 +298,7 @@ jobs:
 
     steps:
     - name: Checkout代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Deploy to Test Kubernetes
       env:
