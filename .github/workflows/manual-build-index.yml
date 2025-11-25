@@ -1,0 +1,59 @@
+name: Manual Build Prefab Index
+
+# 手动触发构建预制件索引
+on:
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild index (default: true)'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  build-index:
+    name: Build Prefab Index
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -q requests
+
+      - name: Build prefab index
+        env:
+          VECTOR_SERVICE_URL: ${{ secrets.VECTOR_SERVICE_URL }}
+        run: |
+          echo "🔨 Starting manual prefab index build..."
+          echo "   Force rebuild: ${{ inputs.force_rebuild }}"
+          echo "   Vector service: $VECTOR_SERVICE_URL"
+          echo ""
+
+          python3 prefabs/releases/scripts/build_index.py \
+            --vector-service-url "$VECTOR_SERVICE_URL" \
+            --input prefabs/releases/community-prefabs.json
+
+      - name: Index build summary
+        if: success()
+        run: |
+          echo "✅ Prefab index built successfully"
+          echo "   The vector service now has the latest prefab data"
+          echo "   You can now use prefab search and call_prefab_function tools"
+
+      - name: Index build failed
+        if: failure()
+        run: |
+          echo "❌ Failed to build prefab index"
+          echo "   Please check:"
+          echo "   1. VECTOR_SERVICE_URL secret is correctly configured"
+          echo "   2. Vector service is accessible from GitHub Actions"
+          echo "   3. community-prefabs.json format is valid"
+          echo "   4. Check the logs above for detailed error messages"
