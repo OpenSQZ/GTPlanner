@@ -14,7 +14,7 @@ dependencies = [
     "json-repair>=0.45.0",
     "python-dotenv>=1.0.0",
     "dynaconf>=3.1.12",
-    "fastapi == 0.115.9",
+    "fastapi == 0.122.0",
 ]
 
 [[tool.uv.index]]
