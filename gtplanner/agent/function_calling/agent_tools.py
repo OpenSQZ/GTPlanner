@@ -139,7 +139,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                     },
                     "recommended_prefabs": {
                         "type": "array",
-                        "description": "推荐预制件列表（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，请从结果中提取你觉得需要的预制件的关键信息（id, version, name, description）,不要全部都提取,推荐的不一定需要",
+                        "description": "推荐预制件列表（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，请从结果中提取你觉得需要的预制件的关键信息（id, version, name, description）。**重要**：如果调用了 list_prefab_functions，请从查询结果中筛选出你认为与用户需求相关的函数（不是全部函数），并包含到 functions 字段中。",
                         "items": {
                             "type": "object",
                             "properties": {
@@ -158,6 +158,23 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                                 "description": {
                                     "type": "string",
                                     "description": "预制件功能描述"
+                                },
+                                "functions": {
+                                    "type": "array",
+                                    "description": "预制件提供的相关函数列表（可选）。**仅包含**你认为与用户需求相关的函数，不是预制件的全部函数。",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "函数名称"
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "description": "函数描述"
+                                            }
+                                        }
+                                    }
                                 }
                             },
                             "required": ["id", "version", "name", "description"]
@@ -296,7 +313,132 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
         }
     }
     tools.append(prefab_recommend_tool)
-    
+
+    # 添加 list_prefab_functions 工具
+    list_prefab_functions_tool = {
+        "type": "function",
+        "function": {
+            "name": "list_prefab_functions",
+            "description": "根据预制件 ID 查询该预制件的所有函数列表（仅包含函数名和描述）。**建议使用场景**：当 prefab_recommend 或 search_prefabs 返回预制件后，使用此工具查看预制件内部有哪些函数，判断是否符合需求。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "prefab_id": {
+                        "type": "string",
+                        "description": "预制件 ID，例如：'file-processing-prefab'"
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "版本号（可选），不指定则返回最新版本"
+                    }
+                },
+                "required": ["prefab_id"]
+            }
+        }
+    }
+    tools.append(list_prefab_functions_tool)
+
+    # 添加 get_function_details 工具
+    get_function_details_tool = {
+        "type": "function",
+        "function": {
+            "name": "get_function_details",
+            "description": "根据预制件 ID 和函数名称获取该函数的完整定义（包括参数、返回值、文件定义等）。**建议使用场景**：在调用 list_prefab_functions 后，针对感兴趣的函数查看其详细定义，了解如何调用。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "prefab_id": {
+                        "type": "string",
+                        "description": "预制件 ID"
+                    },
+                    "function_name": {
+                        "type": "string",
+                        "description": "函数名称"
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "版本号（可选），不指定则返回最新版本"
+                    }
+                },
+                "required": ["prefab_id", "function_name"]
+            }
+        }
+    }
+    tools.append(get_function_details_tool)
+
+    # 添加 call_prefab_function 工具
+    call_prefab_function_tool = {
+        "type": "function",
+        "function": {
+            "name": "call_prefab_function",
+            "description": "直接调用预制件函数并获取实际执行结果。**建议使用场景**：在推荐预制件后，调用此工具验证预制件的实际效果，确认其是否真正符合用户需求。通过实际调用，可以将不确定的推荐过程固定为经过验证的实现方案。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "prefab_id": {
+                        "type": "string",
+                        "description": "预制件 ID"
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "版本号"
+                    },
+                    "function_name": {
+                        "type": "string",
+                        "description": "函数名称"
+                    },
+                    "parameters": {
+                        "type": "object",
+                        "description": "函数参数（JSON 对象）"
+                    },
+                    "files": {
+                        "type": "object",
+                        "description": "文件参数（可选，但是如果是需要处理文件的预制件必须填入s3地址），格式：{\"input\": [\"s3://...\"]}"
+                    }
+                },
+                "required": ["prefab_id", "version", "function_name", "parameters"]
+            }
+        }
+    }
+    tools.append(call_prefab_function_tool)
+
+    # 添加 request_file_upload 工具
+    request_file_upload_tool = {
+        "type": "function",
+        "function": {
+            "name": "request_file_upload",
+            "description": "请求用户上传测试文件。当预制件函数需要文件输入时使用此工具。用户上传文件后会获得 S3 URL，然后你可以使用这些 URL 调用预制件函数。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "prefab_id": {
+                        "type": "string",
+                        "description": "预制件 ID"
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "版本号"
+                    },
+                    "function_name": {
+                        "type": "string",
+                        "description": "函数名称"
+                    },
+                    "file_description": {
+                        "type": "string",
+                        "description": "文件用途描述，例如：'需要处理的PDF文档'、'待转录的音频文件'"
+                    },
+                    "accept": {
+                        "type": "string",
+                        "description": "接受的文件类型，例如：'.pdf,.doc,.docx'、'.mp3,.wav,.m4a'",
+                        "default": ".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt,.csv,.xlsx"
+                    }
+                },
+                "required": ["prefab_id", "version", "function_name", "file_description"]
+            }
+        }
+    }
+    tools.append(request_file_upload_tool)
+
     # 添加 edit_document 工具（subagent 模式）
     edit_document_tool = {
         "type": "function",
@@ -379,6 +521,14 @@ async def execute_agent_tool(tool_name: str, arguments: Dict[str, Any], shared: 
             return await _execute_edit_document(arguments, shared)
         elif tool_name == "view_document":
             return await _execute_view_document(arguments, shared)
+        elif tool_name == "list_prefab_functions":
+            return await _execute_list_prefab_functions(arguments, shared)
+        elif tool_name == "get_function_details":
+            return await _execute_get_function_details(arguments, shared)
+        elif tool_name == "call_prefab_function":
+            return await _execute_call_prefab_function(arguments, shared)
+        elif tool_name == "request_file_upload":
+            return await _execute_request_file_upload(arguments, shared)
         else:
             return {
                 "success": False,
@@ -990,7 +1140,7 @@ async def _execute_prefab_recommend(arguments: Dict[str, Any], shared: Dict[str,
                 "error": "Vector service is not available. Please use 'search_prefabs' tool as a fallback.",
                 "suggestion": f"Try calling search_prefabs with the same query: search_prefabs(query=\"{query}\")"
             }
-        
+
         # 2. 从配置获取索引名称
         from gtplanner.utils.config_manager import get_vector_service_config
         vector_config = get_vector_service_config()
@@ -1211,3 +1361,332 @@ async def call_database_design(
     if recommended_prefabs:
         arguments["recommended_prefabs"] = recommended_prefabs
     return await execute_agent_tool("database_design", arguments)
+
+
+async def _execute_list_prefab_functions(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
+    """
+    执行预制件函数列表查询
+
+    参数：
+    - prefab_id: 必需，预制件 ID
+    - version: 可选，版本号（不指定则返回最新版本）
+    """
+    import httpx
+
+    prefab_id = arguments.get("prefab_id")
+    version = arguments.get("version")
+
+    # 参数验证
+    if not prefab_id:
+        return {
+            "success": False,
+            "error": "prefab_id is required",
+            "tool_name": "list_prefab_functions"
+        }
+
+    try:
+        # 从配置获取 prefab-gateway 地址
+        from gtplanner.utils.config_manager import get_prefab_gateway_url
+        gateway_url = get_prefab_gateway_url()
+
+        if not gateway_url:
+            return {
+                "success": False,
+                "error": "Prefab gateway URL not configured",
+                "tool_name": "list_prefab_functions"
+            }
+
+        # 构建请求 URL
+        url = f"{gateway_url}/v1/public/prefabs/{prefab_id}/functions"
+        params = {}
+        if version:
+            params["version"] = version
+
+        # 发起 HTTP 请求
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url, params=params)
+            response.raise_for_status()
+            functions = response.json()
+
+        # 格式化返回结果
+        return {
+            "success": True,
+            "result": {
+                "prefab_id": prefab_id,
+                "version": version or "latest",
+                "functions": functions,
+                "total_functions": len(functions)
+            },
+            "tool_name": "list_prefab_functions"
+        }
+
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            return {
+                "success": False,
+                "error": f"Prefab '{prefab_id}' not found" + (f" (version: {version})" if version else ""),
+                "tool_name": "list_prefab_functions"
+            }
+        else:
+            return {
+                "success": False,
+                "error": f"HTTP error: {e.response.status_code} - {e.response.text}",
+                "tool_name": "list_prefab_functions"
+            }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to fetch prefab functions: {str(e)}",
+            "tool_name": "list_prefab_functions"
+        }
+
+
+async def _execute_get_function_details(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
+    """
+    执行预制件函数详情查询
+
+    参数：
+    - prefab_id: 必需，预制件 ID
+    - function_name: 必需，函数名称
+    - version: 可选，版本号（不指定则返回最新版本）
+    """
+    import httpx
+
+    prefab_id = arguments.get("prefab_id")
+    function_name = arguments.get("function_name")
+    version = arguments.get("version")
+
+    # 参数验证
+    if not prefab_id:
+        return {
+            "success": False,
+            "error": "prefab_id is required",
+            "tool_name": "get_function_details"
+        }
+
+    if not function_name:
+        return {
+            "success": False,
+            "error": "function_name is required",
+            "tool_name": "get_function_details"
+        }
+
+    try:
+        # 从配置获取 prefab-gateway 地址
+        from gtplanner.utils.config_manager import get_prefab_gateway_url
+        gateway_url = get_prefab_gateway_url()
+
+        if not gateway_url:
+            return {
+                "success": False,
+                "error": "Prefab gateway URL not configured",
+                "tool_name": "get_function_details"
+            }
+
+        # 构建请求 URL
+        url = f"{gateway_url}/v1/public/prefabs/{prefab_id}/functions/{function_name}"
+        params = {}
+        if version:
+            params["version"] = version
+
+        # 发起 HTTP 请求
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url, params=params)
+            response.raise_for_status()
+            function_details = response.json()
+
+        # 格式化返回结果
+        return {
+            "success": True,
+            "result": {
+                "prefab_id": prefab_id,
+                "version": version or "latest",
+                "function": function_details
+            },
+            "tool_name": "get_function_details"
+        }
+
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            error_detail = e.response.json().get("detail", "Not found")
+            return {
+                "success": False,
+                "error": error_detail,
+                "tool_name": "get_function_details"
+            }
+        else:
+            return {
+                "success": False,
+                "error": f"HTTP error: {e.response.status_code} - {e.response.text}",
+                "tool_name": "get_function_details"
+            }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to fetch function details: {str(e)}",
+            "tool_name": "get_function_details"
+        }
+
+
+async def _execute_call_prefab_function(arguments: Dict[str, Any], shared: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """
+    执行预制件函数调用
+
+    参数：
+    - prefab_id: 必需，预制件 ID
+    - version: 必需，版本号
+    - function_name: 必需，函数名称
+    - parameters: 必需，函数参数（JSON 对象）
+    - files: 可选，文件参数
+    """
+    try:
+        # 确保 shared 字典存在
+        if shared is None:
+            shared = {}
+
+        # 提取参数
+        prefab_id = arguments.get("prefab_id")
+        version = arguments.get("version")
+        function_name = arguments.get("function_name")
+        parameters = arguments.get("parameters", {})
+        files = arguments.get("files")
+
+        # 准备节点 shared 数据
+        node_shared = {
+            "prefab_id": prefab_id,
+            "version": version,
+            "function_name": function_name,
+            "parameters": parameters,
+            "files": files
+        }
+
+        # 使用 NodeCallPrefabFunction 执行
+        from gtplanner.agent.nodes import NodeCallPrefabFunction
+        node = NodeCallPrefabFunction()
+
+        # 执行节点
+        prep_result = await node.prep_async(node_shared)
+        if not prep_result.get("success"):
+            return {
+                "success": False,
+                "error": prep_result.get("error"),
+                "hint": prep_result.get("hint"),
+                "tool_name": "call_prefab_function"
+            }
+
+        exec_result = await node.exec_async(prep_result)
+
+        # 后处理
+        await node.post_async(shared, prep_result, exec_result)
+
+        # 返回结果
+        if exec_result.get("success"):
+            return {
+                "success": True,
+                "result": {
+                    "prefab_id": exec_result["prefab_id"],
+                    "version": exec_result["version"],
+                    "function_name": exec_result["function_name"],
+                    "function_result": exec_result["function_result"],
+                    "output_files": exec_result.get("output_files"),
+                    "job_id": exec_result.get("job_id")
+                },
+                "tool_name": "call_prefab_function"
+            }
+        else:
+            return {
+                "success": False,
+                "error": exec_result.get("error"),
+                "prefab_id": exec_result.get("prefab_id"),
+                "version": exec_result.get("version"),
+                "function_name": exec_result.get("function_name"),
+                "tool_name": "call_prefab_function"
+            }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to call prefab function: {str(e)}",
+            "tool_name": "call_prefab_function"
+        }
+
+
+async def _execute_request_file_upload(arguments: Dict[str, Any], shared: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """
+    请求用户上传文件
+
+    参数：
+    - prefab_id: 必需，预制件 ID
+    - version: 必需，版本号
+    - function_name: 必需，函数名称
+    - file_description: 必需，文件用途描述
+    - accept: 可选，接受的文件类型
+    """
+    try:
+        prefab_id = arguments.get("prefab_id")
+        version = arguments.get("version")
+        function_name = arguments.get("function_name")
+        file_description = arguments.get("file_description")
+        accept = arguments.get("accept", ".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt,.csv,.xlsx")
+
+        # 参数验证
+        if not prefab_id:
+            return {
+                "success": False,
+                "error": "prefab_id is required",
+                "tool_name": "request_file_upload"
+            }
+
+        if not version:
+            return {
+                "success": False,
+                "error": "version is required",
+                "tool_name": "request_file_upload"
+            }
+
+        if not function_name:
+            return {
+                "success": False,
+                "error": "function_name is required",
+                "tool_name": "request_file_upload"
+            }
+
+        if not file_description:
+            return {
+                "success": False,
+                "error": "file_description is required",
+                "tool_name": "request_file_upload"
+            }
+
+        # 发送 SSE 事件
+        if shared:
+            from gtplanner.agent.streaming import emit_processing_status
+            await emit_processing_status(
+                shared,
+                f"📁 请求用户上传文件\n"
+                f"📦 预制件: {prefab_id}@{version}\n"
+                f"🔧 函数: {function_name}\n"
+                f"📝 用途: {file_description}"
+            )
+
+        # 返回文件上传请求
+        return {
+            "success": True,
+            "result": {
+                "prefab_id": prefab_id,
+                "version": version,
+                "function_name": function_name,
+                "file_description": file_description,
+                "accept": accept,
+                "message": f"请上传{file_description}。上传成功后，请在消息中包含 S3 URL（格式：s3://bucket/path/file.ext），然后我会继续调用预制件函数。"
+            },
+            "tool_name": "request_file_upload"
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to request file upload: {str(e)}",
+            "tool_name": "request_file_upload"
+        }
+

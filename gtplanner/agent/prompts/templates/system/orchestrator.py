@@ -150,6 +150,19 @@ class SystemOrchestratorTemplates:
 - **`search_prefabs`**：搜索预制件（本地模糊搜索，降级方案）
   - 使用场景：仅当 `prefab_recommend` 失败时自动使用，无需手动调用
 
+- **`list_prefab_functions`**：查询预制件的函数列表
+  - 使用场景：在 `prefab_recommend` 推荐预制件后，查看预制件内部有哪些函数
+  - 参数：`prefab_id`（必需）、`version`（可选）
+
+- **`get_function_details`**：获取预制件函数的详细定义
+  - 使用场景：在 `list_prefab_functions` 后，查看感兴趣函数的完整定义（参数、返回值等）
+  - 参数：`prefab_id`（必需）、`function_name`（必需）、`version`（可选）
+
+- **`call_prefab_function`**：直接调用预制件函数并获取实际执行结果
+  - 使用场景：在推荐预制件后，调用此工具验证预制件的实际效果，确认其是否真正符合用户需求
+  - 参数：`prefab_id`、`version`、`function_name`、`parameters`
+  - **重要**：通过实际调用，可以将不确定的推荐过程固定为经过验证的实现方案
+
 - **`research`**：技术调研（需要 JINA_API_KEY）
   - 使用场景：需要深入了解某个技术方案时
 
