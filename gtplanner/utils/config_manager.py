@@ -242,14 +242,41 @@ class MultilingualConfig:
                 logger.warning(f"Error reading vector service config from settings: {e}")
 
         # Environment variables have higher priority than settings.toml
+        prefabs_index = (
+            os.getenv("VECTOR_SERVICE_PREFABS_INDEX_NAME") or
+            config.get("prefabs_index_name", "document_gtplanner_prefabs")
+        )
+
         config.update({
             "base_url": os.getenv("VECTOR_SERVICE_BASE_URL") or os.getenv("GTPLANNER_VECTOR_SERVICE_BASE_URL") or config.get("base_url"),
             "timeout": int(os.getenv("VECTOR_SERVICE_TIMEOUT") or config.get("timeout", 30)),
-            "prefabs_index_name": os.getenv("VECTOR_SERVICE_INDEX_NAME") or config.get("prefabs_index_name", "document_gtplanner_prefabs"),
+            "prefabs_index_name": prefabs_index,
             "vector_field": os.getenv("VECTOR_SERVICE_VECTOR_FIELD") or config.get("vector_field", "combined_text")
         })
 
         return {k: v for k, v in config.items() if v is not None}
+
+    def get_prefab_gateway_url(self) -> Optional[str]:
+        """Get prefab gateway URL from configuration.
+
+        Returns:
+            The prefab gateway URL, or None if not set
+        """
+        # Try dynaconf settings first
+        if self._settings:
+            try:
+                gateway_url = self._settings.get("prefab_gateway.base_url")
+                if gateway_url:
+                    return gateway_url.rstrip('/')
+            except Exception as e:
+                logger.warning(f"Error reading prefab gateway URL from settings: {e}")
+
+        # Try environment variable
+        gateway_url = os.getenv("GATEWAY_API_URL")
+        if gateway_url:
+            return gateway_url.rstrip('/')
+
+        return None
 
     def get_all_config(self) -> Dict[str, Any]:
         """Get all configuration as a dictionary.
@@ -372,6 +399,15 @@ def get_vector_service_config() -> Dict[str, Any]:
         Dictionary containing vector service configuration
     """
     return multilingual_config.get_vector_service_config()
+
+
+def get_prefab_gateway_url() -> Optional[str]:
+    """Convenience function to get prefab gateway URL.
+
+    Returns:
+        The prefab gateway URL, or None if not set
+    """
+    return multilingual_config.get_prefab_gateway_url()
 
 
 def get_all_config() -> Dict[str, Any]:
