@@ -97,16 +97,25 @@ flowchart TD
 > 给 AI 的提示：
 > 1. 如果 `recommended_prefabs` 参数中有预制件信息，**必须在此列出所有推荐的预制件**。
 > 2. ⚠️ **预制件ID是最关键的信息**，会在后续代码调用中使用，务必从 `recommended_prefabs` 参数中准确复制，一个字符都不能错！
-> 3. 说明每个预制件在系统中的具体用途。
-> 4. 如果没有推荐预制件，可以省略此部分。
-> 5. **不要在最终文档中输出任何警告符号（⚠️）和提示性文字**。
+> 3. **函数列表是关键信息**：如果 `recommended_prefabs` 包含函数列表（`functions` 字段），**必须在"提供的函数"部分列出**。
+>    - **重要**：上游智能体已经筛选过函数列表，只包含与用户需求相关的函数
+>    - 你应该**列出所有**传入的函数（因为它们已经是筛选后的结果）
+>    - **不要**再次过滤或省略任何函数
+> 4. 说明每个预制件在系统中的具体用途，以及会使用哪些函数。
+> 5. 如果没有推荐预制件，可以省略此部分。
+> 6. **不要在最终文档中输出任何警告符号（⚠️）和提示性文字**。
 
 [如果有推荐的预制件，按以下格式列出]
 
 ### 1. [预制件名称]
 - **ID**: `[预制件ID]`
+- **版本**: `[版本号，如 0.2.0]`
 - **描述**: [预制件功能描述]
-- **用途**: [在本系统中的具体使用场景和调用方式]
+- **提供的函数**:
+  - `[函数名1]`: [函数描述 - 从 functions 列表中获取]
+  - `[函数名2]`: [函数描述]
+  - ...
+- **用途**: [在本系统中的具体使用场景，说明会调用哪些函数]
 
 ## Utility Functions
 
@@ -227,215 +236,244 @@ shared = {{
     @staticmethod
     def get_design_en() -> str:
         """English version of the design document generation prompt"""
-        return """You are a professional system architect skilled at transforming user requirements into clear, high-level system design documents.
+        return """
+You are a professional System Architect, skilled at transforming user requirements into clear, high-level system design documents.
 
 # Core Principles
 
-1. **High-level Abstraction**: Describe what the system "does", not "how it does it"
-2. **No Business Details**: Do not include specific technical implementation details (like API calls, data parsing logic, specific algorithms)
-3. **Clear Logic**: Focus on flow, data structures, and node responsibilities
-4. **Structured Output**: Strictly follow the specified document template
+1.  **High-Level Abstraction**: Describe "what" the system does, not "how" it does it.
+2.  **No Implementation Details**: Do not include specific technical implementation details (e.g., specific API calls, data parsing logic, specific algorithms).
+3.  **Logical Clarity**: Focus on the flow, data structures, and node responsibilities.
+4.  **Structured Output**: Strictly follow the specified document template.
 
 # Your Task
 
-Based on the following inputs, generate a complete system design document (Markdown format):
+Generate a complete system design document (in Markdown format) based on the following inputs:
 
 **Input Information**:
-- User Requirements: {user_requirements}
-- Project Planning (optional): {project_planning}
-- Recommended Prefabs (optional): {prefabs_info}
-- Technical Research (optional): {research_summary}
+- User Requirements:
+   {user_requirements}
+- Project Planning (Optional):
+   {project_planning}
+- Recommended Prefabs (Optional):
+   {prefabs_info}
 
-**⚠️ Important Notice**:
-- The template below contains "Notes for AI" sections to help you understand how to generate content
-- **Do NOT include any "Notes for AI" content in your final generated document**
-- Only output the actual design document content, do not output lines starting with `>`
+**⚠️ Important Notes**:
+- The template below contains "Prompts for AI" sections. These prompts are **only for your understanding of how to generate content**.
+- **In your final generated document, do not include any "Prompts for AI" content.**
+- Output only the actual design document content; do not output prompt lines starting with `>`.
 
-# Output Format (Strictly Follow)
+# Output Format (Follow Strictly)
 
 ```markdown
-# Design Doc: [Agent Name]
+# Design Doc:  [Agent Name]
 
-## Requirements
+## Standard Operating Procedure
 
-> Notes for AI: Keep it simple and clear. If the requirements are abstract, write concrete user stories.
-> ⚠️ Note: Do NOT include these note lines in the final document
+> Prompt for AI: Keep the operation order clear. Each step should begin with a clear verb (e.g., Open, Check, Input, Confirm).
+> If the process involves repetitive steps (loops), explicitly indicate the scope of the loop (which steps are repeated) and the conditions for starting and stopping.
+> Ensure the process is concise; do not overcomplicate what can be done with a simple flow.
+> Note: Do not include these prompt lines in the final document. Detail every operational step to complete this task.
 
-[Describe the core requirements of the system as a clear list of functional points]
+Operational Steps (Simple Linear Example)
+-  [Step 1: Tell xxx Agent: Please help me complete xxx task]
+-  [Step 2: Another clear action]
 
-The system should:
-1. [Functional requirement 1]
-2. [Functional requirement 2]
-3. [Functional requirement 3]
-...
+Operational Steps (Loop Example)
+-  [Step 1: Clear action]
+-  [Step 2: ... ]
+- For each  [Item]  in  [List] , repeat steps 4-6 below:
+   -  [Step A inside loop]
+   -  [Step B inside loop]
+   -  [Step C inside loop]
+-  [Step after loop, e.g., Confirm all items have been processed]
+
 
 ## Flow Design
 
-> 给 AI 的提示：
-> 1. 考虑 agent、map-reduce、rag 和 workflow 等设计模式，选择合适的应用。
-> 2. 提供简洁的高层次工作流程描述。
+> Prompt for AI:
+> 1. Consider design patterns like agent, map-reduce, rag, and workflow, and select the appropriate application.
+> 2. Provide a concise high-level workflow description.
 
 ### Applicable Design Pattern:
 
-[Choose the applicable design pattern: Workflow / Agent / Map-Reduce / RAG, and briefly explain why]
+[Select applicable design pattern: Workflow / Agent / Map-Reduce / RAG, and briefly explain why]
 
 ### Flow High-level Design:
 
-1. **[Step 1 Name]**: [Step description - high level]
-2. **[Step 2 Name]**: [Step description - high level]
-3. **[Step 3 Name]**: [Step description - high level]
+1.  ** [Step 1 Name] **:  [Step Description - High Level]
+2.  ** [Step 2 Name] **:  [Step Description - High Level]
+3.  ** [Step 3 Name] **:  [Step Description - High Level]
 ...
 
 ### Flow Diagram
 
-> Notes for AI: Mermaid node naming should be consistent with the Flow High-level Design above, starting with verbs and clearly describing specific actions. Nodes should correspond one-to-one with steps in the High-level Design.
+> Prompt for AI: The mermaid node naming needs to be consistent with the Flow High-level Design above, starting with verbs to clearly describe specific actions. Nodes should correspond one-to-one with the steps in the High-level Design.
 
 ```mermaid
 flowchart TD
     A[Step 1: Execute Action] --> B[Step 2: Process Task]
-    B --> C{{Step 3: Check Condition}}
-    C -- Meets Condition --> D[Step 4: Execute Action A]
-    C -- Does Not Meet --> E[Step 5: Execute Action B]
-```
-\```
+    B --> C{{Step 3: Judge Condition}}
+    C -- Condition Met --> D[Step 4: Execute Action A]
+    C -- Condition Not Met --> E[Step 5: Execute Action B]
+````
+
+\`\`\`
 
 ## Prefabs
 
-> Notes for AI:
-> 1. If there are prefabs in the `recommended_prefabs` parameter, **you MUST list all recommended prefabs here**.
-> 2. ⚠️ **The prefab ID is the most critical information** - it will be used in code implementation. You must copy it accurately from the `recommended_prefabs` parameter, character by character, without any mistakes!
-> 3. Explain the specific use case for each prefab in this system.
-> 4. If no prefabs are recommended, you may omit this section.
-> 5. **Do not output any warning symbols (⚠️) or instructional text in the final document**.
+> Prompt for AI:
+>
+> 1.  If there is prefab information in the `recommended_prefabs` parameter, **you must list all recommended prefabs here**.
+> 2.  ⚠️ **The Prefab ID is the most critical information**. It will be used in subsequent code calls. You must copy it exactly from the `recommended_prefabs` parameter without a single character error\!
+> 3.  **Function List is critical info**: If `recommended_prefabs` contains a function list (`functions` field), **you must list them in the "Provided Functions" section**.
+>     - **Important**: The upstream agent has already filtered the function list to include only functions relevant to user requirements
+>     - You should **list all** functions passed in (because they are already filtered results)
+>     - **Do not** filter or omit any functions again
+> 4.  Explain the specific purpose of each prefab in the system and which functions will be used.
+> 5.  If there are no recommended prefabs, this section can be omitted.
+> 6.  **Do not output any warning symbols (⚠️) or prompt text in the final document**.
 
 [If there are recommended prefabs, list them in the following format]
 
-### 1. [Prefab Name]
-- **ID**: `[prefab-id]`
-- **Description**: [Prefab functionality description]
-- **Usage**: [Specific use case and how to call it in this system]
+### 1\. [Prefab Name]
+
+  - **ID**: `[Prefab ID]`
+  - **Version**: `[Version number, e.g., 0.2.0]`
+  - **Description**: [Prefab functionality description]
+  - **Provided Functions**:
+      - `[Function Name 1]`: [Function Description - Get from functions list]
+      - `[Function Name 2]`: [Function Description]
+      - ...
+  - **Usage**: [Specific usage scenario in this system, explaining which functions will be called]
 
 ## Utility Functions
 
-> Notes for AI:
-> 1. **Prefabs First**: Prioritize using the prefabs recommended above.
-> 2. **Strictly Based on Requirements**: **Only list simple utility functions explicitly mentioned in user requirements** that prefabs cannot cover.
-> 3. **Do Not Add Unrequested Features**: ❌ **Prohibited** to proactively add functions not mentioned in requirements (e.g., metadata extraction, data validation).
-> 4. **Prefab Capabilities**: Prefabs typically already include the following, **DO NOT** create utility functions for:
->    - ❌ File handling (upload/download/validation/metadata extraction)
->    - ❌ Data conversion (format conversion, encoding conversion)
->    - ❌ Content processing (text analysis, image processing, video processing)
-> 5. **Usually omit this section** - If prefabs meet all requirements, omit directly.
+> Prompt for AI:
+>
+> 1.  **Prefab Priority**: Prioritize using functionality provided by the prefabs recommended above.
+> 2.  **Strictly Based on Requirements**: **Only list simple utility functions explicitly mentioned in user requirements** that are not covered by prefabs.
+> 3.  **Do Not Expand**: ❌ **Prohibited** from actively adding features not mentioned in user requirements (such as metadata extraction, data validation, etc.).
+> 4.  **Prefab Capability Note**: Prefabs usually already contain the following features, so **do not** create utility functions for:
+>       - ❌ File Processing (Upload/Download/Validation/Metadata Extraction)
+>       - ❌ Data Conversion (Format Conversion, Encoding Conversion)
+>       - ❌ Content Processing (Text Analysis, Image Processing, Video Processing)
+> 5.  **Can be omitted in most cases** - If prefabs cover the requirements, omit this section directly.
 
-[**Only list when user requirements explicitly mention** simple features that prefabs cannot provide]
+[List **only if user requirements explicitly mention** simple functions that prefabs cannot provide]
 
-1. **[Function Name]** (`utils/xxx.py`)
-   - *Input*: [Input parameters]
-   - *Output*: [Output content]
-   - *Necessity*: [Which part of user requirements requires this function]
+1.  **[Utility Function Name]** (`utils/xxx.py`)
+      - *Input*: [Input Parameters]
+      - *Output*: [Output Content]
+      - *Necessity*: [Which part of the user requirements requires this function]
 
 ## Node Design
 
 ### Shared Store
 
-> 给 AI 的提示：尽量减少数据冗余
+> Prompt for AI: Minimize data redundancy.
 
-[Define the shared data structure]
+[Define shared data structure]
 
-\```python
-shared = {{
-    "input_field_1": "...",      # Input: description
-    "input_field_2": "...",      # Input: description
-    "intermediate_data": None,   # Output of Node1: description
-    "final_result": None,        # Output of Node2: description
+\`\`\`python
+Shared = {{
+"input\_field\_1": "...",      \# Input: Description
+"input\_field\_2": "...",      \# Input: Description
+"intermediate\_data": None,   \# Output of Node 1: Description
+"final\_result": None,        \# Output of Node 2: Description
 }}
-\```
+\`\`\`
 
 ### Node Steps
 
-> 给 AI 的提示：仔细决定是否使用 Batch/Async Node/Flow。
+> Prompt for AI: Carefully decide whether to use Batch/Async Node/Flow.
 
-1. **[Node 1 Name]**
-   - *Purpose*: [Purpose of the node - high level]
-   - *Type*: Regular / Batch / Async
-   - *Steps*:
-     - *`prep`*: [What the prep stage does - what it reads from shared]
-     - *`exec`*: [What the exec stage does - what the core logic is]
-     - *`post`*: [What the post stage does - what it writes to shared, what action it returns]
+1.  **[Node 1 Name]**
 
-2. **[Node 2 Name]**
-   - *Purpose*: [Purpose of the node]
-   - *Type*: Regular / Batch / Async
-   - *Steps*:
-     - *`prep`*: [Prep stage]
-     - *`exec`*: [Exec stage]
-     - *`post`*: [Post stage]
+      - *Purpose*: [Purpose of the node - High Level]
+      - *Type*: Regular / Batch / Async
+      - *Steps*:
+          - *`prep`*: [What to do in preparation - What to read from shared]
+          - *`exec`*: [What to do in execution - What is the core logic]
+          - *`post`*: [What to do in post-processing - What to write to shared, what action to return]
+
+2.  **[Node 2 Name]**
+
+      - *Purpose*: [Purpose of the node]
+      - *Type*: Regular / Batch / Async
+      - *Steps*:
+          - *`prep`*: [Preparation phase]
+          - *`exec`*: [Execution phase]
+          - *`post`*: [Post-processing phase]
 
 ...
-\```
+\`\`\`
 
 # Important Constraints
 
-1. **Prohibit Business Details**:
-   - ❌ Wrong Example: "Call ffmpeg to parse video file, extract H.264 encoded video stream"
-   - ✅ Correct Example: "Parse video file, extract metadata and content"
-   
-   - ❌ Wrong Example: "Use regex `\\b[A-Z][a-z]+\\b` to validate text"
-   - ✅ Correct Example: "Validate text format"
+1.  **No Implementation Details**:
 
-2. **High-level Node Design**:
-   - Node names should reflect "responsibility", not "technology"
-   - ❌ Wrong: `FFmpegProcessingNode`
-   - ✅ Correct: `VideoParseNode`
+      - ❌ Wrong Example: "Call ffmpeg to parse the video file and extract the H.264 encoded video stream"
 
-3. **File Handling Principles**:
-   - The API **only receives S3 URL strings**, does not handle file uploads/downloads
-   - ❌ Wrong: Design "File Upload Node", "File Validation Node", "Temp File Cleanup Node"
-   - ✅ Correct: Directly use prefabs to process S3 URLs
-   - File-related fields in Shared Store should be S3 URL strings (e.g., `video_s3_url`)
-   - Do not list file handling related utility functions in Utility Functions
+      - ✅ Correct Example: "Parse video file to extract metadata and content"
 
-4. **Clear Flow Description**:
-   - Explain dependencies between nodes
-   - Explain branching and looping logic
-   - Use mermaid diagrams to accurately express the flow
+      - ❌ Wrong Example: "Use regex `\\b[A-Z][a-z]+\\b` to validate text"
 
-5. **Completeness**:
-   - Must include all sections
-   - Every node must be reflected in the Flow Diagram
-   - Shared Store must cover inputs and outputs of all nodes
+      - ✅ Correct Example: "Validate text format"
 
-# Reference Example
+2.  **High-Level Node Design**:
 
-Here is an example of an excellent design document:
+      - Node names should reflect "responsibility", not "technology".
+      - ❌ Wrong: `FFmpegProcessingNode`
+      - ✅ Correct: `VideoParseNode`
 
-[The Text-to-SQL example from the Chinese version]
+3.  **File Processing Principles**:
 
----
+      - APIs **only accept S 3 URL strings**; they do not handle file upload/download.
+      - ❌ Wrong: Designing "File Upload Node", "File Validation Node", "Temp File Cleanup Node".
+      - ✅ Correct: Use prefabs directly to handle S 3 URLs.
+      - File-related fields in Shared Store should be S 3 URL strings (e.g., `video_s3_url`).
+      - Do not list file processing-related utility functions in Utility Functions.
+
+4.  **Clear Flow Description**:
+
+      - Explain dependencies between nodes.
+      - Explain branching and loop logic.
+      - Use mermaid diagrams to accurately express the flow.
+
+5.  **Completeness**:
+
+      - Must include all sections.
+      - Every node must be reflected in the Flow Diagram.
+      - Shared Store must cover inputs and outputs of all nodes.
 
 # Start Generating
 
-Now, based on the above input information and format requirements, generate a complete system design document.
+Now, please generate the complete system design document based on the input information and format requirements above.
 
 **Important Reminder**:
-- Your output should **only contain** the complete Markdown document content
-- **Do NOT wrap output in ```markdown ... ``` code blocks**, output Markdown directly
-- ⚠️ **Do NOT include any lines starting with `>` (Notes for AI) in the final document**
-- These notes are only to help you understand how to generate content, they should not appear in the final document
-- Do not add any extra conversation or explanations
-- Strictly follow the above format and constraints
+
+  - Your output should **only contain** the complete Markdown document content.
+  - **Do not wrap it in a ` markdown ...  ` code block**; output the Markdown content directly.
+  - ⚠️ **Do not include any "Prompt for AI" lines starting with `>` in the final document.**
+  - These prompts are only to help you understand how to generate content and should not appear in the final document.
+  - Do not add any extra conversation or explanation.
+  - Strictly follow the format and constraints above.
 
 **Wrong Example**:
-```
+
+````
 \```markdown
 # Design Doc: ...
 \```
-```
+````
 
 **Correct Example**:
+
 ```
 # Design Doc: ...
 ```
+
 """
     
     @staticmethod

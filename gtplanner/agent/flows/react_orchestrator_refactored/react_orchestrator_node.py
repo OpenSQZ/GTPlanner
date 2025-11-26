@@ -415,6 +415,19 @@ class ReActOrchestratorNode(AsyncNode):
                 language=language
             )
 
+            # 动态添加可查看文档列表到系统提示词
+            generated_documents = shared.get("generated_documents", [])
+            if generated_documents:
+                available_docs = [doc.get("filename") for doc in generated_documents if doc.get("filename")]
+                if available_docs:
+                    docs_list = "\n".join([f"- {filename}" for filename in available_docs])
+                    if language == "zh":
+                        context_info = f"\n\n# 当前会话上下文\n\n## 已生成的文档\n当前会话中已生成以下文档，可使用 `view_document` 工具查看：\n{docs_list}\n"
+                    else:
+                        context_info = f"\n\n# Current Session Context\n\n## Generated Documents\nThe following documents have been generated in this session and can be viewed using the `view_document` tool:\n{docs_list}\n"
+                    system_prompt += context_info
+
+
             # 使用流式API（启用工具调用标签过滤）
             stream = self.openai_client.chat_completion_stream(
                 system_prompt=system_prompt,
@@ -468,6 +481,16 @@ class ReActOrchestratorNode(AsyncNode):
             # 构建工具调用列表
             assistant_tool_calls = [tool_call for tool_call in current_tool_calls.values() if tool_call["id"]]
 
+            # 🐛 调试日志：检测并发工具调用
+            if len(assistant_tool_calls) > 1:
+                tool_names = [tc["function"]["name"] for tc in assistant_tool_calls]
+                print(f"⚠️ LLM返回了 {len(assistant_tool_calls)} 个工具调用: {tool_names}")
+                print(f"📋 详细信息:")
+                for i, tc in enumerate(assistant_tool_calls):
+                    print(f"  [{i}] {tc['function']['name']} - call_id: {tc['id']}")
+            elif len(assistant_tool_calls) == 1:
+                print(f"✅ LLM返回了单个工具调用: {assistant_tool_calls[0]['function']['name']}")
+
             # 触发LLM结束回调（使用已过滤的内容，并传递 tool_calls 信息）
             if StreamCallbackType.ON_LLM_END in streaming_callbacks:
                 await streaming_callbacks[StreamCallbackType.ON_LLM_END](
@@ -493,6 +516,36 @@ class ReActOrchestratorNode(AsyncNode):
         streaming_callbacks: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         """执行工具调用并处理回调"""
+        # 🐛 调试日志：记录接收到的工具调用
+        print(f"📞 _execute_tools_with_callbacks 接收到 {len(tool_calls)} 个工具调用")
+        tool_names = [tc["function"]["name"] for tc in tool_calls]
+        call_ids = [tc["id"] for tc in tool_calls]
+        print(f"   工具列表: {tool_names}")
+        print(f"   Call IDs: {call_ids}")
+
+        # 检测重复的工具调用
+        if len(tool_calls) != len(set(call_ids)):
+            print(f"⚠️ 警告：检测到重复的 call_id！")
+            for i, cid in enumerate(call_ids):
+                if call_ids.count(cid) > 1:
+                    print(f"   重复的 call_id: {cid} (出现 {call_ids.count(cid)} 次)")
+
+        # 检测相同工具名称的多次调用
+        from collections import Counter
+        tool_counter = Counter(tool_names)
+        for tool_name, count in tool_counter.items():
+            if count > 1:
+                print(f"⚠️ 警告：工具 '{tool_name}' 被调用了 {count} 次")
+                # 找出所有这个工具的调用详情
+                for i, tc in enumerate(tool_calls):
+                    if tc["function"]["name"] == tool_name:
+                        import json
+                        try:
+                            args = json.loads(tc["function"]["arguments"])
+                        except:
+                            args = tc["function"]["arguments"]
+                        print(f"   [{i}] call_id: {tc['id']}, args: {args}")
+
         # 触发工具调用开始回调
         for tool_call in tool_calls:
             if StreamCallbackType.ON_TOOL_START in streaming_callbacks:

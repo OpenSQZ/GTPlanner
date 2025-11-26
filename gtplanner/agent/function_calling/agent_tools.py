@@ -139,7 +139,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                     },
                     "recommended_prefabs": {
                         "type": "array",
-                        "description": "推荐预制件列表（可选）。如果之前调用了 prefab_recommend 或 search_prefabs，请从结果中提取你觉得需要的预制件的关键信息（id, version, name, description）。**重要**：如果调用了 list_prefab_functions，请从查询结果中筛选出你认为与用户需求相关的函数（不是全部函数），并包含到 functions 字段中。",
+                        "description": "推荐预制件列表。如果之前调用了 prefab_recommend 或 search_prefabs，请从结果中提取你觉得需要的预制件的关键信息（id, version, name, description）。**重要**：如果调用了 list_prefab_functions，请从查询结果中筛选出你认为与用户需求相关的函数（不是全部函数），并包含到 functions 字段中。",
                         "items": {
                             "type": "object",
                             "properties": {
@@ -161,7 +161,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                                 },
                                 "functions": {
                                     "type": "array",
-                                    "description": "预制件提供的相关函数列表（可选）。**仅包含**你认为与用户需求相关的函数，不是预制件的全部函数。",
+                                    "description": "预制件提供的相关函数列表（必须），需要先查询预制件都有哪些方法。**仅包含**你认为与用户需求相关的函数，不是预制件的全部函数。",
                                     "items": {
                                         "type": "object",
                                         "properties": {
@@ -177,7 +177,7 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
                                     }
                                 }
                             },
-                            "required": ["id", "version", "name", "description"]
+                            "required": ["id", "version", "name", "description","functions"]
                         }
                     },
                     "research_findings": {
@@ -473,13 +473,12 @@ def get_agent_function_definitions() -> List[Dict[str, Any]]:
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "document_type": {
+                    "filename": {
                         "type": "string",
-                        "enum": ["design", "database_design"],
-                        "description": "要查看的文档类型"
+                        "description": "要查看的文档文件名（如：design.md, prefabs_info.md, database_design.md）"
                     }
                 },
-                "required": ["document_type"]
+                "required": ["filename"]
             }
         }
     }
@@ -981,46 +980,46 @@ async def _execute_edit_document(arguments: Dict[str, Any], shared: Dict[str, An
 async def _execute_view_document(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
     """
     查看已生成的文档内容
-    
+
     参数：
-    - document_type: 必需，文档类型（"design" 或 "database_design"）
+    - filename: 必需，文档文件名（如：design.md, prefabs_info.md, database_design.md）
     """
-    document_type = arguments.get("document_type")
-    
-    if not document_type:
+    filename = arguments.get("filename")
+
+    if not filename:
         return {
             "success": False,
-            "error": "document_type is required"
+            "error": "filename is required"
         }
-    
+
     try:
         # 确保 shared 字典存在
         if shared is None:
             shared = {}
-        
+
         # 获取已生成的文档列表
         generated_documents = shared.get("generated_documents", [])
-        
+
         # 调试日志：打印当前的文档列表
-        print(f"📖 查看文档: {document_type}")
+        print(f"📖 查看文档: {filename}")
         print(f"📋 当前 generated_documents: {len(generated_documents)} 个文档")
         if generated_documents:
-            doc_types = [doc.get("type") for doc in generated_documents]
-            print(f"📄 可用文档类型: {doc_types}")
+            doc_filenames = [doc.get("filename") for doc in generated_documents]
+            print(f"📄 可用文档文件名: {doc_filenames}")
         else:
             print("⚠️  没有找到任何已生成的文档")
-        
+
         # 准备 Node 所需的 shared 数据
         node_shared = {
-            "document_type": document_type,
+            "filename": filename,
             "generated_documents": generated_documents,
             "streaming_session": shared.get("streaming_session") if shared else None
         }
-        
+
         # 使用 NodeViewDocument 执行
         from gtplanner.agent.nodes import NodeViewDocument
         node = NodeViewDocument()
-        
+
         # 执行节点
         result = await node.run_async(node_shared)
         
@@ -1370,54 +1369,24 @@ async def _execute_list_prefab_functions(arguments: Dict[str, Any], shared: Dict
     参数：
     - prefab_id: 必需，预制件 ID
     - version: 可选，版本号（不指定则返回最新版本）
+
+    注意：此函数不应该发送 emit_tool_start 和 emit_tool_end 事件，
+    因为 ToolExecutor 已经统一处理了这些事件。
     """
     import httpx
-    import uuid
     import time
     from gtplanner.agent.streaming import (
-        emit_tool_start,
         emit_tool_progress,
-        emit_tool_end,
         emit_processing_status
     )
 
     prefab_id = arguments.get("prefab_id")
     version = arguments.get("version")
 
-    # 生成工具调用 ID
-    call_id = str(uuid.uuid4())
-
-    # 保存 call_id 到 shared
-    if shared:
-        if "tool_call_ids" not in shared:
-            shared["tool_call_ids"] = {}
-        shared["tool_call_ids"]["list_prefab_functions"] = call_id
-
-    # 🆕 1️⃣ 发送工具开始事件
-    if shared:
-        await emit_tool_start(
-            shared,
-            tool_name="list_prefab_functions",
-            message=f"查询预制件函数列表: {prefab_id}" + (f"@{version}" if version else ""),
-            arguments={
-                "prefab_id": prefab_id,
-                "version": version
-            },
-            call_id=call_id
-        )
-
     # 参数验证
     if not prefab_id:
         if shared:
             await emit_processing_status(shared, "❌ 参数错误：缺少 prefab_id")
-            await emit_tool_end(
-                shared,
-                tool_name="list_prefab_functions",
-                success=False,
-                message="参数验证失败",
-                error_message="prefab_id is required",
-                call_id=call_id
-            )
         return {
             "success": False,
             "error": "prefab_id is required",
@@ -1427,7 +1396,7 @@ async def _execute_list_prefab_functions(arguments: Dict[str, Any], shared: Dict
     start_time = time.time()
 
     try:
-        # 🆕 2️⃣ 发送工具进度事件
+        # 🆕 发送工具进度事件（不发送 start 事件，ToolExecutor 已经发送了）
         if shared:
             await emit_tool_progress(
                 shared,
@@ -1440,18 +1409,8 @@ async def _execute_list_prefab_functions(arguments: Dict[str, Any], shared: Dict
         gateway_url = get_prefab_gateway_url()
 
         if not gateway_url:
-            execution_time = time.time() - start_time
             if shared:
                 await emit_processing_status(shared, "❌ Prefab gateway URL 未配置")
-                await emit_tool_end(
-                    shared,
-                    tool_name="list_prefab_functions",
-                    success=False,
-                    message="配置错误",
-                    error_message="Prefab gateway URL not configured",
-                    execution_time=execution_time,
-                    call_id=call_id
-                )
             return {
                 "success": False,
                 "error": "Prefab gateway URL not configured",
@@ -1472,22 +1431,8 @@ async def _execute_list_prefab_functions(arguments: Dict[str, Any], shared: Dict
 
         execution_time = time.time() - start_time
 
-        # 🆕 3️⃣ 发送工具成功事件
+        # 发送处理状态信息（不发送 end 事件，ToolExecutor 会发送）
         if shared:
-            await emit_tool_end(
-                shared,
-                tool_name="list_prefab_functions",
-                success=True,
-                message=f"查询成功: {prefab_id}",
-                execution_time=execution_time,
-                result={
-                    "prefab_id": prefab_id,
-                    "version": version or "latest",
-                    "total_functions": len(functions)
-                },
-                call_id=call_id
-            )
-
             await emit_processing_status(
                 shared,
                 f"✅ 查询成功！\n"
@@ -1509,7 +1454,6 @@ async def _execute_list_prefab_functions(arguments: Dict[str, Any], shared: Dict
         }
 
     except httpx.HTTPStatusError as e:
-        execution_time = time.time() - start_time
         if e.response.status_code == 404:
             error_msg = f"Prefab '{prefab_id}' not found" + (f" (version: {version})" if version else "")
         else:
@@ -1517,15 +1461,6 @@ async def _execute_list_prefab_functions(arguments: Dict[str, Any], shared: Dict
 
         if shared:
             await emit_processing_status(shared, f"❌ 查询失败: {error_msg}")
-            await emit_tool_end(
-                shared,
-                tool_name="list_prefab_functions",
-                success=False,
-                message="查询失败",
-                error_message=error_msg,
-                execution_time=execution_time,
-                call_id=call_id
-            )
 
         return {
             "success": False,
@@ -1533,20 +1468,10 @@ async def _execute_list_prefab_functions(arguments: Dict[str, Any], shared: Dict
             "tool_name": "list_prefab_functions"
         }
     except Exception as e:
-        execution_time = time.time() - start_time
         error_msg = f"Failed to fetch prefab functions: {str(e)}"
 
         if shared:
             await emit_processing_status(shared, f"❌ 查询异常: {error_msg}")
-            await emit_tool_end(
-                shared,
-                tool_name="list_prefab_functions",
-                success=False,
-                message="查询异常",
-                error_message=error_msg,
-                execution_time=execution_time,
-                call_id=call_id
-            )
 
         return {
             "success": False,
@@ -1563,14 +1488,14 @@ async def _execute_get_function_details(arguments: Dict[str, Any], shared: Dict[
     - prefab_id: 必需，预制件 ID
     - function_name: 必需，函数名称
     - version: 可选，版本号（不指定则返回最新版本）
+
+    注意：此函数不应该发送 emit_tool_start 和 emit_tool_end 事件，
+    因为 ToolExecutor 已经统一处理了这些事件。
     """
     import httpx
-    import uuid
     import time
     from gtplanner.agent.streaming import (
-        emit_tool_start,
         emit_tool_progress,
-        emit_tool_end,
         emit_processing_status
     )
 
@@ -1578,41 +1503,10 @@ async def _execute_get_function_details(arguments: Dict[str, Any], shared: Dict[
     function_name = arguments.get("function_name")
     version = arguments.get("version")
 
-    # 生成工具调用 ID
-    call_id = str(uuid.uuid4())
-
-    # 保存 call_id 到 shared
-    if shared:
-        if "tool_call_ids" not in shared:
-            shared["tool_call_ids"] = {}
-        shared["tool_call_ids"]["get_function_details"] = call_id
-
-    # 🆕 1️⃣ 发送工具开始事件
-    if shared:
-        await emit_tool_start(
-            shared,
-            tool_name="get_function_details",
-            message=f"查询函数详情: {prefab_id}.{function_name}" + (f"@{version}" if version else ""),
-            arguments={
-                "prefab_id": prefab_id,
-                "function_name": function_name,
-                "version": version
-            },
-            call_id=call_id
-        )
-
     # 参数验证
     if not prefab_id:
         if shared:
             await emit_processing_status(shared, "❌ 参数错误：缺少 prefab_id")
-            await emit_tool_end(
-                shared,
-                tool_name="get_function_details",
-                success=False,
-                message="参数验证失败",
-                error_message="prefab_id is required",
-                call_id=call_id
-            )
         return {
             "success": False,
             "error": "prefab_id is required",
@@ -1622,14 +1516,6 @@ async def _execute_get_function_details(arguments: Dict[str, Any], shared: Dict[
     if not function_name:
         if shared:
             await emit_processing_status(shared, "❌ 参数错误：缺少 function_name")
-            await emit_tool_end(
-                shared,
-                tool_name="get_function_details",
-                success=False,
-                message="参数验证失败",
-                error_message="function_name is required",
-                call_id=call_id
-            )
         return {
             "success": False,
             "error": "function_name is required",
@@ -1639,7 +1525,7 @@ async def _execute_get_function_details(arguments: Dict[str, Any], shared: Dict[
     start_time = time.time()
 
     try:
-        # 🆕 2️⃣ 发送工具进度事件
+        # 发送工具进度事件（不发送 start 事件，ToolExecutor 已经发送了）
         if shared:
             await emit_tool_progress(
                 shared,
@@ -1652,18 +1538,8 @@ async def _execute_get_function_details(arguments: Dict[str, Any], shared: Dict[
         gateway_url = get_prefab_gateway_url()
 
         if not gateway_url:
-            execution_time = time.time() - start_time
             if shared:
                 await emit_processing_status(shared, "❌ Prefab gateway URL 未配置")
-                await emit_tool_end(
-                    shared,
-                    tool_name="get_function_details",
-                    success=False,
-                    message="配置错误",
-                    error_message="Prefab gateway URL not configured",
-                    execution_time=execution_time,
-                    call_id=call_id
-                )
             return {
                 "success": False,
                 "error": "Prefab gateway URL not configured",
@@ -1684,22 +1560,8 @@ async def _execute_get_function_details(arguments: Dict[str, Any], shared: Dict[
 
         execution_time = time.time() - start_time
 
-        # 🆕 3️⃣ 发送工具成功事件
+        # 发送处理状态信息（不发送 end 事件，ToolExecutor 会发送）
         if shared:
-            await emit_tool_end(
-                shared,
-                tool_name="get_function_details",
-                success=True,
-                message=f"查询成功: {prefab_id}.{function_name}",
-                execution_time=execution_time,
-                result={
-                    "prefab_id": prefab_id,
-                    "function_name": function_name,
-                    "version": version or "latest"
-                },
-                call_id=call_id
-            )
-
             await emit_processing_status(
                 shared,
                 f"✅ 查询成功！\n"
@@ -1720,7 +1582,6 @@ async def _execute_get_function_details(arguments: Dict[str, Any], shared: Dict[
         }
 
     except httpx.HTTPStatusError as e:
-        execution_time = time.time() - start_time
         if e.response.status_code == 404:
             error_detail = e.response.json().get("detail", "Not found")
         else:
@@ -1728,15 +1589,6 @@ async def _execute_get_function_details(arguments: Dict[str, Any], shared: Dict[
 
         if shared:
             await emit_processing_status(shared, f"❌ 查询失败: {error_detail}")
-            await emit_tool_end(
-                shared,
-                tool_name="get_function_details",
-                success=False,
-                message="查询失败",
-                error_message=error_detail,
-                execution_time=execution_time,
-                call_id=call_id
-            )
 
         return {
             "success": False,
@@ -1744,20 +1596,10 @@ async def _execute_get_function_details(arguments: Dict[str, Any], shared: Dict[
             "tool_name": "get_function_details"
         }
     except Exception as e:
-        execution_time = time.time() - start_time
         error_msg = f"Failed to fetch function details: {str(e)}"
 
         if shared:
             await emit_processing_status(shared, f"❌ 查询异常: {error_msg}")
-            await emit_tool_end(
-                shared,
-                tool_name="get_function_details",
-                success=False,
-                message="查询异常",
-                error_message=error_msg,
-                execution_time=execution_time,
-                call_id=call_id
-            )
 
         return {
             "success": False,
