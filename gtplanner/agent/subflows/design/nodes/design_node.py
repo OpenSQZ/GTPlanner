@@ -24,12 +24,57 @@ from gtplanner.agent.prompts.text_manager import get_text_manager
 
 class DesignNode(AsyncNode):
     """设计文档生成节点 - 单节点架构，生成完整的设计文档"""
-    
+
     def __init__(self):
         super().__init__()
         self.name = "DesignNode"
         self.description = "生成高层次的系统设计文档（design.md）"
-    
+
+    def _build_prefabs_info(self, recommended_prefabs: list, language: str = None) -> str:
+        """
+        构建预制件信息文本（包含函数列表）
+
+        Args:
+            recommended_prefabs: 推荐预制件列表
+            language: 语言设置
+
+        Returns:
+            格式化的预制件信息文本
+        """
+        if not recommended_prefabs:
+            return ""
+
+        prefabs_lines = []
+        for prefab in recommended_prefabs:
+            # 基本信息
+            prefab_name = prefab.get("name", prefab.get("id", "Unknown"))
+            prefab_type = prefab.get("type", "")
+            prefab_desc = prefab.get("summary", prefab.get("description", ""))
+
+            # 格式化基本信息
+            if prefab_type:
+                prefabs_lines.append(f"- {prefab_name} ({prefab_type}): {prefab_desc}")
+            else:
+                prefabs_lines.append(f"- {prefab_name}: {prefab_desc}")
+
+            # 🔑 添加函数列表
+            functions = prefab.get("functions", [])
+            if functions:
+                # 添加函数列表标题
+                func_title = "  提供的函数:" if language == "zh" else "  Provided Functions:"
+                prefabs_lines.append(func_title)
+
+                # 添加每个函数
+                for func in functions:
+                    func_name = func.get("name", "unknown")
+                    func_desc = func.get("description", "")
+                    if func_desc:
+                        prefabs_lines.append(f"    - {func_name}: {func_desc}")
+                    else:
+                        prefabs_lines.append(f"    - {func_name}")
+
+        return "\n".join(prefabs_lines)
+
     async def prep_async(self, shared: Dict[str, Any]) -> Dict[str, Any]:
         """准备阶段：收集所有输入数据"""
         try:
@@ -52,15 +97,12 @@ class DesignNode(AsyncNode):
             
             # 获取语言设置
             language = shared.get("language")
-            
-            # 使用文本管理器格式化可选信息
+
+            # 使用本地方法构建预制件信息（包含函数列表）
+            prefabs_info = self._build_prefabs_info(recommended_prefabs, language) if recommended_prefabs else ""
+
+            # 使用文本管理器格式化研究结果
             text_manager = get_text_manager()
-            
-            prefabs_info = text_manager.build_tools_content(
-                recommended_prefabs=recommended_prefabs,
-                language=language
-            ) if recommended_prefabs else ""
-            
             research_summary = text_manager.build_research_content(
                 research_findings=research_findings,
                 language=language

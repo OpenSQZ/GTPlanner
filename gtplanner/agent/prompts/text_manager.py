@@ -79,45 +79,9 @@ class TextManager:
             # 添加改进指令
             instruction = self.get_text(CommonPromptType.IMPROVEMENT_INSTRUCTION, language)
             req_parts.append(instruction)
-        
-        return "\n".join(req_parts)
-    
-    def build_tools_content(self,
-                          recommended_prefabs: List[dict] = None,
-                          language: Optional[Union[SupportedLanguage, str]] = None) -> str:
-        """
-        构建预制件清单内容
-        
-        Args:
-            recommended_prefabs: 推荐预制件列表
-            language: 目标语言
-            
-        Returns:
-            构建好的预制件清单字符串
-        """
-        if not recommended_prefabs:
-            return self.get_text(CommonPromptType.NO_TOOLS_PLACEHOLDER, language)
-        
-        tools_list = []
-        for tool in recommended_prefabs:
-            # 使用多语言文本片段获取未知工具名称
-            unknown_tool_text = self.get_text(CommonPromptType.UNKNOWN_TOOL, language)
-            tool_name = tool.get("name", tool.get("id", unknown_tool_text))
-            tool_type = tool.get("type", "")
-            tool_summary = tool.get("summary", tool.get("description", ""))
 
-            # 使用多语言格式模板
-            tool_line = self.get_text(
-                CommonPromptType.TOOL_FORMAT,
-                language,
-                tool_name=tool_name,
-                tool_type=tool_type,
-                tool_summary=tool_summary
-            )
-            tools_list.append(tool_line)
-        
-        return "\n".join(tools_list)
-    
+        return "\n".join(req_parts)
+
     def build_research_content(self,
                              research_findings: dict = None,
                              language: Optional[Union[SupportedLanguage, str]] = None) -> str:
