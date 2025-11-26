@@ -345,10 +345,8 @@ class NodeCallPrefabFunction(AsyncNode):
   
 
             print(f"🔍 [DEBUG] 使用 SDK 调用预制件")
-            print(f"🔍 [DEBUG] Prefab: {prefab_id}@{version}")
-            print(f"🔍 [DEBUG] Function: {function_name}")
-            print(f"🔍 [DEBUG] Parameters: {parameters}")
-            print(f"🔍 [DEBUG] Files: {files}")
+            # 为了安全，不再输出Prefab ID, version, function_name或参数等详情，避免意外泄漏敏感信息
+            # 如需调试详细信息，请仅在开发环境中并确保不会泄漏敏感内容时开启。
 
             # 创建 SDK 客户端
             client = GatewayClient.from_api_key(
