@@ -40,6 +40,16 @@ class ToolExecutor:
         if not tool_calls:
             return []
 
+        # 🐛 调试日志：记录接收到的工具调用
+        print(f"🔧 ToolExecutor 接收到 {len(tool_calls)} 个工具调用")
+        for i, tc in enumerate(tool_calls):
+            print(f"  [{i}] {tc['function']['name']} - call_id: {tc['id']}")
+
+        # TODO: 考虑是否需要强制顺序执行以避免并发调用问题
+        # 当前代码使用 asyncio.gather 并行执行所有工具，但某些工具之间存在依赖关系
+        # 如果 LLM 违反了提示词约束并发调用多个工具，可能导致数据不一致
+        # 解决方案：检测到多个工具调用时，改为顺序执行或报错
+
         # 创建异步任务
         tasks = []
         for tool_call in tool_calls:
