@@ -123,8 +123,8 @@
 
 - [Prefab 贡献指南](../../prefabs/releases/CONTRIBUTING_zh.md)
 - [Prefab 模板](https://github.com/The-Agent-Builder/Prefab-Template)
-- [GitHub Issues](https://github.com/OpenSQZ/GTPlanner/issues)
-- [GitHub Discussions](https://github.com/OpenSQZ/GTPlanner/discussions)
+- [GitHub Issues](https://github.com/wang316902972/GTPlanner/issues)
+- [GitHub Discussions](https://github.com/wang316902972/GTPlanner/discussions)
 
 ---
 

@@ -475,6 +475,6 @@ chmod +x my_gtplanner.sh
 ---
 
 <p align="center">
-  需要帮助？<a href="https://github.com/OpenSQZ/GTPlanner/issues">提交 Issue</a>
+  需要帮助？<a href="https://github.com/wang316902972/GTPlanner/issues">提交 Issue</a>
 </p>
 

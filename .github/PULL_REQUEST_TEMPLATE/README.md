@@ -55,7 +55,7 @@ Use this template for general code changes and improvements.
 ### Method 1: URL Parameter
 Add `?template=template_name.md` to your PR creation URL:
 ```
-https://github.com/your-org/GTPlanner/compare?template=api_tool.md
+https://github.com/wang316902972/GTPlanner/compare?template=api_tool.md
 ```
 
 ### Method 2: GitHub Interface

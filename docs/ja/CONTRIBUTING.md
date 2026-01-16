@@ -13,5 +13,5 @@
 ## クイックリンク
 
 - **Prefab貢献ガイド**: [prefabs/releases/CONTRIBUTING_zh.md](../../prefabs/releases/CONTRIBUTING_zh.md)
-- **GitHub Issues**: [問題を報告](https://github.com/OpenSQZ/GTPlanner/issues)
-- **Discussions**: [ディスカッションに参加](https://github.com/OpenSQZ/GTPlanner/discussions)
+- **GitHub Issues**: [問題を報告](https://github.com/wang316902972/GTPlanner/issues)
+- **Discussions**: [ディスカッションに参加](https://github.com/wang316902972/GTPlanner/discussions)

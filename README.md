@@ -114,7 +114,7 @@ Detailed configuration guide → [MCP Documentation](./mcp/README.md)
 #### Installation
 
 ```bash
-git clone https://github.com/OpenSQZ/GTPlanner.git
+git clone https://github.com/wang316902972/GTPlanner.git
 cd GTPlanner
 
 # Install dependencies with uv

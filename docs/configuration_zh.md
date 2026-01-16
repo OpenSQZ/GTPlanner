@@ -309,6 +309,6 @@ uv run python fastapi_main.py
 ---
 
 <p align="center">
-  有问题？查看 <a href="https://github.com/OpenSQZ/GTPlanner/issues">GitHub Issues</a> 或提交新问题
+  有问题？查看 <a href="https://github.com/wang316902972/GTPlanner/issues">GitHub Issues</a> 或提交新问题
 </p>
 

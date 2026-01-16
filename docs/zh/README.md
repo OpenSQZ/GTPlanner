@@ -114,7 +114,7 @@ GTPlanner 支持 Model Context Protocol (MCP)，可直接在 AI 编程工具中�
 #### 安装
 
 ```bash
-git clone https://github.com/OpenSQZ/GTPlanner.git
+git clone https://github.com/wang316902972/GTPlanner.git
 cd GTPlanner
 
 # 使用 uv 安装依赖

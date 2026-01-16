@@ -12,7 +12,7 @@ body:
         
         Please note: This issue is for tracking purposes. The actual submission should be done via Pull Request to `prefabs/releases/community-prefabs.json`.
         
-        [📚 Read the Contribution Guide](https://github.com/OpenSQZ/GTPlanner/blob/main/prefabs/releases/CONTRIBUTING.md)
+        [📚 Read the Contribution Guide](https://github.com/wang316902972/GTPlanner/blob/main/prefabs/releases/CONTRIBUTING.md)
 
   - type: input
     id: prefab-id
@@ -133,5 +133,5 @@ body:
         4. Address any feedback from maintainers
         5. Your prefab will be deployed after PR approval!
         
-        [📖 Detailed Guide](https://github.com/OpenSQZ/GTPlanner/blob/main/prefabs/releases/CONTRIBUTING.md)
+        [📖 Detailed Guide](https://github.com/wang316902972/GTPlanner/blob/main/prefabs/releases/CONTRIBUTING.md)
 

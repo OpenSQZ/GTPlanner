@@ -413,8 +413,8 @@ flowchart LR
 
 ## 获取帮助
 
-- **报告问题**：[GitHub Issues](https://github.com/OpenSQZ/GTPlanner/issues)
-- **讨论交流**：[GitHub Discussions](https://github.com/OpenSQZ/GTPlanner/discussions)
+- **报告问题**：[GitHub Issues](https://github.com/wang316902972/GTPlanner/issues)
+- **讨论交流**：[GitHub Discussions](https://github.com/wang316902972/GTPlanner/discussions)
 
 ## 许可证
 
