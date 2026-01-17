@@ -2,9 +2,7 @@
 """
 预制件索引构建脚本（用于 CI/CD）
 
-独立脚本，不依赖 gtplanner 或 pocketflow 包。
-当 community-prefabs.json 更新时，通过 GitHub Actions 调用此脚本
-将预制件数据推送到向量服务建立索引。
+适配 FAISS 向量服务的 API 接口。
 
 用法:
     python build_index.py --vector-service-url <URL> [--input <JSON_PATH>]
@@ -24,9 +22,8 @@ from typing import List, Dict, Any
 
 
 # 默认配置
-DEFAULT_INDEX_NAME = "document_gtplanner_prefabs"
-DEFAULT_VECTOR_FIELD = "combined_text"
-DEFAULT_VECTOR_DIMENSION = 1024
+# 注意：预制件使用 gtplanner_prefabs，设计文档使用 gtplanner_designs
+DEFAULT_BUSINESS_TYPE = "gtplanner_prefabs"
 DEFAULT_TIMEOUT = 30
 
 
@@ -39,125 +36,76 @@ def check_vector_service_available(vector_service_url: str) -> bool:
         return False
 
 
-def convert_prefab_to_document(prefab: Dict) -> Dict[str, Any]:
+def convert_prefabs_to_documents(prefabs: List[Dict]) -> List[str]:
     """
-    将预制件转换为向量服务的文档格式
+    将预制件列表转换为向量服务的文档内容格式
 
     Args:
-        prefab: 预制件对象（从 community-prefabs.json）
+        prefabs: 预制件对象列表
 
     Returns:
-        文档对象
+        文档内容字符串列表（每个预制件一个文档）
     """
-    # 构建标签字符串
-    tags = prefab.get("tags", [])
-    tags_str = ", ".join(tags) if tags else ""
+    documents = []
+    for prefab in prefabs:
+        # 构建标签字符串
+        tags = prefab.get("tags", [])
+        tags_str = ", ".join(tags) if tags else ""
 
-    # 构建组合文本（用于 embedding）
-    combined_text = f"{prefab['name']} {prefab['description']}"
-    if tags_str:
-        combined_text += f" {tags_str}"
+        # 构建预制件信息
+        prefab_info = {
+            "id": prefab["id"],
+            "name": prefab["name"],
+            "description": prefab["description"],
+            "tags": tags_str,
+            "version": prefab["version"],
+            "author": prefab["author"],
+            "repo_url": prefab["repo_url"]
+        }
 
-    # 构建 artifact URL
-    repo_url = prefab["repo_url"].rstrip('/')
-    version = prefab["version"]
-    prefab_id = prefab["id"]
-    artifact_url = f"{repo_url}/releases/download/v{version}/{prefab_id}-{version}.whl"
+        # 转换为JSON字符串（每个预制件独立）
+        documents.append(json.dumps(prefab_info, ensure_ascii=False))
 
-    # 返回文档对象
-    document = {
-        "id": prefab["id"],
-        "type": "PREFAB",
-        "summary": prefab["name"],
-        "description": prefab["description"],
-        "tags": tags_str,
-        "combined_text": combined_text,
-        # 元数据
-        "version": prefab["version"],
-        "author": prefab["author"],
-        "repo_url": prefab["repo_url"],
-        "artifact_url": artifact_url,
-        "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
-    }
-
-    return document
+    return documents
 
 
-def call_vector_service_index(
+def call_vector_service_add(
     vector_service_url: str,
-    index_name: str,
-    documents: List[Dict],
-    vector_field: str,
-    force_reindex: bool,
+    business_type: str,
+    documents: List[str],
     timeout: int
 ) -> Dict[str, Any]:
     """
-    调用向量服务建立索引
-
-    步骤：
-    1. 创建索引（如果需要）
-    2. 添加文档
+    调用向量服务的 /add 接口添加文档
 
     Args:
         vector_service_url: 向量服务地址
-        index_name: 索引名称
-        documents: 文档列表
-        vector_field: 向量字段名
-        force_reindex: 是否强制重建
+        business_type: 业务类型标识符
+        documents: 文档内容列表
         timeout: 请求超时时间
 
     Returns:
-        索引结果
+        添加结果
     """
-    # 1. 如果强制重建，先清空索引
-    if force_reindex:
-        try:
-            requests.delete(
-                f"{vector_service_url}/index/{index_name}/clear",
-                timeout=timeout
-            )
-            print(f"🗑️  已清空旧索引")
-        except Exception as e:
-            print(f"⚠️  清空索引失败（可能索引不存在）: {e}")
+    # 将所有文档合并为一个字符串，使用预制件专用分隔符
+    content = "\n\n>>>PREFAB<<<\n\n".join(documents)
 
-    # 2. 创建/确保索引存在
-    create_index_request = {
-        "vector_field": vector_field,
-        "vector_dimension": DEFAULT_VECTOR_DIMENSION,
-        "description": f"预制件索引: {index_name}"
-    }
-
-    response = requests.put(
-        f"{vector_service_url}/index/{index_name}",
-        json=create_index_request,
-        timeout=timeout,
-        headers={"Content-Type": "application/json"}
-    )
-
-    if response.status_code != 200:
-        error_msg = f"创建索引失败: {response.status_code}, {response.text}"
-        raise RuntimeError(error_msg)
-
-    print(f"✅ 索引已就绪: {index_name}")
-
-    # 3. 添加文档
-    create_docs_request = {
-        "documents": documents,
-        "vector_field": vector_field,
-        "index": index_name
+    add_request = {
+        "content": content,
+        "businesstype": business_type,
+        "chunk_size": 2000,   # Maximum allowed by vector service
+        "chunk_overlap": 200   # 10% overlap for context
     }
 
     response = requests.post(
-        f"{vector_service_url}/documents",
-        json=create_docs_request,
+        f"{vector_service_url}/add",
+        json=add_request,
         timeout=timeout,
         headers={"Content-Type": "application/json"}
     )
 
     if response.status_code == 200:
         result = response.json()
-        print(f"✅ 已添加 {result.get('count', 0)} 个文档到索引: {index_name}")
         return result
     else:
         error_msg = f"添加文档失败: {response.status_code}, {response.text}"
@@ -195,29 +143,23 @@ def build_index(vector_service_url: str, input_json: Path):
     print(f"✅ Vector service is available")
 
     # 3. 转换为文档格式
-    print(f"🔨 Converting prefabs to documents...")
+    print(f"🔨 Converting prefabs to document format...")
     start_time = time.time()
 
-    documents = []
-    for prefab in prefabs:
-        try:
-            doc = convert_prefab_to_document(prefab)
-            documents.append(doc)
-        except Exception as e:
-            print(f"⚠️  Failed to convert prefab {prefab.get('id')}: {e}")
-            continue
+    documents = convert_prefabs_to_documents(prefabs)
+    print(f"📝 Converted {len(documents)} prefab documents")
 
-    print(f"📝 Converted {len(documents)} documents")
+    # 计算总字符数
+    total_chars = sum(len(doc) for doc in documents)
+    print(f"📝 Total content length: {total_chars} characters")
 
-    # 4. 构建索引
+    # 4. 添加到向量服务
     try:
-        print(f"🔨 Building index...")
-        result = call_vector_service_index(
+        print(f"🔨 Adding documents to vector service...")
+        result = call_vector_service_add(
             vector_service_url=vector_service_url,
-            index_name=DEFAULT_INDEX_NAME,
+            business_type=DEFAULT_BUSINESS_TYPE,
             documents=documents,
-            vector_field=DEFAULT_VECTOR_FIELD,
-            force_reindex=True,
             timeout=DEFAULT_TIMEOUT
         )
 
@@ -225,19 +167,21 @@ def build_index(vector_service_url: str, input_json: Path):
 
         # 5. 输出结果
         print(f"\n✅ Index build completed successfully!")
-        print(f"   Index Name: {DEFAULT_INDEX_NAME}")
-        print(f"   Indexed Count: {len(documents)}")
+        print(f"   Business Type: {DEFAULT_BUSINESS_TYPE}")
+        print(f"   Prefab Count: {len(prefabs)}")
         print(f"   Elapsed Time: {round(elapsed_time, 2)}s")
 
         # 输出详细结果（JSON 格式，便于 CI/CD 解析）
         print(f"\n📊 Build Result:")
         build_result = {
             "success": True,
-            "index_name": DEFAULT_INDEX_NAME,
-            "indexed_count": len(documents),
+            "business_type": DEFAULT_BUSINESS_TYPE,
+            "prefab_count": len(prefabs),
+            "document_count": len(documents),
+            "content_length": total_chars,
             "elapsed_time": round(elapsed_time, 2),
             "vector_service_url": vector_service_url,
-            **result
+            "result": result
         }
         print(json.dumps(build_result, indent=2, ensure_ascii=False))
 
@@ -250,26 +194,26 @@ def build_index(vector_service_url: str, input_json: Path):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Build prefab index for GTPlanner",
+        description="Build prefab index for GTPlanner (FAISS Vector Service)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Build index with vector service URL
-  python build_index.py --vector-service-url http://localhost:8000
+  python build_index.py --vector-service-url http://192.168.136.224:8003
 
   # Build index with custom input file
-  python build_index.py --vector-service-url http://localhost:8000 \\
+  python build_index.py --vector-service-url http://192.168.136.224:8003 \\
     --input /path/to/community-prefabs.json
 
   # Use environment variable for vector service URL
-  export VECTOR_SERVICE_URL=http://localhost:8000
+  export VECTOR_SERVICE_URL=http://192.168.136.224:8003
   python build_index.py
         """
     )
 
     parser.add_argument(
         "--vector-service-url",
-        help="Vector service URL (e.g., http://localhost:8000)",
+        help="Vector service URL (e.g., http://192.168.136.224:8003)",
         default=os.getenv("VECTOR_SERVICE_URL")
     )
 

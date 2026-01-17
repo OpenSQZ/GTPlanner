@@ -20,6 +20,14 @@ log_to_console = false  # 关闭控制台输出
 base_url = "@format {env[LLM_BASE_URL]}"
 api_key = "@format {env[LLM_API_KEY]}"
 model = "@format {env[LLM_MODEL]}"
+temperature = 0.0
+timeout = 120.0
+max_retries = 3
+retry_delay = 2.0
+log_requests = true
+log_responses = true
+function_calling_enabled = true
+tool_choice = "auto"
 
 [default.jina]
 api_key = "@format {env[JINA_API_KEY]}"
@@ -28,7 +36,7 @@ web_base_url = "https://r.jina.ai/"
 
 [default.multilingual]
 # Default language for the system (en, zh, es, fr, ja)
-default_language = "en"
+default_language = "zh"
 # Enable automatic language detection from user input
 auto_detect = true
 # Fallback to default language when requested language is not supported
@@ -39,11 +47,12 @@ supported_languages = ["en", "zh", "es", "fr", "ja"]
 [default.vector_service]
 # Vector service configuration for prefab recommendation
 # These values will be overridden by environment variables if set
-base_url = "http://localhost:8080"  # Default fallback, override with VECTOR_SERVICE_BASE_URL
+base_url = "http://192.168.136.224:8003"  # Updated to use the vector service with anti-cheat data
 timeout = 30  # Override with VECTOR_SERVICE_TIMEOUT
 # Index name for prefabs - override with VECTOR_SERVICE_INDEX_NAME
-# Note: Index name must start with 'document_' prefix as required by vector service
-prefabs_index_name = "document_gtplanner_prefabs"
+prefabs_index_name = "gtplanner_prefabs"
+# Index name for designs - override with VECTOR_SERVICE_DESIGNS_INDEX_NAME
+designs_index_name = "gtplanner_designs"
 # Vector field name for document embedding - override with VECTOR_SERVICE_VECTOR_FIELD
 vector_field = "combined_text"
 

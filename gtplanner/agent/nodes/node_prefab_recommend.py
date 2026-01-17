@@ -330,9 +330,9 @@ class NodePrefabRecommend(AsyncNode):
         return ""
     
     async def _search_prefabs_vector(
-        self, 
-        query: str, 
-        index_name: str, 
+        self,
+        query: str,
+        index_name: str,
         top_k: int,
         shared: Dict[str, Any]
     ) -> Dict[str, Any]:
@@ -340,12 +340,13 @@ class NodePrefabRecommend(AsyncNode):
         try:
             # 构建搜索请求
             search_request = {
-                "query": query,
+                "question": query,  # 向量服务期望的参数名是 question 而不是 query
+                "businesstype": index_name,  # 业务类型标识符（使用 index_name 作为 business_type）
                 "vector_field": self.vector_field,
                 "index": index_name,
                 "top_k": top_k
             }
-            
+
             # 调用向量服务
             response = requests.post(
                 f"{self.vector_service_url}/search",
@@ -353,11 +354,132 @@ class NodePrefabRecommend(AsyncNode):
                 timeout=self.timeout,
                 headers={"Content-Type": "application/json"}
             )
-            
+
             if response.status_code == 200:
                 result = response.json()
-                total_results = result.get('total', 0)
-                
+
+                # 🔧 适配向量服务返回格式到 GTPlanner 期望格式
+                # 向量服务返回: {total_found, detailed_results}
+                # GTPlanner 期望: {total, results}
+
+                # 提取 total_found
+                total_results = result.get('total_found', result.get('total', 0))
+
+                # 提取 detailed_results 并转换为 results 格式
+                detailed_results = result.get('detailed_results', [])
+                adapted_results = []
+
+                for item in detailed_results:
+                    # 向量服务返回的 detailed_results 项包含:
+                    # {text, score, faiss_id, text_relevance, search_method}
+                    # 其中 text 字段包含 JSON 字符串格式的预制件信息
+                    # 注意：多个预制件可能被连接在一起，使用 >>>PREFAB<<< 分隔符
+                    # 由于向量服务的chunking可能在JSON中间切断，需要智能提取完整JSON
+                    try:
+                        import json
+                        import re
+                        text = item.get('text', '')
+
+                        # 智能提取JSON对象的辅助函数
+                        def extract_json_objects(text):
+                            """从文本中提取所有完整的JSON对象"""
+                            # 尝试方法1: 直接解析整个文本
+                            try:
+                                return [json.loads(text)]
+                            except:
+                                pass
+
+                            # 尝试方法2: 按分隔符分割后解析
+                            if '>>>PREFAB<<<' in text:
+                                jsons = []
+                                for part in text.split('>>>PREFAB<<<'):
+                                    part = part.strip()
+                                    if part and part.startswith('{'):
+                                        try:
+                                            jsons.append(json.loads(part))
+                                        except:
+                                            continue
+                                if jsons:
+                                    return jsons
+
+                            # 尝试方法3: 使用正则表达式查找JSON对象
+                            # 匹配从 {"id": 到下一个 } 结束的完整JSON
+                            pattern = r'\{"id"\s*:\s*"[^"]+"[^}]*\}'
+                            matches = re.findall(pattern, text)
+                            if matches:
+                                jsons = []
+                                for match in matches:
+                                    try:
+                                        jsons.append(json.loads(match))
+                                    except:
+                                        continue
+                                if jsons:
+                                    return jsons
+
+                            # 尝试方法4: 查找所有可能的JSON起始点
+                            # 找到所有 {"id": "xxx"} 模式并尝试向后解析
+                            jsons = []
+                            start_pattern = r'\{["\']?id["\']?\s*:\s*["\']([^"\']+)["\']'
+                            for match in re.finditer(start_pattern, text):
+                                start_pos = match.start()
+                                # 从这个位置开始，尝试找到匹配的结束 }
+                                brace_count = 0
+                                in_string = False
+                                escape_next = False
+                                for i in range(start_pos, len(text)):
+                                    char = text[i]
+                                    if escape_next:
+                                        escape_next = False
+                                        continue
+                                    if char == '\\':
+                                        escape_next = True
+                                        continue
+                                    if char == '"' and not escape_next:
+                                        in_string = not in_string
+                                        continue
+                                    if not in_string:
+                                        if char == '{':
+                                            brace_count += 1
+                                        elif char == '}':
+                                            brace_count -= 1
+                                            if brace_count == 0:
+                                                # 找到完整的JSON对象
+                                                try:
+                                                    json_str = text[start_pos:i+1]
+                                                    jsons.append(json.loads(json_str))
+                                                    break  # 只使用第一个完整的JSON
+                                                except:
+                                                    pass
+                                if jsons:
+                                    break  # 找到一个就停止
+                            return jsons
+
+                        # 提取JSON对象
+                        prefab_jsons = extract_json_objects(text)
+
+                        if not prefab_jsons:
+                            # 如果所有方法都失败，跳过这个结果
+                            continue
+
+                        # 使用所有找到的预制件（一个chunk可能包含多个预制件）
+                        for prefab_info in prefab_jsons:
+                            # 构造 GTPlanner 期望的格式
+                            adapted_item = {
+                                'score': item.get('score', 0.0),
+                                'document': prefab_info,
+                                'faiss_id': item.get('faiss_id'),
+                                'text_relevance': item.get('text_relevance'),
+                                'search_method': item.get('search_method')
+                            }
+                            adapted_results.append(adapted_item)
+                    except json.JSONDecodeError:
+                        # 如果解析失败，跳过这个结果
+                        continue
+
+                # 替换为适配后的格式
+                result['total'] = total_results
+                result['results'] = adapted_results
+
                 # 打印每个预制件的相似度分数（调试用）
                 if result.get('results'):
                     print(f"\n🔍 向量检索结果 (查询: '{query}'):")
@@ -366,10 +488,10 @@ class NodePrefabRecommend(AsyncNode):
                         score = item.get('score', 0)
                         name = doc.get('name', 'Unknown')
                         print(f"  {idx}. [{score:.3f}] {name}")
-                
+
                 await emit_processing_status(
-                    shared, 
-                    f"✅ 检索到 {total_results} 个相关预制件"
+                    shared,
+                    f"✅ 检索到 {len(adapted_results)} 个相关预制件"
                 )
                 return result
             else:
@@ -413,13 +535,14 @@ class NodePrefabRecommend(AsyncNode):
     def _process_results(self, results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """后处理搜索结果"""
         processed = []
-        
+
         for result in results:
             # 确保必要字段存在
+            # 注意：向量服务返回的JSON使用 'name' 字段，需要映射到 'summary'
             processed_result = {
                 "id": result.get("id", ""),
                 "type": result.get("type", "PREFAB"),
-                "summary": result.get("summary", ""),
+                "summary": result.get("name") or result.get("summary", ""),  # Map 'name' to 'summary'
                 "description": result.get("description", ""),
                 "tags": result.get("tags", ""),
                 "score": result.get("score", 0.0),
@@ -431,12 +554,12 @@ class NodePrefabRecommend(AsyncNode):
                 "created_at": result.get("created_at", ""),
                 "updated_at": result.get("updated_at", "")
             }
-            
+
             processed.append(processed_result)
-        
+
         # 按相似度分数排序
         processed.sort(key=lambda x: x["score"], reverse=True)
-        
+
         return processed
     
     async def _llm_filter_prefabs(

@@ -121,22 +121,56 @@ class LocalPrefabSearcher:
             if not any(tag.lower() in prefab_tags for tag in tags):
                 return False
         
-        # 关键词搜索
+        # 关键词搜索（支持拆分关键词）
         if query:
             query_lower = query.lower()
             name = prefab.get("name", "").lower()
             description = prefab.get("description", "").lower()
             prefab_id = prefab.get("id", "").lower()
             prefab_tags = " ".join(prefab.get("tags", [])).lower()
-            
-            # 在任何字段中找到关键词即匹配
-            if (query_lower in name or 
-                query_lower in description or 
+
+            # 方法1: 整个查询作为子串匹配
+            if (query_lower in name or
+                query_lower in description or
                 query_lower in prefab_id or
                 query_lower in prefab_tags):
                 return True
-            else:
+
+            # 方法2: 拆分查询为多个关键词，至少匹配一个
+            # 支持中文（按空格、标点拆分）和英文（按空格拆分）
+            import re
+            # 移除标点符号，保留中文、英文、数字、空格
+            cleaned_query = re.sub(r'[^\w\s\u4e00-\u9fff]+', ' ', query_lower)
+            # 拆分为关键词（去除空白词）
+            keywords = [kw.strip() for kw in cleaned_query.split() if kw.strip() and len(kw.strip()) > 1]
+
+            # 方法3: 对于没有空格的连续中文文本，提取有意义的子串（2-4个字符）
+            # 检测条件：没有关键词，或者唯一的关键词过长（>10字符，说明没被正确拆分）
+            has_long_unsplit_keyword = len(keywords) == 1 and len(keywords[0]) > 10
+            if (not keywords or has_long_unsplit_keyword) and any('\u4e00' <= c <= '\u9fff' for c in query_lower):
+                # 提取所有可能的2-4字符的中文子串
+                for start in range(len(query_lower) - 1):
+                    for length in [2, 3, 4]:
+                        if start + length <= len(query_lower):
+                            substring = query_lower[start:start + length]
+                            # 只包含有意义的中文字符（跳过纯数字、字母）
+                            if any('\u4e00' <= c <= '\u9fff' for c in substring):
+                                keywords.append(substring)
+                # 去重
+                keywords = list(set(keywords))
+
+            if keywords:
+                # 至少匹配一个关键词
+                for keyword in keywords:
+                    if (keyword in name or
+                        keyword in description or
+                        keyword in prefab_id or
+                        keyword in prefab_tags):
+                        return True
+                # 所有关键词都不匹配
                 return False
+
+            return False
         
         return True
 
