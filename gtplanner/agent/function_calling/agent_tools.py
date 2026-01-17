@@ -1045,52 +1045,116 @@ async def _execute_view_document(arguments: Dict[str, Any], shared: Dict[str, An
         }
 
 
+def _extract_keywords_from_query(query: str) -> list:
+    """
+    从查询字符串中提取关键词
+
+    Args:
+        query: 查询字符串（可能包含多个关键词，用标点符号分隔）
+
+    Returns:
+        关键词列表
+    """
+    import re
+
+    # 移除常见的中文和英文标点符号，替换为空格
+    cleaned = re.sub(r'[、。，,.\s、，．·]+', ' ', query)
+
+    # 按空格分割并去除空白项
+    keywords = [k.strip() for k in cleaned.split(' ') if k.strip()]
+
+    # 如果只有一个关键词且长度较长（可能是完整句子），尝试按长度分割
+    if len(keywords) == 1 and len(keywords[0]) > 10:
+        # 对于中文，每 2-4 个字符可能是一个词
+        main_keyword = keywords[0]
+        if len(main_keyword) <= 15:
+            # 返回完整的查询和可能的子关键词
+            return [main_keyword]
+        else:
+            # 对于很长的查询，返回前几个词
+            return [main_keyword[:4], main_keyword[:6], main_keyword[:8]]
+
+    return keywords
+
+
 async def _execute_search_prefabs(arguments: Dict[str, Any], shared: Dict[str, Any] = None) -> Dict[str, Any]:
     """
     执行预制件搜索（本地模糊搜索，降级方案）
-    
+
     这是一个简单的搜索工具，不依赖向量服务。
     适用于向量服务不可用时的降级场景。
+
+    增强功能：自动从完整句子中提取关键词并进行多关键词搜索。
     """
+    # 🔍 调试日志：打印接收到的参数
+    print(f"   📋 search_prefabs 接收到的参数: {arguments}")
+
     query = arguments.get("query")
     tags = arguments.get("tags")
     author = arguments.get("author")
     limit = arguments.get("limit", 20)
-    
+
     # 至少需要一个搜索条件
     if not query and not tags and not author:
         return {
             "success": False,
             "error": "At least one search parameter (query, tags, or author) is required"
         }
-    
+
     try:
         from gtplanner.agent.utils.local_prefab_searcher import get_local_prefab_searcher
-        
+
         # 获取搜索器实例
         searcher = get_local_prefab_searcher()
-        
-        # 执行搜索
+
+        # 首先尝试原始查询
         results = searcher.search(
             query=query,
             tags=tags,
             author=author,
             limit=limit
         )
-        
+
+        # 如果没有结果且查询包含标点符号（可能是多关键词查询），尝试关键词提取
+        if not results and query and any(punct in query for punct in ['、', '。', ',', '.', ' ', '，', '．', '·']):
+            keywords = _extract_keywords_from_query(query)
+            print(f"   🔎 原查询无结果，尝试提取关键词: {keywords}")
+
+            # 尝试每个关键词（最多 3 个）
+            seen_ids = set()  # 用于去重
+            max_keywords = min(3, len(keywords))
+
+            for i in range(max_keywords):
+                keyword_results = searcher.search(
+                    query=keywords[i],
+                    tags=tags,
+                    author=author,
+                    limit=limit
+                )
+
+                # 去重并添加结果
+                for prefab in keyword_results:
+                    prefab_id = prefab.get("id")
+                    if prefab_id and prefab_id not in seen_ids:
+                        seen_ids.add(prefab_id)
+                        results.append(prefab)
+
+            if results:
+                print(f"   ✅ 关键词搜索找到 {len(results)} 个预制件")
+
         return {
             "success": True,
             "result": {
                 "prefabs": results,
                 "total_found": len(results),
-                "search_mode": "local_fuzzy_search",
+                "search_mode": "local_fuzzy_search_with_keyword_extraction" if query and any(punct in query for punct in ['、', '。', ',', '.', ' ']) else "local_fuzzy_search",
                 "query": query,
                 "tags": tags,
                 "author": author
             },
             "tool_name": "search_prefabs"
         }
-        
+
     except Exception as e:
         return {
             "success": False,
