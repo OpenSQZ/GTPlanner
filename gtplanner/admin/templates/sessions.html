@@ -1,0 +1,702 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - GTPlanner Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header with Create Button -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-chat-dots"></i> 会话管理</h4>
+                <div class="gap-2">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createSessionModal">
+                        <i class="bi bi-plus-circle"></i> 创建会话
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="loadSessions()">
+                        <i class="bi bi-arrow-clockwise"></i> 刷新
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card-mini">
+                <div class="stat-icon-mini bg-primary">
+                    <i class="bi bi-chat-left"></i>
+                </div>
+                <div class="stat-info-mini">
+                    <h6 class="mb-0">总会话数</h6>
+                    <h4 class="mb-0" id="totalSessions">-</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card-mini">
+                <div class="stat-icon-mini bg-success">
+                    <i class="bi bi-chat-square"></i>
+                </div>
+                <div class="stat-info-mini">
+                    <h6 class="mb-0">活跃会话</h6>
+                    <h4 class="mb-0" id="activeSessions">-</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card-mini">
+                <div class="stat-icon-mini bg-info">
+                    <i class="bi bi-chat-right-text"></i>
+                </div>
+                <div class="stat-info-mini">
+                    <h6 class="mb-0">总消息数</h6>
+                    <h4 class="mb-0" id="totalMessages">-</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchInput" placeholder="搜索会话标题...">
+                <button class="btn btn-outline-secondary" onclick="searchSessions()">
+                    <i class="bi bi-search"></i> 搜索
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="statusFilter" onchange="loadSessions()">
+                <option value="active">活跃会话</option>
+                <option value="archived">已归档</option>
+                <option value="deleted">已删除</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="limitSelect" onchange="loadSessions()">
+                <option value="20">每页 20 条</option>
+                <option value="50" selected>每页 50 条</option>
+                <option value="100">每页 100 条</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Sessions Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="sessionsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>会话ID</th>
+                                    <th>标题</th>
+                                    <th>消息数</th>
+                                    <th>阶段</th>
+                                    <th>创建时间</th>
+                                    <th>最后更新</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sessionsTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">加载中...</span>
+                                        </div>
+                                        <p class="mt-2 text-muted">正在加载会话列表...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <nav>
+                <ul class="pagination justify-content-center" id="pagination">
+                    <!-- Pagination will be generated here -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Create Session Modal -->
+<div class="modal fade" id="createSessionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> 创建新会话</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createSessionForm">
+                    <div class="mb-3">
+                        <label for="sessionTitle" class="form-label">会话标题 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="sessionTitle" required
+                               placeholder="例如：电商平台设计">
+                    </div>
+                    <div class="mb-3">
+                        <label for="projectStage" class="form-label">项目阶段</label>
+                        <select class="form-select" id="projectStage">
+                            <option value="requirements" selected>需求分析</option>
+                            <option value="design">设计</option>
+                            <option value="development">开发</option>
+                            <option value="testing">测试</option>
+                            <option value="deployment">部署</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="createSession()">
+                    <i class="bi bi-check-circle"></i> 创建
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Session Modal -->
+<div class="modal fade" id="viewSessionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-eye"></i> 会话详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="sessionDetails">
+                    <!-- Session details will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Session Modal -->
+<div class="modal fade" id="editSessionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil"></i> 编辑会话</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editSessionForm">
+                    <input type="hidden" id="editSessionId">
+                    <div class="mb-3">
+                        <label for="editSessionTitle" class="form-label">会话标题</label>
+                        <input type="text" class="form-control" id="editSessionTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editProjectStage" class="form-label">项目阶段</label>
+                        <select class="form-select" id="editProjectStage">
+                            <option value="requirements">需求分析</option>
+                            <option value="design">设计</option>
+                            <option value="development">开发</option>
+                            <option value="testing">测试</option>
+                            <option value="deployment">部署</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editStatus" class="form-label">状态</label>
+                        <select class="form-select" id="editStatus">
+                            <option value="active">活跃</option>
+                            <option value="archived">已归档</option>
+                            <option value="deleted">已删除</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="updateSession()">
+                    <i class="bi bi-check-circle"></i> 保存
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 全局变量
+let currentSessions = [];
+let currentPage = 1;
+const itemsPerPage = 50;
+
+// 工具函数
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleString('zh-CN');
+}
+
+function formatSessionId(sessionId) {
+    if (!sessionId) return '-';
+    // 只显示前8位和后4位
+    if (sessionId.length > 12) {
+        return sessionId.substring(0, 8) + '...' + sessionId.substring(sessionId.length - 4);
+    }
+    return sessionId;
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        'active': '<span class="badge bg-success">活跃</span>',
+        'archived': '<span class="badge bg-secondary">已归档</span>',
+        'deleted': '<span class="badge bg-danger">已删除</span>'
+    };
+    return badges[status] || '<span class="badge bg-secondary">未知</span>';
+}
+
+function getStageBadge(stage) {
+    const stages = {
+        'requirements': '<span class="badge bg-info">需求分析</span>',
+        'design': '<span class="badge bg-primary">设计</span>',
+        'development': '<span class="badge bg-warning">开发</span>',
+        'testing': '<span class="badge bg-purple">测试</span>',
+        'deployment': '<span class="badge bg-success">部署</span>'
+    };
+    return stages[stage] || '<span class="badge bg-secondary">其他</span>';
+}
+
+// 加载会话列表
+async function loadSessions() {
+    const status = document.getElementById('statusFilter').value;
+    const limit = parseInt(document.getElementById('limitSelect').value);
+
+    try {
+        const response = await fetch(`/admin/api/sessions?status=${status}&limit=${limit}`);
+        const data = await response.json();
+
+        if (data.success) {
+            currentSessions = data.sessions;
+            renderSessions(currentSessions);
+            updateStats(data.sessions);
+        } else {
+            showAlert('加载会话列表失败', 'danger');
+        }
+    } catch (error) {
+        console.error('Error loading sessions:', error);
+        showAlert('加载会话列表失败: ' + error.message, 'danger');
+    }
+}
+
+// 渲染会话列表
+function renderSessions(sessions) {
+    const tbody = document.getElementById('sessionsTableBody');
+
+    if (sessions.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
+                    <p class="mt-3 text-muted">暂无会话数据</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = sessions.map(session => `
+        <tr>
+            <td>
+                <code class="text-muted">${formatSessionId(session.session_id)}</code>
+                <button class="btn btn-sm btn-link p-0" onclick="copyToClipboard('${session.session_id}')"
+                        title="复制完整ID">
+                    <i class="bi bi-clipboard"></i>
+                </button>
+            </td>
+            <td>
+                <strong>${escapeHtml(session.title)}</strong>
+            </td>
+            <td>
+                <span class="badge bg-light text-dark">${session.total_messages || 0}</span>
+            </td>
+            <td>${getStageBadge(session.project_stage)}</td>
+            <td><small class="text-muted">${formatDate(session.created_at)}</small></td>
+            <td><small class="text-muted">${formatDate(session.updated_at)}</small></td>
+            <td>${getStatusBadge(session.status)}</td>
+            <td>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-success" onclick="startChat('${session.session_id}', '${escapeHtml(session.title).replace(/'/g, "\\'")}')"
+                            title="开始对话">
+                        <i class="bi bi-chat-square-text"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="viewSession('${session.session_id}')"
+                            title="查看详情">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="editSession('${session.session_id}')"
+                            title="编辑">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="deleteSession('${session.session_id}')"
+                            title="删除">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// 更新统计信息
+function updateStats(sessions) {
+    const totalSessions = sessions.length;
+    const activeSessions = sessions.filter(s => s.status === 'active').length;
+    const totalMessages = sessions.reduce((sum, s) => sum + (s.total_messages || 0), 0);
+
+    document.getElementById('totalSessions').textContent = totalSessions;
+    document.getElementById('activeSessions').textContent = activeSessions;
+    document.getElementById('totalMessages').textContent = totalMessages;
+}
+
+// 创建会话
+async function createSession() {
+    const title = document.getElementById('sessionTitle').value.trim();
+    const projectStage = document.getElementById('projectStage').value;
+
+    if (!title) {
+        showAlert('请输入会话标题', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch('/admin/api/sessions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: title,
+                project_stage: projectStage
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showAlert('会话创建成功', 'success');
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createSessionModal'));
+            modal.hide();
+            // 清空表单
+            document.getElementById('createSessionForm').reset();
+            // 重新加载会话列表
+            loadSessions();
+        } else {
+            showAlert('创建会话失败', 'danger');
+        }
+    } catch (error) {
+        console.error('Error creating session:', error);
+        showAlert('创建会话失败: ' + error.message, 'danger');
+    }
+}
+
+// 查看会话详情
+async function viewSession(sessionId) {
+    try {
+        const response = await fetch(`/admin/api/sessions/${sessionId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            const session = data.session;
+            const messages = data.messages || [];
+
+            const detailsHtml = `
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong>会话ID:</strong><br>
+                        <code>${session.session_id}</code>
+                    </div>
+                    <div class="col-6">
+                        <strong>状态:</strong><br>
+                        ${getStatusBadge(session.status)}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong>标题:</strong><br>
+                        ${escapeHtml(session.title)}
+                    </div>
+                    <div class="col-6">
+                        <strong>项目阶段:</strong><br>
+                        ${getStageBadge(session.project_stage)}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong>创建时间:</strong><br>
+                        ${formatDate(session.created_at)}
+                    </div>
+                    <div class="col-6">
+                        <strong>最后更新:</strong><br>
+                        ${formatDate(session.updated_at)}
+                    </div>
+                </div>
+                <hr>
+                <h6>消息列表 (${messages.length})</h6>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    ${messages.length === 0 ? '<p class="text-muted">暂无消息</p>' : ''}
+                    ${messages.map(msg => `
+                        <div class="card mb-2">
+                            <div class="card-body py-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="badge ${msg.role === 'user' ? 'bg-primary' : 'bg-secondary'}">${msg.role}</span>
+                                        <small class="text-muted ms-2">${formatDate(msg.timestamp)}</small>
+                                    </div>
+                                </div>
+                                <p class="mb-0 mt-2">${escapeHtml(msg.content.substring(0, 200))}${msg.content.length > 200 ? '...' : ''}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('sessionDetails').innerHTML = detailsHtml;
+
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('viewSessionModal'));
+            modal.show();
+        } else {
+            showAlert('加载会话详情失败', 'danger');
+        }
+    } catch (error) {
+        console.error('Error viewing session:', error);
+        showAlert('加载会话详情失败: ' + error.message, 'danger');
+    }
+}
+
+// 编辑会话
+async function editSession(sessionId) {
+    try {
+        const response = await fetch(`/admin/api/sessions/${sessionId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            const session = data.session;
+
+            // 填充表单
+            document.getElementById('editSessionId').value = session.session_id;
+            document.getElementById('editSessionTitle').value = session.title;
+            document.getElementById('editProjectStage').value = session.project_stage;
+            document.getElementById('editStatus').value = session.status;
+
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('editSessionModal'));
+            modal.show();
+        } else {
+            showAlert('加载会话信息失败', 'danger');
+        }
+    } catch (error) {
+        console.error('Error editing session:', error);
+        showAlert('加载会话信息失败: ' + error.message, 'danger');
+    }
+}
+
+// 更新会话
+async function updateSession() {
+    const sessionId = document.getElementById('editSessionId').value;
+    const title = document.getElementById('editSessionTitle').value.trim();
+    const projectStage = document.getElementById('editProjectStage').value;
+    const status = document.getElementById('editStatus').value;
+
+    if (!title) {
+        showAlert('请输入会话标题', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/admin/api/sessions/${sessionId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: title,
+                project_stage: projectStage,
+                status: status
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showAlert('会话更新成功', 'success');
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editSessionModal'));
+            modal.hide();
+            // 重新加载会话列表
+            loadSessions();
+        } else {
+            showAlert('更新会话失败', 'danger');
+        }
+    } catch (error) {
+        console.error('Error updating session:', error);
+        showAlert('更新会话失败: ' + error.message, 'danger');
+    }
+}
+
+// 删除会话
+async function deleteSession(sessionId) {
+    if (!confirm('确定要删除此会话吗？此操作为软删除，可以恢复。')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/admin/api/sessions/${sessionId}`, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showAlert('会话删除成功', 'success');
+            // 重新加载会话列表
+            loadSessions();
+        } else {
+            showAlert('删除会话失败', 'danger');
+        }
+    } catch (error) {
+        console.error('Error deleting session:', error);
+        showAlert('删除会话失败: ' + error.message, 'danger');
+    }
+}
+
+// 搜索会话
+async function searchSessions() {
+    const keyword = document.getElementById('searchInput').value.trim();
+
+    if (!keyword) {
+        loadSessions();
+        return;
+    }
+
+    // 客户端过滤（简单实现）
+    const filtered = currentSessions.filter(s =>
+        s.title.toLowerCase().includes(keyword.toLowerCase()) ||
+        s.session_id.toLowerCase().includes(keyword.toLowerCase())
+    );
+
+    renderSessions(filtered);
+    showAlert(`找到 ${filtered.length} 个匹配的会话`, 'info');
+}
+
+// 复制到剪贴板
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showAlert('已复制到剪贴板', 'success');
+    }).catch(err => {
+        console.error('Copy failed:', err);
+        showAlert('复制失败', 'danger');
+    });
+}
+
+// 开始对话
+function startChat(sessionId, title) {
+    // 将session ID和title存储到sessionStorage
+    sessionStorage.setItem('selectedSessionId', sessionId);
+    sessionStorage.setItem('selectedSessionTitle', title);
+
+    // 跳转到聊天页面
+    window.location.href = '/admin/chat';
+}
+
+// 显示提示消息
+function showAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    const container = document.querySelector('.content');
+    if (container) {
+        container.insertBefore(alertDiv, container.firstChild);
+
+        // 5秒后自动关闭
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+}
+
+// HTML转义
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+// 页面加载时自动加载会话列表
+document.addEventListener('DOMContentLoaded', () => {
+    loadSessions();
+});
+</script>
+
+<style>
+.stat-card-mini {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.stat-icon-mini {
+    width: 45px;
+    height: 45px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: #ffffff;
+}
+
+.stat-info-mini h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.stat-info-mini h6 {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+code {
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}

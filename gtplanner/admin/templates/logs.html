@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - GTPlanner Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Log Files List -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> 日志文件</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush" id="logFilesList">
+                        {% if log_files %}
+                            {% for log in log_files %}
+                            <a href="#" class="list-group-item list-group-item-action"
+                               onclick="loadLogContent('{{ log.name }}'); return false;">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ log.name }}</h6>
+                                    <small>{{ log.size_mb }} MB</small>
+                                </div>
+                                <small class="text-muted"><i class="bi bi-clock"></i> {{ log.modified }}</small>
+                            </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="list-group-item">
+                                <p class="text-muted mb-0 text-center">暂无日志文件</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Content Viewer -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-file-code"></i> 日志内容</h5>
+                    <div>
+                        <select class="form-select form-select-sm" id="linesSelect" onchange="changeLines()">
+                            <option value="50">最后 50 行</option>
+                            <option value="100" selected>最后 100 行</option>
+                            <option value="200">最后 200 行</option>
+                            <option value="500">最后 500 行</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="logContent" class="log-viewer">
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-hand-index" style="font-size: 3rem;"></i>
+                            <p class="mt-3">请从左侧选择一个日志文件查看</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentLogFile = null;
+
+function loadLogContent(filename) {
+    currentLogFile = filename;
+    const lines = document.getElementById('linesSelect').value;
+
+    fetch(`/admin/api/logs/${filename}?lines=${lines}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.content) {
+                const logContent = document.getElementById('logContent');
+                logContent.innerHTML = `<pre class="log-content">${escapeHtml(data.content)}</pre>`;
+            } else {
+                document.getElementById('logContent').innerHTML = `
+                    <div class="alert alert-warning">无法加载日志内容</div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading log:', error);
+            document.getElementById('logContent').innerHTML = `
+                <div class="alert alert-danger">加载日志失败: ${error}</div>
+            `;
+        });
+}
+
+function changeLines() {
+    if (currentLogFile) {
+        loadLogContent(currentLogFile);
+    }
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+</script>
+{% endblock %}
