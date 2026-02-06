@@ -55,7 +55,7 @@
 ### 方法一：URL 参数
 在您创建 PR 的 URL 后面添加 `?template=template_name.md`：
 ```
-https://github.com/your-org/GTPlanner/compare?template=api_tool.md
+https://github.com/wang316902972/GTPlanner/compare?template=api_tool.md
 ```
 
 ### 方法二：GitHub 界面

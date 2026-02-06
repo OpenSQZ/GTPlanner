@@ -73,7 +73,7 @@ git push origin v1.0.0
 ```bash
 # 在 GitHub 上 Fork 本仓库
 # 然后克隆你的 fork
-git clone https://github.com/your-username/GTPlanner.git
+git clone https://github.com/wang316902972/GTPlanner.git
 cd GTPlanner
 ```
 
@@ -472,8 +472,8 @@ cat community-prefabs.json | jq '.[] | select(.tags[] | contains("video"))'
 
 ## 联系我们
 
-- **报告问题**：[GitHub Issues](https://github.com/OpenSQZ/GTPlanner/issues)
-- **讨论交流**：[GitHub Discussions](https://github.com/OpenSQZ/GTPlanner/discussions)
+- **报告问题**：[GitHub Issues](https://github.com/wang316902972/GTPlanner/issues)
+- **讨论交流**：[GitHub Discussions](https://github.com/wang316902972/GTPlanner/discussions)
 
 ---
 

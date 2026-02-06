@@ -55,7 +55,7 @@ PyPIからPythonパッケージを提供する場合は、このテンプレー�
 ### 方法1：URLパラメータ
 PR作成ページのURLに `?template=template_name.md` を追加します：
 ```
-https://github.com/your-org/GTPlanner/compare?template=api_tool.md
+https://github.com/wang316902972/GTPlanner/compare?template=api_tool.md
 ```
 
 ### 方法2：GitHubインターフェース

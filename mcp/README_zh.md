@@ -439,6 +439,6 @@ MCP 服务会缓存 Prefab 索引，避免重复加载。
 ---
 
 <p align="center">
-  有问题？<a href="https://github.com/OpenSQZ/GTPlanner/issues">提交 Issue</a>
+  有问题？<a href="https://github.com/wang316902972/GTPlanner/issues">提交 Issue</a>
 </p>
 

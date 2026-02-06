@@ -1,15 +1,15 @@
 blank_issues_enabled: false
 contact_links:
   - name: 📚 Documentation
-    url: https://github.com/OpenSQZ/GTPlanner/tree/main/docs
+    url: https://github.com/wang316902972/GTPlanner/tree/main/docs
     about: Read the comprehensive documentation
   - name: 💬 Discussions
-    url: https://github.com/OpenSQZ/GTPlanner/discussions
+    url: https://github.com/wang316902972/GTPlanner/discussions
     about: Ask questions and discuss ideas with the community
   - name: 🧩 Prefab Documentation
-    url: https://github.com/OpenSQZ/GTPlanner/blob/main/prefabs/README.md
+    url: https://github.com/wang316902972/GTPlanner/blob/main/prefabs/README.md
     about: Learn about the Prefab ecosystem
   - name: 🚀 Contributing Guide
-    url: https://github.com/OpenSQZ/GTPlanner/blob/main/contribute.md
+    url: https://github.com/wang316902972/GTPlanner/blob/main/contribute.md
     about: Learn how to contribute to GTPlanner
 

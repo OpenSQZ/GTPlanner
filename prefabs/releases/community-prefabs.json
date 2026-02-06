@@ -79,5 +79,14 @@
     "name": "Imagen 图像生成预制件",
     "description": "基于 Imagen AI 模型的图像生成工具，支持文本转图像生成、图像编辑等功能，提供高质量的 AI 图像生成服务",
     "tags": ["image", "image-generation", "ai", "imagen", "text-to-image", "图像生成"]
+  },
+  {
+    "id": "anti-cheat-attribution-analyzer",
+    "version": "1.0.0",
+    "author": "GTPlanner Community",
+    "repo_url": "https://github.com/your-org/anti-cheat-analyzer",
+    "name": "反作弊归因分析预制件",
+    "description": "AI辅助的反作弊归因分析系统，支持多维查询引擎、关联反查、异常检测和AI诊断分析。核心功能：1）多维查询引擎 - 支持按时间粒度、用户ID、账号、UID、机器码、物品、代币、操作类型等多维度组合查询；2）关联反查系统 - 基于机器码和服务器信息进行横向关联，支持'由点到面'的扩散查询；3）AI诊断分析模块 - 内置四项诊断模型，自动化异常识别与优先级排序；4）可定制化输出 - 支持按日期或统计周期汇总，结果可导出为结构化数据或可视化图表。",
+    "tags": ["anti-cheat", "fraud-detection", "attribution-analysis", "game-security", "anomaly-detection", "data-analysis", "ai-diagnosis", "correlation-analysis"]
   }
 ]

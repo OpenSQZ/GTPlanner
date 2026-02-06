@@ -506,7 +506,10 @@ class SimpleOpenAIConfig:
             "temperature": self.temperature,
         }
 
-        if self.max_tokens:
+        # 只在 max_tokens 不为 None 时才添加该参数
+        # 使用 is not None 而不是直接 if self.max_tokens，
+        # 避免 0 值被误判，同时确保 None 不会被传递给 API
+        if self.max_tokens is not None:
             kwargs["max_tokens"] = self.max_tokens
 
         return kwargs
@@ -874,7 +877,9 @@ class OpenAIClient:
 
                 # 收集token使用信息
                 if hasattr(chunk, 'usage') and chunk.usage:
-                    total_tokens = chunk.usage.total_tokens
+                    tokens = chunk.usage.total_tokens
+                    if tokens is not None:
+                        total_tokens = tokens
 
 
 

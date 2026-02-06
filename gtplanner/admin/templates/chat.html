@@ -1,0 +1,729 @@
+{% extends "base.html" %}
+
+{% block title %}GTPlanner 聊天界面{% endblock %}
+
+{% block content %}
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <!-- Sidebar: Session List -->
+        <div class="col-md-3 border-end bg-light">
+            <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                <h6 class="mb-0"><i class="bi bi-chat-dots"></i> 会话列表</h6>
+                <button class="btn btn-sm btn-primary" onclick="showCreateSessionModal()">
+                    <i class="bi bi-plus"></i>
+                </button>
+            </div>
+            <div class="p-2" id="sessionList" style="height: calc(100vh - 200px); overflow-y: auto;">
+                <div class="text-center text-muted py-5">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                    <p class="mt-2 small">加载中...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="col-md-9 d-flex flex-column">
+            <!-- Chat Header -->
+            <div class="p-3 border-bottom bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0" id="chatTitle">选择或创建一个会话开始对话</h5>
+                        <small class="text-muted" id="chatSessionId"></small>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="clearChat()">
+                            <i class="bi bi-trash"></i> 清空
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="exportChat()">
+                            <i class="bi bi-download"></i> 导出
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="flex-grow-1 overflow-auto p-3 bg-light" id="messagesArea" style="height: calc(100vh - 300px);">
+                <div class="text-center text-muted mt-5" id="welcomeMessage">
+                    <i class="bi bi-robot" style="font-size: 4rem; opacity: 0.3;"></i>
+                    <p class="mt-3">欢迎使用 GTPlanner 智能助手</p>
+                    <p class="small">从左侧选择一个会话，或创建新会话开始对话</p>
+                </div>
+                <div id="messagesList"></div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-3 border-top bg-white">
+                <div class="input-group">
+                    <textarea class="form-control" id="messageInput" rows="2"
+                              placeholder="输入你的问题..."
+                              onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }"></textarea>
+                    <button class="btn btn-primary" onclick="sendMessage()" id="sendButton" disabled>
+                        <i class="bi bi-send"></i> 发送
+                    </button>
+                </div>
+                <div class="mt-2 d-flex justify-content-between align-items-center">
+                    <small class="text-muted">提示: 按 Enter 发送，Shift + Enter 换行</small>
+                    <div class="language-selector">
+                        <select class="form-select form-select-sm" id="languageSelect" style="width: auto;">
+                            <option value="zh">中文</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Session Modal -->
+<div class="modal fade" id="createSessionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> 创建新会话</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createSessionForm">
+                    <div class="mb-3">
+                        <label for="newSessionTitle" class="form-label">会话标题</label>
+                        <input type="text" class="form-control" id="newSessionTitle" required
+                               placeholder="例如：设计电商平台">
+                    </div>
+                    <div class="mb-3">
+                        <label for="newProjectStage" class="form-label">项目阶段</label>
+                        <select class="form-select" id="newProjectStage">
+                            <option value="requirements" selected>需求分析</option>
+                            <option value="design">设计</option>
+                            <option value="development">开发</option>
+                            <option value="testing">测试</option>
+                            <option value="deployment">部署</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="createNewSession()">
+                    <i class="bi bi-check-circle"></i> 创建并开始对话
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 全局状态
+let currentSessionId = null;
+let currentSessionTitle = null;
+let dialogueHistory = [];
+let eventSource = null;
+
+// 工具函数
+function formatTime(timestamp) {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function repr(str) {
+    // 显示字符串的原始内容，包括特殊字符
+    if (typeof str !== 'string') return String(str);
+    return str.replace(/[\r\n\t]/g, (c) => {
+        switch (c) {
+            case '\r': return '\\r';
+            case '\n': return '\\n';
+            case '\t': return '\\t';
+            default: return c;
+        }
+    });
+}
+
+// 加载会话列表
+async function loadSessions() {
+    try {
+        const response = await fetch('/admin/api/sessions?status=active&limit=50');
+        const data = await response.json();
+
+        if (data.success) {
+            renderSessionList(data.sessions);
+        }
+    } catch (error) {
+        console.error('Error loading sessions:', error);
+        showAlert('加载会话列表失败', 'danger');
+    }
+}
+
+// 渲染会话列表
+function renderSessionList(sessions) {
+    const container = document.getElementById('sessionList');
+
+    if (sessions.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <p class="mb-0">暂无会话</p>
+                <button class="btn btn-sm btn-primary mt-2" onclick="showCreateSessionModal()">
+                    创建新会话
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = sessions.map(session => `
+        <div class="session-item p-2 mb-2 rounded cursor-pointer ${session.session_id === currentSessionId ? 'bg-primary text-white' : 'bg-white'}"
+             onclick="selectSession('${session.session_id}', '${escapeHtml(session.title)}')"
+             style="cursor: pointer; border: 1px solid #dee2e6;">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <div class="fw-bold small">${escapeHtml(session.title)}</div>
+                    <div class="small text-muted ${session.session_id === currentSessionId ? 'text-white-50' : ''}"
+                         style="font-size: 0.75rem;">${session.total_messages || 0} 条消息</div>
+                </div>
+                ${session.session_id === currentSessionId ? '<i class="bi bi-check-circle"></i>' : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+// 选择会话
+async function selectSession(sessionId, title) {
+    currentSessionId = sessionId;
+    currentSessionTitle = title;
+
+    // 更新UI
+    document.getElementById('chatTitle').textContent = title;
+    document.getElementById('chatSessionId').textContent = `Session ID: ${sessionId}`;
+    document.getElementById('sendButton').disabled = false;
+
+    // 加载对话历史
+    await loadDialogueHistory(sessionId);
+
+    // 重新加载会话列表以更新选中状态
+    loadSessions();
+}
+
+// 加载对话历史
+async function loadDialogueHistory(sessionId) {
+    try {
+        const response = await fetch(`/admin/api/sessions/${sessionId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            dialogueHistory = data.messages.map(msg => ({
+                role: msg.role,
+                content: msg.content,
+                timestamp: msg.timestamp
+            }));
+
+            renderMessages();
+
+            // 滚动到底部
+            scrollToBottom();
+        }
+    } catch (error) {
+        console.error('Error loading dialogue history:', error);
+    }
+}
+
+// 渲染消息列表
+function renderMessages() {
+    const container = document.getElementById('messagesList');
+    const welcomeMessage = document.getElementById('welcomeMessage');
+
+    if (dialogueHistory.length === 0) {
+        welcomeMessage.style.display = 'block';
+        container.innerHTML = '';
+        return;
+    }
+
+    welcomeMessage.style.display = 'none';
+
+    container.innerHTML = dialogueHistory.map((msg, index) => {
+        const isUser = msg.role === 'user';
+        return `
+            <div class="message mb-3 ${isUser ? 'text-end' : ''}">
+                <div class="d-inline-block ${isUser ? 'bg-primary text-white' : 'bg-white'} rounded p-3"
+                     style="max-width: 70%; border: 1px solid ${isUser ? 'transparent' : '#dee2e6'};">
+                    <div class="small mb-1 ${isUser ? 'text-white' : 'text-muted'}">
+                        ${isUser ? '你' : 'GTPlanner'} • ${formatTime(msg.timestamp)}
+                    </div>
+                    <div class="message-content" style="white-space: pre-wrap;">${escapeHtml(msg.content)}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 发送消息
+async function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+
+    if (!message) return;
+    if (!currentSessionId) {
+        showAlert('请先选择或创建一个会话', 'warning');
+        return;
+    }
+
+    console.log('=== 开始发送消息 ===');
+    console.log('会话ID:', currentSessionId);
+    console.log('消息内容:', message);
+    console.log('对话历史长度:', dialogueHistory.length);
+
+    // 添加用户消息到历史
+    const userMessage = {
+        role: 'user',
+        content: message,
+        timestamp: new Date().toISOString()
+    };
+    dialogueHistory.push(userMessage);
+
+    // 清空输入框
+    input.value = '';
+
+    // 渲染消息
+    renderMessages();
+    scrollToBottom();
+
+    // 禁用发送按钮
+    document.getElementById('sendButton').disabled = true;
+
+    // 显示加载指示器
+    addLoadingIndicator();
+
+    try {
+        // 调用GTPlanner API
+        const language = document.getElementById('languageSelect').value;
+
+        const requestData = {
+            session_id: currentSessionId,
+            dialogue_history: dialogueHistory,
+            session_metadata: { language: language }
+        };
+
+        console.log('发送请求到:', '/api/chat/agent');
+        console.log('请求数据:', JSON.stringify(requestData, null, 2));
+
+        const response = await fetch('/api/chat/agent', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        console.log('响应状态:', response.status);
+        console.log('响应头:', Object.fromEntries(response.headers.entries()));
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('API错误响应:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+        }
+
+        // 处理SSE流
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let assistantMessage = '';
+        let messageElement = null;
+        let chunkCount = 0;
+        let buffer = '';  // 用于累积不完整的JSON数据
+
+        // 移除加载指示器
+        removeLoadingIndicator();
+
+        // 添加助手消息占位符
+        messageElement = addAssistantMessagePlaceholder();
+
+        console.log('开始读取SSE流...');
+
+        let hasReceivedData = false;
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+                // 处理最后剩余的buffer数据
+                if (buffer.trim()) {
+                    console.log('处理最后的buffer数据');
+                    try {
+                        const data = JSON.parse(buffer.slice(6));
+                        assistantMessage = processSSEEvent(data, assistantMessage, messageElement);
+                    } catch (e) {
+                        console.warn('最后的buffer也无法解析:', buffer.substring(0, 100));
+                    }
+                }
+                console.log('SSE流读取完成，共处理', chunkCount, '个数据块');
+                break;
+            }
+
+            const chunk = decoder.decode(value, { stream: true });
+            if (chunkCount < 5) {  // 只打印前5个数据块
+                console.log('📦 收到数据块 (原始内容):', repr(chunk.substring(0, 300)));
+            }
+            buffer += chunk;
+
+            // 尝试按行分割并处理完整的行
+            let lines;
+            let lastNewlineIndex = buffer.lastIndexOf('\n');
+
+            if (lastNewlineIndex >= 0) {
+                lines = buffer.substring(0, lastNewlineIndex).split('\n');
+                buffer = buffer.substring(lastNewlineIndex + 1);
+            } else {
+                // 没有换行符，继续等待
+                lines = [];
+            }
+
+            for (const line of lines) {
+                if (!line.trim()) {
+                    if (chunkCount < 10) console.log('⚪ 空行');
+                    continue;
+                }
+
+                if (chunkCount < 10) {
+                    if (line.startsWith('event:')) {
+                        console.log('🔵 事件类型行:', line);
+                    } else if (line.startsWith('data:')) {
+                        console.log('🟢 数据行 (前100字符):', line.substring(0, 100));
+                    } else {
+                        console.log('⚪ 其他行:', line.substring(0, 50));
+                    }
+                }
+
+                if (line.startsWith('event:')) {
+                    // 事件类型行，跳过
+                    continue;
+                }
+
+                if (line.startsWith('data:')) {
+                    hasReceivedData = true;
+                    chunkCount++;
+                    // SSE格式: "data: {json content}" 或 "data:{json content}"
+                    // slice(5) 去掉 "data:", trim() 去掉可能的空格
+                    const jsonStr = line.slice(5).trim();
+
+                    try {
+                        const data = JSON.parse(jsonStr);
+                        if (chunkCount <= 5) {
+                            console.log('✅ 解析成功, 事件类型:', data.event_type || data.type);
+                        }
+                        assistantMessage = processSSEEvent(data, assistantMessage, messageElement);
+                    } catch (e) {
+                        if (e instanceof SyntaxError) {
+                            if (chunkCount < 10) {
+                                console.warn('⚠️ JSON不完整，等待更多数据');
+                                console.warn('   JSON字符串前100字符:', jsonStr.substring(0, 100));
+                            }
+                            // 数据保留在buffer中，等待下一个chunk
+                        } else {
+                            console.error('❌ 解析SSE数据失败:', e);
+                            console.error('   原始行 (前200字符):', line.substring(0, 200));
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!hasReceivedData) {
+            console.warn('⚠️ 没有收到任何SSE数据！可能的原因：');
+            console.warn('1. API端点返回了空响应');
+            console.warn('2. 会话ID无效');
+            console.warn('3. dialogue_history格式错误');
+            console.warn('4. 后端处理出错但没有返回错误事件');
+            showAlert('未收到任何响应，请检查会话配置或联系管理员', 'warning');
+        }
+
+        // 添加助手消息到历史
+        if (assistantMessage) {
+            dialogueHistory.push({
+                role: 'assistant',
+                content: assistantMessage,
+                timestamp: new Date().toISOString()
+            });
+            console.log('助手消息已添加到历史，总消息数:', dialogueHistory.length);
+        } else {
+            console.warn('警告：未收到助手消息');
+        }
+
+        // 保存消息到数据库
+        await saveMessagesToDatabase();
+
+        // 更新会话列表
+        loadSessions();
+
+        console.log('=== 消息发送完成 ===');
+
+    } catch (error) {
+        console.error('❌ 发送消息失败:', error);
+        removeLoadingIndicator();
+
+        // 添加错误消息
+        dialogueHistory.push({
+            role: 'assistant',
+            content: `抱歉，发生了错误：${error.message}\n\n请检查：\n1. 浏览器控制台是否有错误信息\n2. 网络连接是否正常\n3. API服务是否正常运行`,
+            timestamp: new Date().toISOString()
+        });
+        renderMessages();
+
+        showAlert('发送消息失败: ' + error.message, 'danger');
+    } finally {
+        document.getElementById('sendButton').disabled = false;
+        scrollToBottom();
+    }
+}
+
+// 添加加载指示器
+function addLoadingIndicator() {
+    const container = document.getElementById('messagesList');
+    const loadingHtml = `
+        <div class="message mb-3" id="loadingIndicator">
+            <div class="d-inline-block bg-white rounded p-3" style="border: 1px solid #dee2e6;">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    <span class="small text-muted">GTPlanner 正在思考...</span>
+                </div>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', loadingHtml);
+}
+
+// 移除加载指示器
+function removeLoadingIndicator() {
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    if (loadingIndicator) {
+        loadingIndicator.remove();
+    }
+}
+
+// 添加助手消息占位符
+function addAssistantMessagePlaceholder() {
+    const container = document.getElementById('messagesList');
+    const messageHtml = `
+        <div class="message mb-3" id="currentAssistantMessage">
+            <div class="d-inline-block bg-white rounded p-3"
+                 style="max-width: 70%; border: 1px solid #dee2e6;">
+                <div class="small mb-1 text-muted">
+                    GTPlanner • ${formatTime(new Date().toISOString())}
+                </div>
+                <div class="message-content" style="white-space: pre-wrap;"></div>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', messageHtml);
+    return document.querySelector('#currentAssistantMessage .message-content');
+}
+
+// 处理SSE事件
+function processSSEEvent(data, assistantMessage, messageElement) {
+    console.log('处理SSE事件:', data);
+
+    // 处理不同的事件类型
+    if (data.event_type === 'conversation_start') {
+        console.log('对话开始:', data);
+    } else if (data.event_type === 'assistant_message_start') {
+        console.log('助手消息开始');
+    } else if (data.event_type === 'assistant_message_chunk') {
+        // 追加消息片段
+        if (data.data && data.data.content) {
+            assistantMessage += data.data.content;
+            updateAssistantMessage(messageElement, assistantMessage);
+        }
+    } else if (data.event_type === 'assistant_message_end') {
+        console.log('助手消息结束');
+    } else if (data.event_type === 'conversation_end') {
+        console.log('对话结束:', data.data);
+    } else if (data.event_type === 'processing_status') {
+        console.log('处理状态:', data.data?.status_message);
+    } else if (data.event_type === 'error') {
+        console.error('错误事件:', data.data?.error_message);
+        showAlert(`错误: ${data.data?.error_message || '未知错误'}`, 'danger');
+    } else if (data.event_type === 'heartbeat') {
+        console.log('心跳');
+    } else {
+        console.log('未知事件类型:', data.event_type, data);
+    }
+
+    return assistantMessage;
+}
+
+// 更新助手消息
+function updateAssistantMessage(element, content) {
+    if (element) {
+        element.textContent = content;
+        scrollToBottom();
+    }
+}
+
+// 滚动到底部
+function scrollToBottom() {
+    const messagesArea = document.getElementById('messagesArea');
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+}
+
+// 保存消息到数据库
+async function saveMessagesToDatabase() {
+    if (!currentSessionId) return;
+
+    // 注意：这里简化了实现，实际上应该调用API保存消息
+    // 目前GTPlanner的流程中，消息会在Agent处理时自动保存
+}
+
+// 显示创建会话模态框
+function showCreateSessionModal() {
+    const modal = new bootstrap.Modal(document.getElementById('createSessionModal'));
+    modal.show();
+}
+
+// 创建新会话
+async function createNewSession() {
+    const title = document.getElementById('newSessionTitle').value.trim();
+    const projectStage = document.getElementById('newProjectStage').value;
+
+    if (!title) {
+        showAlert('请输入会话标题', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch('/admin/api/sessions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: title,
+                project_stage: projectStage
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createSessionModal'));
+            modal.hide();
+
+            // 清空表单
+            document.getElementById('createSessionForm').reset();
+
+            // 选择新会话
+            selectSession(data.session_id, data.session.title);
+
+            showAlert('会话创建成功', 'success');
+        } else {
+            showAlert('创建会话失败', 'danger');
+        }
+    } catch (error) {
+        console.error('Error creating session:', error);
+        showAlert('创建会话失败: ' + error.message, 'danger');
+    }
+}
+
+// 清空聊天
+function clearChat() {
+    if (!currentSessionId) return;
+
+    if (!confirm('确定要清空当前对话历史吗？')) {
+        return;
+    }
+
+    dialogueHistory = [];
+    renderMessages();
+    showAlert('对话历史已清空', 'info');
+}
+
+// 导出对话
+function exportChat() {
+    if (dialogueHistory.length === 0) {
+        showAlert('暂无对话内容可导出', 'warning');
+        return;
+    }
+
+    const content = dialogueHistory.map(msg => {
+        const role = msg.role === 'user' ? '你' : 'GTPlanner';
+        const time = formatTime(msg.timestamp);
+        return `[${time}] ${role}:\n${msg.content}\n`;
+    }).join('\n' + '-'.repeat(50) + '\n');
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat_${currentSessionId}_${new Date().getTime()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showAlert('对话已导出', 'success');
+}
+
+// 显示提示消息
+function showAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    document.body.appendChild(alertDiv);
+
+    // 5秒后自动关闭
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', () => {
+    loadSessions().then(() => {
+        // 检查是否有预选的会话
+        const preSelectedSessionId = sessionStorage.getItem('selectedSessionId');
+        const preSelectedTitle = sessionStorage.getItem('selectedSessionTitle');
+
+        if (preSelectedSessionId && preSelectedTitle) {
+            // 清除sessionStorage
+            sessionStorage.removeItem('selectedSessionId');
+            sessionStorage.removeItem('selectedSessionTitle');
+
+            // 自动选中该会话
+            selectSession(preSelectedSessionId, preSelectedTitle);
+        }
+    });
+});
+</script>
+
+<style>
+.message-content {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.session-item:hover {
+    background-color: #f8f9fa !important;
+}
+
+.session-item.bg-primary:hover {
+    background-color: #0b5ed7 !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+#messagesArea {
+    scroll-behavior: smooth;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - GTPlanner Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-gear"></i> 配置管理</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        配置管理功能正在开发中。此页面将允许您修改系统配置。
+                    </div>
+
+                    <!-- Settings Form -->
+                    <form id="settingsForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="apiHost" class="form-label">API Host</label>
+                                <input type="text" class="form-control" id="apiHost" value="0.0.0.0" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="apiPort" class="form-label">API Port</label>
+                                <input type="number" class="form-control" id="apiPort" value="11211" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="logLevel" class="form-label">日志级别</label>
+                                <select class="form-select" id="logLevel" disabled>
+                                    <option value="DEBUG" selected>DEBUG</option>
+                                    <option value="INFO">INFO</option>
+                                    <option value="WARNING">WARNING</option>
+                                    <option value="ERROR">ERROR</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="maxSessions" class="form-label">最大会话数</label>
+                                <input type="number" class="form-control" id="maxSessions" value="100" disabled>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enableCORS" checked disabled>
+                                <label class="form-check-label" for="enableCORS">
+                                    启用 CORS
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enableDebug" checked disabled>
+                                <label class="form-check-label" for="enableDebug">
+                                    启用调试模式
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" disabled>
+                                <i class="bi bi-check-circle"></i> 保存配置
+                            </button>
+                            <button type="reset" class="btn btn-secondary" disabled>
+                                <i class="bi bi-arrow-counterclockwise"></i> 重置
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr>
+
+                    <h6>环境配置文件位置</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-file-earmark-code"></i> .env</li>
+                        <li><i class="bi bi-file-earmark-code"></i> settings.toml</li>
+                        <li><i class="bi bi-file-earmark-code"></i> pyproject.toml</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> 系统状态</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <td><strong>FastAPI:</strong></td>
+                                    <td><span class="badge bg-success">运行中</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>数据库:</strong></td>
+                                    <td><span class="badge bg-success">连接正常</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <td><strong>预制件索引:</strong></td>
+                                    <td><span class="badge bg-success">已加载</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>SSE API:</strong></td>
+                                    <td><span class="badge bg-success">可用</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('settingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('配置保存功能正在开发中');
+});
+</script>
+{% endblock %}

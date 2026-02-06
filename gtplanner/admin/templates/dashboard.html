@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - GTPlanner Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary">
+                    <i class="bi bi-database"></i>
+                </div>
+                <div class="stat-info">
+                    <h6>数据库大小</h6>
+                    <h3>{{ stats.db_size_mb }} MB</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-success">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <div class="stat-info">
+                    <h6>日志文件数</h6>
+                    <h3>{{ stats.log_file_count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-info">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-info">
+                    <h6>运行时间</h6>
+                    <h3>{{ stats.uptime_hours }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-warning">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <div class="stat-info">
+                    <h6>Python版本</h6>
+                    <h3>{{ stats.python_version }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> 快捷操作</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="/admin/sessions" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-chat-dots"></i> 查看会话
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/admin/logs" class="btn btn-outline-success w-100">
+                                <i class="bi bi-file-text"></i> 查看日志
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/admin/settings" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-gear"></i> 系统设置
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-danger w-100" onclick="refreshStats()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新数据
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Info -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> 系统信息</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>应用名称:</strong></td>
+                            <td>GTPlanner</td>
+                        </tr>
+                        <tr>
+                            <td><strong>版本:</strong></td>
+                            <td>1.0.0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>框架:</strong></td>
+                            <td>FastAPI</td>
+                        </tr>
+                        <tr>
+                            <td><strong>数据库:</strong></td>
+                            <td>SQLite ({{ stats.db_size_mb }} MB)</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bell"></i> 最新日志</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats.latest_log_file %}
+                        <p class="mb-2">
+                            <i class="bi bi-file-earmark-text"></i>
+                            {{ stats.latest_log_file }}
+                        </p>
+                        <a href="/admin/logs" class="btn btn-sm btn-primary">
+                            查看所有日志 <i class="bi bi-arrow-right"></i>
+                        </a>
+                    {% else %}
+                        <p class="text-muted mb-0">暂无日志文件</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshStats() {
+    location.reload();
+}
+</script>
+{% endblock %}

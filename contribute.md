@@ -13,5 +13,5 @@ Please refer to the [Chinese version](docs/zh/CONTRIBUTING.md) for now.
 ## Quick Links
 
 - **Prefab Contribution Guide**: [prefabs/releases/CONTRIBUTING_zh.md](prefabs/releases/CONTRIBUTING_zh.md)
-- **GitHub Issues**: [Report Issues](https://github.com/OpenSQZ/GTPlanner/issues)
-- **Discussions**: [Join Discussions](https://github.com/OpenSQZ/GTPlanner/discussions)
+- **GitHub Issues**: [Report Issues](https://github.com/wang316902972/GTPlanner/issues)
+- **Discussions**: [Join Discussions](https://github.com/wang316902972/GTPlanner/discussions)

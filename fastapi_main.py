@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 # 导入 SSE GTPlanner API
@@ -15,6 +16,9 @@ from gtplanner.agent.api.agent_api import SSEGTPlanner
 
 # 导入索引管理器
 from gtplanner.agent.utils.startup_init import initialize_application
+
+# 导入Admin模块
+from gtplanner.admin import router as admin_router
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -83,6 +87,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 挂载Admin路由
+app.include_router(admin_router, tags=["admin"])
+
+# 挂载静态文件服务
+from pathlib import Path
+admin_static_dir = Path(__file__).parent / "gtplanner" / "admin" / "static"
+if admin_static_dir.exists():
+    app.mount("/static/admin", StaticFiles(directory=str(admin_static_dir)), name="admin-static")
 
 # 现有路由已移除，只保留 SSE Agent 路由
 
