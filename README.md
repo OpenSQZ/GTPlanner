@@ -11,6 +11,7 @@
 <p align="center">
   <a href="#overview">Overview</a> •
   <a href="#web-ui-recommended">Web UI</a> •
+  <a href="#claude-code-skill">Claude Code Skill</a> •
   <a href="#mcp-integration">MCP Integration</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#configuration">Configuration</a> •
@@ -64,6 +65,66 @@ For the best experience, we strongly recommend using the Web UI. It provides a s
 - **Team Collaboration**: Multi-format export for easy sharing
 
 [Try the Live Demo](https://the-agent-builder.com/)
+
+---
+
+## Claude Code Skill
+
+GTPlanner is available as a Claude Code plugin skill, enabling seamless PRD generation directly within Claude Code.
+
+**Trigger Words:** `PRD`, `项目规划`, `架构设计`, `技术方案`, `设计文档`
+
+### Installation
+
+1. Clone GTPlanner as a plugin:
+```bash
+cd ~/.claude/plugins
+git clone https://github.com/OpenSQZ/GTPlanner.git
+```
+
+2. Configure environment:
+```bash
+cd GTPlanner
+cp .env.example .env
+# Edit .env with your LLM configuration
+```
+
+3. Initialize:
+```bash
+# In Claude Code, run:
+/gtplanner-init
+```
+
+### Usage
+
+Simply mention trigger words in Claude Code:
+
+```
+帮我设计一个自动化视频处理流程：从 YouTube 下载视频，提取字幕，生成摘要
+```
+
+Or in English:
+
+```
+Design a workflow that monitors GitHub issues, analyzes sentiment, and auto-assigns labels
+```
+
+### Available Tools
+
+| Tool | Description |
+|------|-------------|
+| `short_planning` | Requirement analysis and scope definition |
+| `tool_recommend` | Technology stack recommendations |
+| `research` | Deep technical research (requires JINA_API_KEY) |
+| `design` | Generate design documents (quick/deep mode) |
+
+### Workflow
+
+```
+short_planning (initial) → tool_recommend → short_planning (technical) → design
+```
+
+Detailed skill documentation → [Skill Guide](./.claude/skills/gtplanner/SKILL.md)
 
 ---
 
@@ -206,14 +267,18 @@ GTPlanner/
 ├── fastapi_main.py           # API service entry
 ├── settings.toml             # Configuration file
 │
-├── gtplanner/                # Core code
-│   ├── agent/               # Agent system
-│   │   ├── cli/            # → [CLI Documentation](./gtplanner/agent/cli/README.md)
-│   │   ├── api/            # → [API Documentation](./gtplanner/agent/api/README.md)
-│   │   ├── flows/          # Control flows
-│   │   ├── subflows/       # Specialized subflows
-│   │   └── ...
-│   └── utils/              # Utilities
+├── .claude/                  # Claude Code plugin
+│   ├── plugin.json          # Plugin manifest
+│   ├── skills/gtplanner/    # → [Skill Guide](./.claude/skills/gtplanner/SKILL.md)
+│   └── commands/            # Slash commands
+│
+├── agent/                   # Core agent code
+│   ├── flows/              # Control flows
+│   ├── subflows/           # Specialized subflows
+│   ├── function_calling/   # Tool definitions
+│   └── ...
+│
+├── utils/                  # Utilities
 │
 ├── prefabs/                 # Prefab ecosystem
 │   ├── README.md           # → [Prefab Documentation](./prefabs/README.md)
