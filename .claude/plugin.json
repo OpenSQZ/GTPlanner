@@ -1,0 +1,8 @@
+{
+  "name": "gtplanner",
+  "version": "0.1.0",
+  "description": "AI 驱动的 PRD 生成工具 - 将需求转换为专业的项目规划和技术架构文档",
+  "author": {
+    "name": "Agent Builder Team"
+  }
+}
