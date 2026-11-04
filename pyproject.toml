@@ -25,6 +25,8 @@ dependencies = [
     "dynaconf>=3.1.12",
     "rich>=13.0.0",
     "pydantic>=2.5.0",
+    "truststore>=0.10",
+    "httpx>=0.28.1",
 ]
 
 [tool.setuptools.packages.find]
