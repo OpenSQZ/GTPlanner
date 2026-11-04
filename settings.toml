@@ -4,7 +4,7 @@ debug = true
 [default.logging]
 level = "INFO"
 file_enabled = true
-console_enabled = false  # 关闭控制台输出
+console_enabled = false  # Disable console output
 max_file_size = 10485760  # 10MB
 backup_count = 5
 
@@ -14,12 +14,18 @@ log_requests = true
 log_responses = true
 log_level = "DEBUG"
 log_to_file = true
-log_to_console = false  # 关闭控制台输出
+log_to_console = false  # Disable console output
 
 [default.llm]
 base_url = "@format {env[LLM_BASE_URL]}"
 api_key = "@format {env[LLM_API_KEY]}"
 model = "@format {env[LLM_MODEL]}"
+# Long documents (design.md) can take several minutes to generate without streaming
+timeout = 600
+max_retries = 1
+# Upper bound for generated tokens per call; without it the provider's (smaller) default can cut long PRDs off.
+# 65536 was accepted by glm-5.3-flash on 2026-11-04 and leaves context room for revisions (previous PRD as input).
+max_tokens = 65536
 
 [default.jina]
 api_key = "@format {env[JINA_API_KEY]}"

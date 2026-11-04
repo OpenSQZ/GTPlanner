@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GTPlanner</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --line: #e3e6eb; --text: #1d2330; --muted: #6b7385;
+    --accent: #4f6ef2; --accent-soft: #eef1fe; --user: #4f6ef2; --user-text: #fff;
+    --ok: #1f9d55; --bad: #d64545; --warn: #b7791f; --code: #f1f3f6;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151c; --panel: #1a1e27; --line: #2a303c; --text: #e6e9ef; --muted: #8e97a8;
+      --accent: #7b93ff; --accent-soft: #232b45; --user: #3d57d6; --user-text: #fff;
+      --ok: #4cc38a; --bad: #f07178; --warn: #e0b458; --code: #222733;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font: 14px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  button, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  .app { display: grid; grid-template-columns: 240px minmax(0, 1fr) minmax(0, 1fr); height: 100vh; }
+  .app.no-docs { grid-template-columns: 240px minmax(0, 1fr); }
+  .app.no-docs .docs { display: none; }
+
+  /* Sidebar */
+  .side { border-right: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; min-height: 0; }
+  .brand { padding: 16px; font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  .side .new { margin: 0 12px 12px; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; font-weight: 600; }
+  .sessions { flex: 1; overflow: auto; padding: 0 8px 8px; }
+  .sess { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 8px; color: var(--text); cursor: pointer; }
+  .sess:hover { background: var(--accent-soft); }
+  .sess.active { background: var(--accent-soft); font-weight: 600; }
+  .sess .t { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sess .x { border: 0; background: none; color: var(--muted); padding: 0 4px; visibility: hidden; }
+  .sess:hover .x { visibility: visible; }
+  .side .foot { padding: 12px; border-top: 1px solid var(--line); display: grid; gap: 8px; color: var(--muted); font-size: 12px; }
+  .side select { width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); }
+  .status { display: flex; align-items: center; gap: 6px; }
+  .status i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+  .status.ok i { background: var(--ok); } .status.bad i { background: var(--bad); }
+
+  /* Chat */
+  .chat { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .chat-head { padding: 12px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; background: var(--panel); }
+  .chat-head h1 { font-size: 15px; margin: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ghost { border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 5px 10px; font-size: 13px; }
+  .menu-btn { display: none; }
+  .msgs { flex: 1; overflow: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .empty { margin: auto; text-align: center; color: var(--muted); max-width: 460px; }
+  .empty h2 { color: var(--text); font-size: 20px; margin: 0 0 6px; }
+  .samples { display: grid; gap: 8px; margin-top: 16px; }
+  .samples button { text-align: left; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 10px 12px; }
+  .samples button:hover { border-color: var(--accent); }
+  .msg { max-width: 820px; width: fit-content; }
+  .msg.user { align-self: flex-end; background: var(--user); color: var(--user-text); padding: 9px 14px; border-radius: 14px 14px 4px 14px; white-space: pre-wrap; }
+  .msg.bot { align-self: flex-start; background: var(--panel); border: 1px solid var(--line); padding: 10px 14px; border-radius: 14px 14px 14px 4px; width: 100%; }
+  .msg.err { align-self: stretch; border: 1px solid var(--bad); color: var(--bad); background: transparent; padding: 9px 14px; border-radius: 10px; white-space: pre-wrap; }
+  .md > :first-child { margin-top: 0; } .md > :last-child { margin-bottom: 0; }
+  .md pre { background: var(--code); padding: 10px; border-radius: 6px; overflow-x: auto; }
+  .md code { background: var(--code); padding: 1px 4px; border-radius: 4px; font-size: 13px; }
+  .md pre code { background: none; padding: 0; }
+  .md table { border-collapse: collapse; display: block; overflow-x: auto; }
+  .md th, .md td { border: 1px solid var(--line); padding: 5px 9px; }
+  .tool { align-self: flex-start; font-size: 12.5px; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 6px 10px; display: flex; gap: 8px; align-items: center; }
+  .tool b { color: var(--text); font-weight: 600; }
+  .tool.done .st { color: var(--ok); } .tool.fail .st { color: var(--bad); }
+  .spin { width: 12px; height: 12px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: s 0.8s linear infinite; }
+  @keyframes s { to { transform: rotate(360deg); } }
+  .note { align-self: center; font-size: 12px; color: var(--muted); }
+  .checks { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 3px; font-size: 12.5px; }
+  .checks li { display: flex; gap: 6px; align-items: baseline; overflow-wrap: anywhere; }
+  .checks li.ok b { color: var(--ok); } .checks li.bad b { color: var(--bad); }
+  .checks .d { color: var(--muted); }
+  .warnbox { border: 1px solid var(--warn); color: var(--warn); border-radius: 8px; padding: 6px 10px; margin-top: 6px; font-size: 12.5px; }
+  .proposal { align-self: stretch; border: 1px solid var(--accent); border-radius: 10px; background: var(--panel); padding: 12px 14px; }
+  .proposal h4 { margin: 0 0 6px; }
+  .edit { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; font-size: 13px; }
+  .edit pre { white-space: pre-wrap; margin: 4px 0; padding: 6px 8px; border-radius: 6px; max-height: 180px; overflow: auto; }
+  .edit .del { background: color-mix(in srgb, var(--bad) 14%, transparent); }
+  .edit .add { background: color-mix(in srgb, var(--ok) 14%, transparent); }
+  .proposal .acts { display: flex; gap: 8px; margin-top: 10px; }
+  .btn { border: 0; border-radius: 6px; padding: 6px 12px; font-weight: 600; }
+  .btn.ok { background: var(--ok); color: #fff; } .btn.no { background: var(--line); }
+
+  .composer { border-top: 1px solid var(--line); padding: 12px 20px 16px; background: var(--panel); }
+  .box { display: flex; gap: 10px; align-items: flex-end; border: 1px solid var(--line); border-radius: 12px; padding: 8px 8px 8px 12px; background: var(--bg); }
+  .box:focus-within { border-color: var(--accent); }
+  .box textarea { flex: 1; border: 0; background: transparent; resize: none; outline: none; max-height: 200px; min-height: 24px; }
+  .send { border: 0; background: var(--accent); color: #fff; border-radius: 8px; padding: 8px 14px; font-weight: 600; }
+  .send:disabled { opacity: 0.5; cursor: not-allowed; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  /* Documents */
+  .docs { border-left: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .tabs { display: flex; gap: 4px; padding: 8px 10px 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .tab { border: 0; background: none; padding: 8px 10px; border-bottom: 2px solid transparent; white-space: nowrap; color: var(--muted); }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+  .doc-tools { display: flex; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--line); align-items: center; }
+  .doc-tools .fn { flex: 1; font-size: 12px; color: var(--muted); }
+  .doc-body { flex: 1; overflow: auto; padding: 16px 22px 28px; }
+
+  @media (max-width: 1100px) {
+    .app, .app.no-docs { grid-template-columns: 220px minmax(0, 1fr); }
+    .docs { position: fixed; inset: 0 0 0 auto; width: min(640px, 100%); z-index: 20; box-shadow: -8px 0 24px rgba(0,0,0,0.15); }
+    .app.docs-closed .docs { display: none; }
+  }
+  @media (max-width: 720px) {
+    .app, .app.no-docs { grid-template-columns: minmax(0, 1fr); }
+    .side { position: fixed; inset: 0 auto 0 0; width: 260px; z-index: 30; transform: translateX(-100%); transition: transform 0.2s; }
+    .app.side-open .side { transform: none; box-shadow: 8px 0 24px rgba(0,0,0,0.2); }
+    .menu-btn { display: inline-block; }
+    .msgs, .composer { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app no-docs" id="app">
+  <aside class="side">
+    <div class="brand"><span class="dot"></span>GTPlanner</div>
+    <button class="new" id="newBtn">+ New plan</button>
+    <div class="sessions" id="sessions"></div>
+    <div class="foot">
+      <label>Mode for new plans
+        <select id="mode">
+          <option value="prd">Quick PRD (one step)</option>
+          <option value="agent">Agent planner (step by step)</option>
+        </select>
+      </label>
+      <label>PRD template
+        <select id="tpl">
+          <option value="fullstack_nextjs">Full Stack AI Coding (Starter Next JS)</option>
+          <option value="general">General product PRD</option>
+        </select>
+      </label>
+      <label>Document language
+        <select id="lang">
+          <option value="auto">Auto (same as my message)</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="en">English</option>
+          <option value="zh">中文</option>
+          <option value="ja">日本語</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+        </select>
+      </label>
+      <div class="status" id="status"><i></i><span>Checking server…</span></div>
+      <a href="/docs" target="_blank" style="color:var(--muted)">API docs</a>
+    </div>
+  </aside>
+
+  <main class="chat">
+    <div class="chat-head">
+      <button class="ghost menu-btn" id="menuBtn">☰</button>
+      <h1 id="title">New plan</h1>
+      <button class="ghost" id="docsBtn" hidden>Documents</button>
+    </div>
+    <div class="msgs" id="msgs"></div>
+    <div class="composer">
+      <div class="box">
+        <textarea id="input" rows="1" placeholder="Describe what you want to build…"></textarea>
+        <button class="send" id="send">Send</button>
+      </div>
+      <div class="hint" id="hint"></div>
+    </div>
+  </main>
+
+  <section class="docs">
+    <div class="tabs" id="tabs"></div>
+    <div class="doc-tools">
+      <span class="fn" id="docName"></span>
+      <button class="ghost" id="copyDoc">Copy</button>
+      <button class="ghost" id="dlDoc">.md</button>
+      <button class="ghost" id="dlRepo" title="docs/PRD.md tanpa bagian 0 (berisi token)">For repo</button>
+      <button class="ghost" id="dlWord">Word</button>
+      <button class="ghost" id="printDoc">Print / PDF</button>
+      <button class="ghost" id="closeDocs">✕</button>
+    </div>
+    <div class="doc-body md" id="docBody"></div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const STORE = "gtplanner.sessions.v1";
+  const md = (s) => {
+    const text = s || "";
+    if (window.marked && window.DOMPurify) return DOMPurify.sanitize(marked.parse(text));
+    const d = document.createElement("div"); d.textContent = text; return "<pre>" + d.innerHTML + "</pre>";
+  };
+  const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; };
+
+  let state = load();
+  let current = null;       // active session object
+  let busy = false;
+  let activeDoc = null;
+  let streamingDoc = false;
+
+  function load() {
+    const fresh = { sessions: [], lang: "auto", mode: "prd", template: "fullstack_nextjs" };
+    try { return Object.assign(fresh, JSON.parse(localStorage.getItem(STORE)) || {}); }
+    catch { return fresh; }
+  }
+  function save() {
+    try { localStorage.setItem(STORE, JSON.stringify(state)); } catch {}
+  }
+  function newSession() {
+    const s = { id: uid(), title: "New plan", created: Date.now(), mode: state.mode || "prd", template: state.template || "fullstack_nextjs", history: [], view: [], toolResults: {}, docs: {} };
+    state.sessions.unshift(s); save(); open(s.id);
+  }
+  function open(id) {
+    current = state.sessions.find((s) => s.id === id);
+    if (!current) return newSession();
+    activeDoc = Object.keys(current.docs)[0] || null;
+    $("app").classList.remove("side-open");
+    render();
+  }
+
+  // ---------- rendering ----------
+  function renderSessions() {
+    $("sessions").innerHTML = "";
+    for (const s of state.sessions) {
+      const el = document.createElement("div");
+      el.className = "sess" + (current && s.id === current.id ? " active" : "");
+      el.innerHTML = `<span class="t">${esc(s.title)}</span><button class="x" title="Delete">✕</button>`;
+      el.onclick = () => { if (!busy) open(s.id); };
+      el.querySelector(".x").onclick = (e) => {
+        e.stopPropagation(); if (busy) return;
+        state.sessions = state.sessions.filter((x) => x.id !== s.id); save();
+        if (current && current.id === s.id) { state.sessions.length ? open(state.sessions[0].id) : newSession(); }
+        else renderSessions();
+      };
+      $("sessions").appendChild(el);
+    }
+  }
+
+  function renderMessages() {
+    const box = $("msgs"); box.innerHTML = "";
+    if (!current.view.length) {
+      box.innerHTML = isPrd()
+        ? `<div class="empty"><h2>Apa yang ingin Anda bangun?</h2>
+        <div>Tulis ide aplikasinya (boleh sertakan link website referensi). PRD lengkap akan langsung dibuat dan bisa diunduh. Kirim pesan lagi untuk merevisi.</div>
+        <div class="samples">
+          <button>Buatkan PRD aplikasi toko online lengkap dengan admin panel, pembayaran Midtrans, dan ongkir otomatis</button>
+          <button>Buatkan PRD aplikasi booking klinik dengan jadwal dokter, reminder WhatsApp, dan rekam medis sederhana</button>
+          <button>Buatkan PRD aplikasi kasir (POS) untuk kafe dengan multi cabang dan laporan penjualan</button>
+        </div></div>`
+        : `<div class="empty"><h2>What do you want to build?</h2>
+        <div>Agent planner: GTPlanner scopes an AI agent/workflow step by step and asks you to confirm each step (reply "OK") before generating the design document.</div>
+        <div class="samples">
+          <button>Build an agent that downloads YouTube videos, extracts subtitles and writes a summary</button>
+          <button>Design an agent that monitors GitHub issues, analyzes sentiment and auto-assigns labels</button>
+        </div></div>`;
+      box.querySelectorAll(".samples button").forEach((b) => b.onclick = () => { $("input").value = b.textContent; send(); });
+      return;
+    }
+    for (const item of current.view) box.appendChild(renderItem(item));
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function renderItem(item) {
+    const el = document.createElement("div");
+    if (item.kind === "user") { el.className = "msg user"; el.textContent = item.text; }
+    else if (item.kind === "bot") { el.className = "msg bot md"; el.innerHTML = md(item.text); }
+    else if (item.kind === "error") { el.className = "msg err"; el.textContent = "⚠ " + item.text; }
+    else if (item.kind === "note") { el.className = "note"; el.textContent = item.text; }
+    else if (item.kind === "prd") {
+      el.className = "msg bot";
+      if (item.status === "writing") {
+        el.innerHTML = `<div class="tool" style="border:0;padding:0"><span class="spin"></span><span>${esc(item.message || "Writing the PRD...")}${item.chars ? ` · ${item.chars.toLocaleString()} characters` : ""}</span></div>`;
+      } else {
+        const v = item.validation;
+        const failed = v && v.checks ? v.checks.filter((c) => !c.ok).length : 0;
+        const head = item.status === "truncated"
+          ? `<div>⚠️ <b>${esc(item.filename)}</b> <b>terpotong</b> (${(item.chars || 0).toLocaleString()} characters): LLM berhenti karena batas token. Jangan dipakai sebagai PRD final. Mengirim pesan revisi (mis. "lanjutkan") tidak menyambung dokumen ini, karena revisi menulis ulang seluruh PRD dan kemungkinan terpotong lagi. Sebaiknya generate ulang dengan scope permintaan yang lebih kecil, naikkan <code>max_tokens</code> di settings.toml, atau pakai model dengan batas output lebih besar.</div>`
+          : `<div>${failed ? "⚠️" : "✅"} <b>${esc(item.filename)}</b> ${item.revised ? "updated" : "is ready"} (${(item.chars || 0).toLocaleString()} characters)${failed ? `, ${failed} pengecekan gagal` : ""}. Send another message to revise it.</div>`;
+        const meta = v ? `<div class="warnbox" style="${item.status === "truncated" ? "" : "border-color:var(--line);color:var(--muted)"}">finish_reason: <b>${esc(String(v.finish_reason ?? "tidak dilaporkan"))}</b> · max_tokens: <b>${v.max_tokens ? esc(String(v.max_tokens)) : "tidak diset (default provider)"}</b></div>` : "";
+        const list = v && v.checks ? `<ul class="checks">${v.checks.map((c) => `<li class="${c.ok ? "ok" : "bad"}"><b>${c.ok ? "✓ Lolos" : "✗ Gagal"}</b><span>${esc(c.label)}${c.detail ? ` <span class="d">— ${esc(String(c.detail))}</span>` : ""}</span></li>`).join("")}</ul>` : "";
+        el.innerHTML = `${head}${meta}${list}
+          <div class="acts" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <button class="btn ok" data-a="open">Open</button>
+            <button class="btn no" data-a="md">Download .md</button>
+            <button class="btn no" data-a="repo" title="Tanpa bagian 0 yang berisi token">Download untuk repo (docs/PRD.md)</button>
+            <button class="btn no" data-a="word">Download Word</button>
+            <button class="btn no" data-a="print">Print / PDF</button>
+          </div>`;
+        el.querySelectorAll("[data-a]").forEach((b) => b.onclick = () => {
+          activeDoc = item.filename; $("app").classList.remove("docs-closed"); renderDocs();
+          if (b.dataset.a === "md") downloadMd(); else if (b.dataset.a === "repo") downloadRepoMd(); else if (b.dataset.a === "word") downloadWord(); else if (b.dataset.a === "print") printDoc();
+        });
+      }
+    }
+    else if (item.kind === "tool") {
+      el.className = "tool" + (item.status === "completed" ? " done" : item.status === "failed" ? " fail" : "");
+      const icon = item.status === "completed" ? "✓" : item.status === "failed" ? "✕" : "";
+      el.innerHTML = (icon ? "" : '<span class="spin"></span>') +
+        `<span><b>${esc(item.name)}</b> · <span class="st">${esc(item.message || item.status)}</span></span>` + (icon ? `<span class="st">${icon}</span>` : "");
+    } else if (item.kind === "proposal") {
+      el.className = "proposal";
+      const p = item.proposal;
+      el.innerHTML = `<h4>Proposed edit to ${esc(p.document_filename || p.document_type)}</h4><div>${esc(p.summary || "")}</div>` +
+        (p.edits || []).map((e) => `<div class="edit"><div>${esc(e.reason || "")}</div><pre class="del">${esc(e.search)}</pre><pre class="add">${esc(e.replace)}</pre></div>`).join("") +
+        (item.decision ? `<div class="acts"><span class="note">${item.decision === "accepted" ? "✓ Applied" : "✕ Rejected"}</span></div>`
+          : `<div class="acts"><button class="btn ok">Apply</button><button class="btn no">Reject</button></div>`);
+      if (!item.decision) {
+        el.querySelector(".ok").onclick = () => decide(item, "accepted");
+        el.querySelector(".no").onclick = () => decide(item, "rejected");
+      }
+    }
+    return el;
+  }
+
+  function renderDocs() {
+    const names = Object.keys(current.docs);
+    $("docsBtn").hidden = !names.length;
+    const app = $("app");
+    app.classList.toggle("no-docs", !names.length);
+    if (!names.length) return;
+    if (!activeDoc || !current.docs[activeDoc]) activeDoc = names[0];
+    $("tabs").innerHTML = "";
+    for (const n of names) {
+      const t = document.createElement("button");
+      t.className = "tab" + (n === activeDoc ? " active" : "");
+      t.textContent = n; t.onclick = () => { activeDoc = n; renderDocs(); };
+      $("tabs").appendChild(t);
+    }
+    $("docName").textContent = activeDoc;
+    $("docBody").innerHTML = md(current.docs[activeDoc]);
+    if (!streamingDoc) renderMermaid($("docBody"));
+  }
+
+  let mermaidReady = false;
+  function renderMermaid(root) {
+    if (!window.mermaid) return;
+    if (!mermaidReady) {
+      const dark = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+      mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default", securityLevel: "strict" });
+      mermaidReady = true;
+    }
+    const blocks = root.querySelectorAll("pre code.language-mermaid");
+    blocks.forEach((code, i) => {
+      const div = document.createElement("div");
+      div.className = "mermaid"; div.textContent = code.textContent;
+      code.parentElement.replaceWith(div);
+    });
+    if (blocks.length) mermaid.run({ nodes: root.querySelectorAll(".mermaid") }).catch(() => {});
+  }
+
+  function isPrd() { return (current && current.mode) === "prd"; }
+
+  function render() {
+    $("title").textContent = current.title + (isPrd() ? "" : "  ·  Agent planner");
+    $("hint").textContent = isPrd()
+      ? "Enter to send · Shift+Enter for a new line. The first message creates the PRD; later messages revise it. Large PRDs can take several minutes."
+      : "Enter to send · Shift+Enter for a new line. GTPlanner asks you to confirm each step (reply \"OK\" / \"continue\") before generating the design document.";
+    $("input").placeholder = isPrd() ? (Object.keys(current.docs).length ? "Ask for a change, e.g. tambahkan fitur voucher dan flash sale…" : "Describe the app you want, optionally with a reference website link…") : "Describe the agent you want to build…";
+    renderSessions(); renderMessages(); renderDocs();
+  }
+
+  // ---------- documents ----------
+  function storeDoc(filename, content) {
+    current.docs[filename] = content;
+    const designs = current.toolResults.designs || (current.toolResults.designs = {});
+    const list = designs.generated_documents || (designs.generated_documents = []);
+    const existing = list.filter((d) => d.filename === filename);
+    if (existing.length) existing.forEach((d) => { d.content = content; d.timestamp = Date.now() / 1000; });
+    else list.push({ type: filename.includes("database") ? "database_design" : "design", filename, content, timestamp: Date.now() / 1000 });
+    activeDoc = filename;
+    $("app").classList.remove("docs-closed");
+  }
+
+  function decide(item, decision) {
+    const p = item.proposal;
+    item.decision = decision;
+    if (decision === "accepted") {
+      const name = p.document_filename;
+      let content = current.docs[name] ?? "";
+      const missing = [];
+      for (const e of p.edits || []) {
+        if (content.includes(e.search)) content = content.replace(e.search, e.replace);
+        else missing.push(e.reason || e.search.slice(0, 40));
+      }
+      storeDoc(name, content);
+      if (missing.length) current.view.push({ kind: "error", text: "Some edits could not be applied (text not found): " + missing.join("; ") });
+    }
+    const pend = current.toolResults.pending_document_edits || (current.toolResults.pending_document_edits = {});
+    if (pend[p.proposal_id]) pend[p.proposal_id].user_decision = decision;
+    save(); render();
+  }
+
+  // ---------- networking ----------
+  async function checkServer() {
+    const el = $("status");
+    try {
+      const r = await fetch("/health");
+      const ok = r.ok && (await r.json()).status === "healthy";
+      el.className = "status " + (ok ? "ok" : "bad");
+      el.querySelector("span").textContent = ok ? "Server online" : "Server unhealthy";
+    } catch { el.className = "status bad"; el.querySelector("span").textContent = "Server offline"; }
+  }
+
+  function setBusy(v) { busy = v; $("send").disabled = v; $("send").textContent = v ? "…" : "Send"; }
+
+  async function send() {
+    const text = $("input").value.trim();
+    if (!text || busy) return;
+    $("input").value = ""; autosize();
+    if (current.title === "New plan") current.title = text.slice(0, 48);
+    if (isPrd()) return sendPrd(text);
+    const userMsg = { role: "user", content: text, timestamp: new Date().toISOString() };
+    current.history.push(userMsg);
+    current.view.push({ kind: "user", text });
+    save(); render();
+
+    setBusy(true);
+    let bot = null;       // current streaming bot view item
+    let botEl = null;
+    const tools = {};     // call_id -> view item
+    const msgs = $("msgs");
+    const redraw = () => { renderMessages(); };
+
+    const handle = (type, ev) => {
+      const d = ev.data || {};
+      switch (type) {
+        case "assistant_message_start":
+          bot = null; break;
+        case "assistant_message_chunk": {
+          if (!bot) { bot = { kind: "bot", text: "" }; current.view.push(bot); redraw(); botEl = msgs.lastElementChild; }
+          bot.text += d.content || "";
+          if (botEl) { botEl.innerHTML = md(bot.text); msgs.scrollTop = msgs.scrollHeight; }
+          break;
+        }
+        case "assistant_message_end":
+          if (bot && d.complete_message && d.complete_message.length > bot.text.length) { bot.text = d.complete_message; redraw(); }
+          bot = null; botEl = null; break;
+        case "tool_call_start": case "tool_call_progress": case "tool_call_end": {
+          const key = d.call_id || d.tool_name;
+          let t = tools[key];
+          if (!t) { t = tools[key] = { kind: "tool", name: d.tool_name }; current.view.push(t); }
+          t.status = d.status || (type === "tool_call_end" ? "completed" : "running");
+          t.message = d.status === "failed" ? (d.error_message || d.progress_message) : d.progress_message;
+          if (type === "tool_call_end" && d.result && d.result.success === true && d.tool_name === "edit_document" && d.result.edits) {
+            current.view.push({ kind: "proposal", proposal: d.result });
+          }
+          bot = null; botEl = null; redraw(); break;
+        }
+        case "design_document_generated":
+          if (d.filename && d.content) { storeDoc(d.filename, d.content); renderDocs(); }
+          break;
+        case "error":
+          current.view.push({ kind: "error", text: d.error_message || ev.error || "Unknown error" }); redraw(); break;
+        case "conversation_end":
+          if (Array.isArray(d.new_messages)) {
+            for (const m of d.new_messages) current.history.push(m);
+            const upd = d.tool_execution_results_updates || {};
+            for (const [k, v] of Object.entries(upd)) {
+              if (k === "designs" && v && current.toolResults.designs) {
+                Object.assign(current.toolResults.designs, v);
+                for (const doc of v.generated_documents || []) current.docs[doc.filename] = doc.content;
+              } else current.toolResults[k] = v;
+            }
+            if (d.success === false && d.error && !current.view.some((x) => x.kind === "error" && x.text === d.error)) {
+              current.view.push({ kind: "error", text: d.error });
+            }
+          }
+          break;
+      }
+    };
+
+    try {
+      const res = await fetch("/api/chat/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: current.id,
+          dialogue_history: current.history,
+          tool_execution_results: current.toolResults,
+          session_metadata: { language: state.lang },
+          language: state.lang,
+        }),
+      });
+      if (!res.ok || !res.body) throw new Error("HTTP " + res.status + " " + (await res.text()).slice(0, 300));
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let i;
+        while ((i = buf.indexOf("\n\n")) >= 0) {
+          const block = buf.slice(0, i); buf = buf.slice(i + 2);
+          let type = null, data = "";
+          for (const line of block.split("\n")) {
+            if (line.startsWith("event:")) type = line.slice(6).trim();
+            else if (line.startsWith("data:")) data += line.slice(5).trim();
+          }
+          if (!data) continue;
+          let ev; try { ev = JSON.parse(data); } catch { continue; }
+          handle(ev.event_type || type, ev);
+        }
+      }
+    } catch (e) {
+      current.view.push({ kind: "error", text: "Request failed: " + e.message });
+    } finally {
+      // Mark tools that never reported an end as finished
+      for (const t of Object.values(tools)) if (t.status !== "completed" && t.status !== "failed") t.status = "completed";
+      setBusy(false); save(); render();
+      $("input").focus();
+    }
+  }
+
+  // ---------- Quick PRD mode ----------
+  function prdFilename(content) {
+    const m = /^#\s*(?:PRD\s*[:\-–]\s*)?(.+)$/m.exec(content || "");
+    const name = (m ? m[1] : current.title).replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, " ").trim().slice(0, 60);
+    return "PRD - " + (name || "Product") + ".md";
+  }
+
+  async function readSse(res, onEvent) {
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf("\n\n")) >= 0) {
+        const block = buf.slice(0, i); buf = buf.slice(i + 2);
+        let type = null, data = "";
+        for (const line of block.split("\n")) {
+          if (line.startsWith("event:")) type = line.slice(6).trim();
+          else if (line.startsWith("data:")) data += line.slice(5).trim();
+        }
+        if (!data) continue;
+        let ev; try { ev = JSON.parse(data); } catch { continue; }
+        onEvent(type, ev);
+      }
+    }
+  }
+
+  async function sendPrd(text) {
+    const prevName = current.prdDoc && current.docs[current.prdDoc] ? current.prdDoc : null;
+    const previous = prevName ? current.docs[prevName] : null;
+    current.view.push({ kind: "user", text });
+    const item = { kind: "prd", status: "writing", message: previous ? "Revising the PRD..." : "Preparing...", chars: 0 };
+    current.view.push(item);
+    save(); render();
+    setBusy(true);
+
+    const msgs = $("msgs");
+    const itemEl = () => msgs.lastElementChild;
+    const tempName = previous ? prevName : "PRD (writing…).md";
+    let content = "";
+    let lastPaint = 0;
+    streamingDoc = true;
+
+    try {
+      const res = await fetch("/api/prd/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request: text, language: state.lang || "auto", previous_prd: previous, template: current.template || state.template || "fullstack_nextjs" }),
+      });
+      if (!res.ok || !res.body) throw new Error("HTTP " + res.status + " " + (await res.text()).slice(0, 300));
+      let finished = false;
+      let validation = null;
+      await readSse(res, (_t, ev) => {
+        if (ev.type === "status") { item.message = ev.message; }
+        else if (ev.type === "reference") {
+          current.view.splice(current.view.length - 1, 0, { kind: "note", text: ev.ok ? `Read reference: ${ev.title || ev.url}` : `Could not read ${ev.url} (${ev.error}); using general knowledge instead` });
+          renderMessages();
+        }
+        else if (ev.type === "chunk") {
+          content += ev.content;
+          item.chars = content.length;
+          const now = Date.now();
+          if (now - lastPaint > 400) {
+            lastPaint = now;
+            current.docs[tempName] = content; activeDoc = tempName;
+            $("app").classList.remove("docs-closed");
+            renderDocs();
+            const body = $("docBody"); body.scrollTop = body.scrollHeight;
+          }
+        }
+        else if (ev.type === "validation") { validation = ev; }
+        else if (ev.type === "done") { content = ev.content || content; finished = true; }
+        else if (ev.type === "error") { throw new Error(ev.message); }
+        const el = itemEl(); if (el) el.replaceWith(renderItem(item));
+      });
+      if (!finished || !content.trim()) throw new Error("The model returned no document. Please try again.");
+
+      if (!previous) delete current.docs[tempName];
+      const name = previous ? prevName : prdFilename(content);
+      current.docs[name] = content;
+      current.prdDoc = name;
+      activeDoc = name;
+      const truncated = !!(validation && validation.truncated);
+      Object.assign(item, { status: truncated ? "truncated" : "done", filename: name, chars: content.length, revised: !!previous, validation });
+    } catch (e) {
+      if (!previous) delete current.docs[tempName];
+      else current.docs[prevName] = previous;
+      current.view.pop();
+      current.view.push({ kind: "error", text: "PRD generation failed: " + e.message });
+    } finally {
+      streamingDoc = false;
+      setBusy(false); save(); render();
+      $("input").focus();
+    }
+  }
+
+  // ---------- downloads ----------
+  function docHtml() {
+    const body = $("docBody").innerHTML;
+    return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(activeDoc)}</title>
+<style>body{font:11pt/1.5 Calibri,Arial,sans-serif;color:#111;max-width:900px;margin:24px auto;padding:0 16px}
+table{border-collapse:collapse;margin:8px 0}th,td{border:1px solid #999;padding:4px 8px;vertical-align:top}
+pre{background:#f3f3f3;padding:8px;white-space:pre-wrap}code{font-family:Consolas,monospace}h1,h2,h3{color:#1f3a8a}</style>
+</head><body>${body}</body></html>`;
+  }
+  function download(name, blob) {
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  }
+  function downloadMd() {
+    download(activeDoc || "PRD.md", new Blob([current.docs[activeDoc] || ""], { type: "text/markdown;charset=utf-8" }));
+  }
+  function stripSetupSection(text) {
+    // Remove "## 0. Setup proyek ..." up to the next "## 1." heading (it contains the template token)
+    return (text || "").replace(/^## 0\.[^\n]*\n[\s\S]*?(?=^## 1\.)/m, "");
+  }
+  function downloadRepoMd() {
+    download("PRD.md", new Blob([stripSetupSection(current.docs[activeDoc])], { type: "text/markdown;charset=utf-8" }));
+  }
+  function downloadWord() {
+    const name = (activeDoc || "PRD.md").replace(/\.md$/i, "") + ".doc";
+    download(name, new Blob(["﻿", docHtml()], { type: "application/msword" }));
+  }
+  function printDoc() {
+    const w = window.open("", "_blank");
+    if (!w) { alert("Please allow pop-ups to print / save as PDF."); return; }
+    w.document.write(docHtml()); w.document.close();
+    setTimeout(() => { try { w.focus(); w.print(); } catch {} }, 600);
+  }
+
+  // ---------- UI wiring ----------
+  function autosize() { const t = $("input"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 200) + "px"; }
+  $("input").addEventListener("input", autosize);
+  $("input").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
+  $("send").onclick = send;
+  $("newBtn").onclick = () => { if (!busy) newSession(); };
+  $("menuBtn").onclick = () => $("app").classList.toggle("side-open");
+  $("docsBtn").onclick = () => $("app").classList.toggle("docs-closed");
+  $("closeDocs").onclick = () => $("app").classList.add("docs-closed");
+  $("lang").value = state.lang || "auto";
+  $("lang").onchange = (e) => { state.lang = e.target.value; save(); };
+  $("tpl").value = state.template || "fullstack_nextjs";
+  $("tpl").onchange = (e) => {
+    state.template = e.target.value; save();
+    if (!busy && current && !current.view.length) { current.template = state.template; save(); }
+  };
+  $("mode").value = state.mode || "prd";
+  $("mode").onchange = (e) => {
+    state.mode = e.target.value; save();
+    // Switch the current plan too if nothing has been sent yet; otherwise start a new one
+    if (!busy) { if (!current.view.length) { current.mode = state.mode; save(); render(); } else newSession(); }
+  };
+  $("copyDoc").onclick = async () => {
+    try { await navigator.clipboard.writeText(current.docs[activeDoc] || ""); $("copyDoc").textContent = "Copied"; setTimeout(() => $("copyDoc").textContent = "Copy", 1200); } catch {}
+  };
+  $("dlDoc").onclick = downloadMd;
+  $("dlWord").onclick = downloadWord;
+  $("dlRepo").onclick = downloadRepoMd;
+  $("printDoc").onclick = printDoc;
+
+  checkServer(); setInterval(checkServer, 15000);
+  state.sessions.length ? open(state.sessions[0].id) : newSession();
+})();
+</script>
+</body>
+</html>

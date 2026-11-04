@@ -6,117 +6,118 @@ from typing import Optional, List, Dict, Any
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Query, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
+from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-# 导入 SSE GTPlanner API
+# Import the SSE GTPlanner API
 from gtplanner.agent.api.agent_api import SSEGTPlanner
 
-# 导入索引管理器
+# Import the index manager
 from gtplanner.agent.utils.startup_init import initialize_application
 
-# 配置日志
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# 应用生命周期管理
+# Application lifespan management
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期管理：启动和关闭事件"""
-    # 启动时执行
-    logger.info("🚀 GTPlanner API 启动中...")
+    """Application lifespan management: startup and shutdown events"""
+    # Run on startup
+    logger.info("🚀 GTPlanner API starting...")
     
     try:
-        # 初始化应用，包括预加载预制件索引
+        # Initialize the application, including preloading the prefab index
         result = await initialize_application(
             preload_index=True
         )
 
         if result["success"]:
-            logger.info("✅ 应用初始化成功")
+            logger.info("✅ Application initialized successfully")
             if "prefab_index" in result["components"]:
                 index_info = result["components"]["prefab_index"]
-                logger.info(f"📦 预制件索引已就绪: {index_info.get('index_name', 'N/A')}")
+                logger.info(f"📦 Prefab index ready: {index_info.get('index_name', 'N/A')}")
         else:
-            logger.error("❌ 应用初始化失败")
+            logger.error("❌ Application initialization failed")
             for error in result["errors"]:
                 logger.error(f"  - {error}")
 
     except Exception as e:
-        logger.error(f"❌ 启动时初始化失败: {str(e)}")
-        # 不阻止应用启动，但记录错误
+        logger.error(f"❌ Initialization failed at startup: {str(e)}")
+        # Don't block startup, but log the error
     
-    yield  # 应用运行期间
+    yield  # While the application is running
     
-    # 关闭时执行（如果需要清理资源）
-    logger.info("👋 GTPlanner API 正在关闭...")
+    # Run on shutdown (clean up resources if needed)
+    logger.info("👋 GTPlanner API shutting down...")
 
 app = FastAPI(
     title="GTPlanner API",
     description="""
-智能规划助手 API，支持流式响应和实时工具调用
+Intelligent planning assistant API with streaming responses and real-time tool calls
 
-## 核心功能
-- ✅ 流式 SSE 响应
-- ✅ 实时工具调用
-- ✅ 多模态输入（文本 + 图片）
-- ✅ 多语言支持（中文、英文、日文、西班牙语、法语）
+## Core Features
+- ✅ Streaming SSE responses
+- ✅ Real-time tool calls
+- ✅ Multimodal input (text + images)
+- ✅ Multilingual support (Chinese, English, Japanese, Spanish, French)
 
-## 多模态支持 🖼️
-支持用户发送图片（架构图、截图、设计稿、流程图等）：
-- 图片格式：HTTP URL 或 Base64 Data URL
-- 图片类型：JPEG、PNG、GIF、WebP 等
-- 细节级别：auto（默认）、low（快速）、high（高精度）
+## Multimodal Support 🖼️
+Users can send images (architecture diagrams, screenshots, design mockups, flowcharts, etc.):
+- Image format: HTTP URL or Base64 Data URL
+- Image types: JPEG, PNG, GIF, WebP, etc.
+- Detail level: auto (default), low (fast), high (high precision)
 
-详见 /api/chat/agent 接口文档。
+See the /api/chat/agent endpoint documentation for details.
     """,
     version="1.0.0",
     lifespan=lifespan
 )
 
-# CORS 配置
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 在生产环境中应该限制具体域名
+    allow_origins=["*"],  # Should be restricted to specific domains in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# 现有路由已移除，只保留 SSE Agent 路由
+# Existing routes removed; only the SSE Agent route is kept
 
-# 创建全局 SSE API 实例
+# Create the global SSE API instance
 sse_api = SSEGTPlanner(verbose=True)
 
-# 请求模型
+# Request models
 class AgentContextRequest(BaseModel):
     """
-    AgentContext 请求模型（直接对应后端 AgentContext）
+    AgentContext request model (maps directly to the backend AgentContext)
     
-    支持多模态消息（文本+图片）：
-    dialogue_history 中的每条消息的 content 字段可以是：
-    1. 纯文本字符串：
-       {"role": "user", "content": "设计一个系统", "timestamp": "..."}
+    Supports multimodal messages (text + images):
+    The content field of each message in dialogue_history can be:
+    1. A plain text string:
+       {"role": "user", "content": "Design a system", "timestamp": "..."}
     
-    2. 多模态列表（文本+图片）：
+    2. A multimodal list (text + images):
        {
            "role": "user",
            "content": [
-               {"type": "text", "text": "分析这个架构图"},
+               {"type": "text", "text": "Analyze this architecture diagram"},
                {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,...", "detail": "high"}}
            ],
            "timestamp": "..."
        }
     
-    图片格式支持：
+    Supported image formats:
     - HTTP/HTTPS URL: "https://example.com/image.jpg"
     - Base64 Data URL: "data:image/jpeg;base64,/9j/4AAQ..."
     
-    图片细节级别（detail）：
-    - "auto": 自动选择（默认，平衡速度和准确性）
-    - "low": 低细节模式（更快、更便宜，适合简单图片）
-    - "high": 高细节模式（更慢、更贵，适合复杂图片如架构图、设计稿）
+    Image detail level (detail):
+    - "auto": automatic (default, balances speed and accuracy)
+    - "low": low detail mode (faster, cheaper, good for simple images)
+    - "high": high detail mode (slower, more expensive, good for complex images such as architecture diagrams and mockups)
     """
     session_id: str
     dialogue_history: List[Dict[str, Any]]
@@ -124,17 +125,58 @@ class AgentContextRequest(BaseModel):
     session_metadata: Dict[str, Any] = {}
     last_updated: Optional[str] = None
     is_compressed: bool = False
-    language: Optional[str] = None  # 新增：语言选择字段，支持 'zh', 'en', 'ja', 'es', 'fr'
+    language: Optional[str] = None  # New: language selection field, supports 'zh', 'en', 'ja', 'es', 'fr'
 
-    # SSE 配置选项（不属于 AgentContext，但用于 API 配置）
+    # SSE configuration options (not part of AgentContext, but used for API configuration)
     include_metadata: bool = False
     buffer_events: bool = False
     heartbeat_interval: float = 30.0
 
-# 健康检查端点（增强版）
+# Web UI
+WEB_UI_FILE = Path(__file__).parent / "static" / "index.html"
+
+
+@app.get("/", include_in_schema=False)
+async def web_ui():
+    """Serve the GTPlanner web UI"""
+    return FileResponse(WEB_UI_FILE, media_type="text/html")
+
+
+class PRDRequest(BaseModel):
+    """Quick PRD generation request"""
+    request: str
+    language: str = "auto"  # "auto" = same language as the request, or en/id/zh/ja/es/fr
+    previous_prd: Optional[str] = None  # When set, the PRD is revised according to `request`
+    template: str = "fullstack_nextjs"  # "fullstack_nextjs" (Starter Next JS framework) or "general"
+
+
+@app.post("/api/prd/stream")
+async def prd_stream(body: PRDRequest):
+    """Generate (or revise) a complete PRD in one streaming call"""
+    from gtplanner.agent.prd_generator import stream_prd
+
+    if not body.request.strip():
+        raise HTTPException(status_code=400, detail="request is required")
+
+    async def generate():
+        try:
+            async for event in stream_prd(body.request, body.language, body.previous_prd, body.template):
+                yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+        except Exception as e:
+            logger.error(f"PRD generation error: {e}", exc_info=True)
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
+    )
+
+
+# Health check endpoint (enhanced)
 @app.get("/health")
 async def health_check():
-    """增强的健康检查端点，包含 API 状态信息"""
+    """Enhanced health check endpoint including API status information"""
     api_status = sse_api.get_api_status()
     return {
         "status": "healthy",
@@ -145,18 +187,18 @@ async def health_check():
 
 @app.get("/api/status")
 async def api_status():
-    """获取详细的 API 状态信息"""
+    """Get detailed API status information"""
     return sse_api.get_api_status()
 
-# 测试页面端点已移除
+# Test page endpoint removed
 
-# 普通聊天API已移除，只保留SSE Agent API
+# Plain chat API removed; only the SSE Agent API is kept
 
 @app.post("/api/chat/agent")
 async def chat_agent_stream(request: AgentContextRequest):
-    """SSE 流式聊天端点 - GTPlanner Agent"""
+    """SSE streaming chat endpoint - GTPlanner Agent"""
     try:
-        # 验证 AgentContext 数据
+        # Validate AgentContext data
         if not request.session_id.strip():
             raise HTTPException(status_code=400, detail="session_id is required")
 
@@ -165,9 +207,9 @@ async def chat_agent_stream(request: AgentContextRequest):
 
         logger.info(f"Starting SSE stream for session: {request.session_id}, messages: {len(request.dialogue_history)}")
 
-        # 解析多模态消息内容（如果 content 是 JSON 字符串，解析成数组）
+        # Parse multimodal message content (if content is a JSON string, parse it into a list)
         def parse_message_content(message: Dict[str, Any]) -> Dict[str, Any]:
-            """解析消息内容，支持多模态格式"""
+            """Parse message content, supporting multimodal format"""
             content = message.get("content")
             if isinstance(content, str) and content.strip().startswith('['):
                 try:
@@ -176,18 +218,18 @@ async def chat_agent_stream(request: AgentContextRequest):
                         message["content"] = parsed
                         logger.debug(f"Parsed multimodal content: {len(parsed)} parts")
                 except json.JSONDecodeError:
-                    # 解析失败，保持原字符串
+                    # Parsing failed, keep the original string
                     pass
             return message
         
-        # 处理 dialogue_history 中的所有消息
+        # Process all messages in dialogue_history
         parsed_history = [parse_message_content(msg.copy()) for msg in request.dialogue_history]
         request.dialogue_history = parsed_history
 
         async def generate_sse_stream():
-            """生成 SSE 数据流"""
+            """Generate the SSE data stream"""
             try:
-                # 发送对话开始事件（使用标准的 conversation_start 事件类型）
+                # Send the conversation start event (using the standard conversation_start event type)
                 conversation_start_event = {
                     "event_type": "conversation_start",
                     "timestamp": datetime.now().isoformat(),
@@ -204,20 +246,20 @@ async def chat_agent_stream(request: AgentContextRequest):
                 }
                 yield f"event: conversation_start\ndata: {json.dumps(conversation_start_event, ensure_ascii=False)}\n\n"
 
-                # 创建一个队列来收集 SSE 数据
+                # Create a queue to collect SSE data
                 import asyncio
                 sse_queue = asyncio.Queue()
                 processing_complete = False
 
                 async def queue_sse_data(data: str):
-                    """将 SSE 数据放入队列"""
+                    """Put SSE data into the queue"""
                     await sse_queue.put(data)
 
-                # 启动处理任务
+                # Start the processing task
                 async def process_request():
                     nonlocal processing_complete
                     try:
-                        # 构建 AgentContext 数据（移除冗余的 user_input）
+                        # Build AgentContext data (redundant user_input removed)
                         agent_context = {
                             "session_id": request.session_id,
                             "dialogue_history": request.dialogue_history,
@@ -227,18 +269,18 @@ async def chat_agent_stream(request: AgentContextRequest):
                             "is_compressed": request.is_compressed
                         }
 
-                        language = request.session_metadata.get('language', 'zh')
+                        language = request.language or request.session_metadata.get('language') or 'en'
 
                         result = await sse_api.process_request_stream(
                             agent_context=agent_context,
-                            language=language,  # 作为独立参数传递语言选择
+                            language=language,  # Pass the language selection as a separate parameter
                             response_writer=queue_sse_data,
                             include_metadata=request.include_metadata,
                             buffer_events=request.buffer_events,
                             heartbeat_interval=request.heartbeat_interval
                         )
 
-                        # 发送对话结束事件（使用标准的 conversation_end 事件类型）
+                        # Send the conversation end event (using the standard conversation_end event type)
                         conversation_end_event = {
                             "event_type": "conversation_end",
                             "timestamp": datetime.now().isoformat(),
@@ -251,7 +293,7 @@ async def chat_agent_stream(request: AgentContextRequest):
 
                     except Exception as e:
                         logger.error(f"SSE processing error: {e}", exc_info=True)
-                        # 发送错误事件
+                        # Send the error event
                         error_event = {
                             "error": str(e),
                             "error_type": type(e).__name__,
@@ -260,38 +302,38 @@ async def chat_agent_stream(request: AgentContextRequest):
                         await sse_queue.put(f"event: error\ndata: {json.dumps(error_event, ensure_ascii=False)}\n\n")
                     finally:
                         processing_complete = True
-                        await sse_queue.put(None)  # 结束标记
+                        await sse_queue.put(None)  # End marker
 
-                # 启动处理任务
+                # Start the processing task
                 task = asyncio.create_task(process_request())
 
-                # 从队列中读取并发送数据
+                # Read data from the queue and send it
                 heartbeat_counter = 0
                 while True:
                     try:
-                        # 等待数据，使用较短超时以快速检测处理完成
+                        # Wait for data, using a short timeout to detect completion quickly
                         data = await asyncio.wait_for(sse_queue.get(), timeout=0.1)
-                        if data is None:  # 结束标记
+                        if data is None:  # End marker
                             break
                         yield data
                     except asyncio.TimeoutError:
-                        # 检查是否处理完成
+                        # Check whether processing is complete
                         if processing_complete:
                             break
-                        # 每100次超时发送一次心跳（每10秒）
+                        # Send a heartbeat every 100 timeouts (every 10 seconds)
                         heartbeat_counter += 1
                         if heartbeat_counter >= 100:
                             heartbeat = f"event: heartbeat\ndata: {{\"timestamp\": \"{datetime.now().isoformat()}\"}}\n\n"
                             yield heartbeat
                             heartbeat_counter = 0
 
-                # 确保任务完成
+                # Make sure the task is complete
                 if not task.done():
                     await task
 
             except Exception as e:
                 logger.error(f"SSE stream error: {e}", exc_info=True)
-                # 发送错误事件
+                # Send the error event
                 error_event = {
                     "error": str(e),
                     "error_type": type(e).__name__,
@@ -305,7 +347,7 @@ async def chat_agent_stream(request: AgentContextRequest):
             headers={
                 "Cache-Control": "no-cache",
                 "Connection": "keep-alive",
-                "X-Accel-Buffering": "no",  # 禁用 Nginx 缓冲
+                "X-Accel-Buffering": "no",  # Disable Nginx buffering
             }
         )
 
